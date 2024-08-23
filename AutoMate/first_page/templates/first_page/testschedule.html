@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Server IP Scheduler</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.1/main.min.css' rel='stylesheet' />
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.1/main.min.js'></script>
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.1/locales/all.min.js'></script>
+    <style>
+        /* Custom styles to display multi-select options in columns */
+        #serviceSelectContainer,
+        #serverSelect {
+            column-count: 2;
+            column-gap: 20px;
+            height: auto;
+            max-height: 200px;
+            overflow: auto;
+        }
+
+        .is-invalid {
+            border-color: red;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-md-8">
+                <h2>Server IP Scheduler</h2>
+                <form id="ipSchedulerForm">
+                    <div class="form-group">
+                        <label for="projectName">Project Name:</label>
+                        <input type="text" class="form-control" id="projectName" placeholder="Enter project name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="bookedBy">Booked By:</label>
+                        <input type="text" class="form-control" id="bookedBy" placeholder="Enter your name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="serviceSelectContainer">Select Services:</label>
+                        <div id="serviceSelectContainer" class="form-control">
+                            <div>
+                                <input type="checkbox" id="visa" value="Visa">
+                                <label for="visa">Visa</label>
+                                <div id="visaOptions" style="display: none; padding-left: 20px;">
+                                    <input type="checkbox" id="visaOption1" value="Visa Option 1">
+                                    <label for="visaOption1">Visa Option 1</label><br>
+                                    <input type="checkbox" id="visaOption2" value="Visa Option 2">
+                                    <label for="visaOption2">Visa Option 2</label><br>
+                                    <input type="checkbox" id="visaOption3" value="Visa Option 3">
+                                    <label for="visaOption3">Visa Option 3</label>
+                                </div>
+                            </div>
+                            <div>
+                                <input type="checkbox" id="mastercard" value="Mastercard">
+                                <label for="mastercard">Mastercard</label>
+                                <div id="mastercardOptions" style="display: none; padding-left: 20px;">
+                                    <input type="checkbox" id="mastercardOption1" value="Mastercard Option 1">
+                                    <label for="mastercardOption1">Mastercard Option 1</label><br>
+                                    <input type="checkbox" id="mastercardOption2" value="Mastercard Option 2">
+                                    <label for="mastercardOption2">Mastercard Option 2</label><br>
+                                    <input type="checkbox" id="mastercardOption3" value="Mastercard Option 3">
+                                    <label for="mastercardOption3">Mastercard Option 3</label>
+                                </div>
+                            </div>
+                            <div>
+                                <input type="checkbox" id="upi" value="UPI">
+                                <label for="upi">UPI</label>
+                                <div id="upiOptions" style="display: none; padding-left: 20px;">
+                                    <input type="checkbox" id="upiOption1" value="UPI Option 1">
+                                    <label for="upiOption1">UPI Option 1</label><br>
+                                    <input type="checkbox" id="upiOption2" value="UPI Option 2">
+                                    <label for="upiOption2">UPI Option 2</label><br>
+                                    <input type="checkbox" id="upiOption3" value="UPI Option 3">
+                                    <label for="upiOption3">UPI Option 3</label>
+                                </div>
+                            </div>
+                            <!-- Add more services and their options here -->
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="serverSelect">Select Servers:</label>
+                        <select multiple class="form-control" id="serverSelect" required>
+                            <option>dev77</option>
+                            <option>test77</option>
+                            <!-- Add more server options here -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="startDate">Start Date:</label>
+                        <input type="date" class="form-control" id="startDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="endDate">End Date:</label>
+                        <input type="date" class="form-control" id="endDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="timeSlot">Time Slot:</label>
+                        <div>
+                            <input type="radio" id="morning" name="timeSlot" value="morning">
+                            <label for="morning">Morning</label>
+                        </div>
+                        <div>
+                            <input type="radio" id="afternoon" name="timeSlot" value="afternoon">
+                            <label for="afternoon">Afternoon</label>
+                        </div>
+                        <div>
+                            <input type="radio" id="fullDay" name="timeSlot" value="fullDay">
+                            <label for="fullDay">Full Day</label>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Schedule IP Change</button>
+                </form>
+            </div>
+            <div class="col-md-4">
+                <h3>Upcoming Bookings</h3>
+                <div id="upcomingBookings">
+                    <!-- Upcoming bookings will be displayed here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-md-12">
+                <h3>Booking History</h3>
+                <div id="bookingHistory">
+                    <!-- History will be displayed here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-md-12">
+                <button id="openCalendarModal" class="btn btn-primary">Open Calendar</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="calendarModal" tabindex="-1" aria-labelledby="calendarModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="calendarModalLabel">Server IP Booking Calendar</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="calendarModalContent"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        let bookingHistory = []; // Array to store past bookings
+
+        document.addEventListener('DOMContentLoaded', (event) => {
+            const ipSchedulerForm = document.getElementById('ipSchedulerForm');
+            const upcomingBookings = document.getElementById('upcomingBookings');
+            const bookingHistoryDiv = document.getElementById('bookingHistory');
+            const openCalendarModal = document.getElementById('openCalendarModal');
+            const startDate = document.getElementById('startDate');
+            const endDate = document.getElementById('endDate');
+
+            // Show/hide service options based on main service checkbox
+            document.querySelectorAll('#serviceSelectContainer input[type="checkbox"]').forEach(checkbox => {
+                checkbox.addEventListener('change', function () {
+                    const optionsDiv = document.getElementById(this.id + 'Options');
+                    if (this.checked) {
+                        optionsDiv.style.display = 'block';
+                    } else {
+                        optionsDiv.style.display = 'none';
+                        optionsDiv.querySelectorAll('input[type="checkbox"]').forEach(option => option.checked = false);
+                    }
+                });
+            });
+
+            // Function to check for overlapping bookings
+            function isBookingOverlapping(newJob, bookings) {
+                return bookings.some(existingJob => {
+                    const newStart = new Date(newJob.startDateTime);
+                    const newEnd = new Date(newJob.endDateTime);
+                    const existingStart = new Date(existingJob.startDateTime);
+                    const existingEnd = new Date(existingJob.endDateTime);
+
+                    // Check for overlaps
+                    return (
+                        (newStart >= existingStart && newStart < existingEnd) ||
+                        (newEnd > existingStart && newEnd <= existingEnd) ||
+                        (newStart <= existingStart && newEnd >= existingEnd)
+                    );
+                });
+            }
+
+            // Handle form submission
+            ipSchedulerForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+
+                // Get form values
+                const projectName = document.getElementById('projectName').value;
+                const bookedBy = document.getElementById('bookedBy').value;
+                const startDateValue = document.getElementById('startDate').value;
+                const endDateValue = document.getElementById('endDate').value;
+                const timeSlot = document.querySelector('input[name="timeSlot"]:checked').value;
+
+                // Get selected services and options
+                const services = [];
+                const serviceCheckboxes = document.querySelectorAll('#serviceSelectContainer > div > input[type="checkbox"]');
+                serviceCheckboxes.forEach(serviceCheckbox => {
+                    if (serviceCheckbox.checked) {
+                        const selectedOptions = [];
+                        const optionCheckboxes = document.querySelectorAll(`#${serviceCheckbox.id}Options input[type="checkbox"]`);
+                        optionCheckboxes.forEach(optionCheckbox => {
+                            if (optionCheckbox.checked) {
+                                selectedOptions.push(optionCheckbox.value);
+                            }
+                        });
+                        services.push({ service: serviceCheckbox.value, options: selectedOptions });
+                    }
+                });
+
+                // Get selected servers
+                const serverSelect = document.getElementById('serverSelect');
+                const servers = Array.from(serverSelect.selectedOptions).map(option => option.value);
+
+                // Validate form fields
+                if (!projectName || !bookedBy || !services.length || !servers.length || !startDateValue || !endDateValue) {
+                    // Mark invalid fields in red
+                    document.getElementById('projectName').classList.add('is-invalid');
+                    document.getElementById('bookedBy').classList.add('is-invalid');
+                    document.getElementById('startDate').classList.add('is-invalid');
+                    document.getElementById('endDate').classList.add('is-invalid');
+                    if (!services.length) {
+                        document.getElementById('serviceSelectContainer').classList.add('is-invalid');
+                    }
+                    if (!servers.length) {
+                        document.getElementById('serverSelect').classList.add('is-invalid');
+                    }
+                    return; // Stop form submission if invalid
+                }
+
+                // Validate dates
+                const startDate = new Date(document.getElementById('startDate').value);
+                const endDate = new Date(document.getElementById('endDate').value);
+                if (startDate >= endDate) {
+                    alert("Start date must be before end date.");
+                    return; // Stop form submission if invalid
+                }
+
+                // Create a job object
+                const job = {
+                    projectName,
+                    bookedBy,
+                    services,
+                    servers,
+                    startDateTime: new Date(startDateValue),
+                    endDateTime: new Date(endDateValue),
+                    timeSlot
+                };
+
+                // Adjust start/end times for full-day bookings
+                if (timeSlot === 'fullDay') {
+                    job.startDateTime.setHours(0, 0, 0, 0);
+                    job.endDateTime.setHours(23, 59, 59, 999);
+                } else if (timeSlot === 'morning') {
+                    job.startDateTime.setHours(9, 0, 0, 0);
+                    job.endDateTime.setHours(12, 0, 0, 0);
+                } else if (timeSlot === 'afternoon') {
+                    job.startDateTime.setHours(13, 0, 0, 0);
+                    job.endDateTime.setHours(17, 0, 0, 0);
+                }
+
+                // Check for overlapping bookings
+                if (isBookingOverlapping(job, bookingHistory)) {
+                    alert("This booking overlaps with an existing booking. Please adjust the dates and times.");
+                    return; // Stop form submission if invalid
+                }
+
+                // Add the job to the upcoming bookings (only if upcoming)
+                if (new Date(job.startDateTime) > new Date()) { // Check if start time is in the future
+                    const bookingEntry = document.createElement('div');
+                    bookingEntry.classList.add('booking-entry', 'card');
+                    bookingEntry.innerHTML = `
+                        <div class="card-body">
+                            <h4>${job.projectName}</h4>
+                            <p>Booked by: ${job.bookedBy}</p>
+                            <p>Services: ${job.services.map(s => s.service + (s.options.length ? ` (${s.options.join(', ')})` : '')).join(', ')}</p>
+                            <p>Servers: ${job.servers.join(', ')}</p>
+                            <p>Start: ${job.startDateTime}</p>
+                            <p>End: ${job.endDateTime}</p>
+                            <p>Time Slot: ${job.timeSlot}</p>
+                        </div>
+                    `;
+                    upcomingBookings.appendChild(bookingEntry);
+                }
+
+                // Add the job to history
+                bookingHistory.push(job);
+                const historyEntry = document.createElement('div');
+                historyEntry.classList.add('booking-entry', 'card');
+                historyEntry.innerHTML = `
+                    <div class="card-body">
+                        <h4>${job.projectName}</h4>
+                        <p>Booked by: ${job.bookedBy}</p>
+                        <p>Services: ${job.services.map(s => s.service + (s.options.length ? ` (${s.options.join(', ')})` : '')).join(', ')}</p>
+                        <p>Servers: ${job.servers.join(', ')}</p>
+                        <p>Start: ${job.startDateTime}</p>
+                        <p>End: ${job.endDateTime}</p>
+                        <p>Time Slot: ${job.timeSlot}</p>
+                    </div>
+                `;
+                bookingHistoryDiv.appendChild(historyEntry);
+
+                // Clear the form
+                ipSchedulerForm.reset();
+                document.querySelectorAll('#serviceSelectContainer > div > div').forEach(optionsDiv => {
+                    optionsDiv.style.display = 'none';
+                    optionsDiv.querySelectorAll('input[type="checkbox"]').forEach(option => option.checked = false);
+                });
+            });
+
+            // Display upcoming bookings on page load
+            bookingHistory.forEach(historyJob => {
+                if (new Date(historyJob.startDateTime) > new Date()) { // Check if start time is in the future
+                    const bookingEntry = document.createElement('div');
+                    bookingEntry.classList.add('booking-entry', 'card');
+                    bookingEntry.innerHTML = `
+                        <div class="card-body">
+                            <h4>${historyJob.projectName}</h4>
+                            <p>Booked by: ${historyJob.bookedBy}</p>
+                            <p>Services: ${historyJob.services.map(s => s.service + (s.options.length ? ` (${s.options.join(', ')})` : '')).join(', ')}</p>
+                            <p>Servers: ${historyJob.servers.join(', ')}</p>
+                            <p>Start: ${historyJob.startDateTime}</p>
+                            <p>End: ${historyJob.endDateTime}</p>
+                            <p>Time Slot: ${historyJob.timeSlot}</p>
+                        </div>
+                    `;
+                    upcomingBookings.appendChild(bookingEntry);
+                }
+            });
+
+            // Display past bookings on page load
+            bookingHistory.forEach(historyJob => {
+                if (new Date(historyJob.startDateTime) < new Date()) { // Check if start time is in the past
+                    const historyEntry = document.createElement('div');
+                    historyEntry.classList.add('booking-entry', 'card');
+                    historyEntry.innerHTML = `
+                        <div class="card-body">
+                            <h4>${historyJob.projectName}</h4>
+                            <p>Booked by: ${historyJob.bookedBy}</p>
+                            <p>Services: ${historyJob.services.map(s => s.service + (s.options.length ? ` (${s.options.join(', ')})` : '')).join(', ')}</p>
+                            <p>Servers: ${historyJob.servers.join(', ')}</p>
+                            <p>Start: ${historyJob.startDateTime}</p>
+                            <p>End: ${historyJob.endDateTime}</p>
+                            <p>Time Slot: ${historyJob.timeSlot}</p>
+                        </div>
+                    `;
+                    bookingHistoryDiv.appendChild(historyEntry);
+                }
+            });
+
+            // Handle Calendar Button Click
+            openCalendarModal.addEventListener('click', function () {
+                $('#calendarModal').modal('show');
+            });
+
+            // Initialize FullCalendar within the modal content
+            const calendarEl = document.getElementById('calendarModalContent');
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                events: [
+                    // Populate events from bookingHistory and future bookings
+                ]
+            });
+            calendar.render();
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,77 @@
+[33mcommit 966483ba23f9a9e5c77a2267855ab3d5b6be84ad[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m
+Author: Durgesh Singh <durgesh.singh90@gmail.com>
+Date:   Sun Aug 11 23:57:06 2024 +0100
+
+    just before action
+
+[33mcommit 437f9497c48a3e0ca88592126dd8bea2221ff509[m
+Author: Durgesh Singh <durgesh.singh90@gmail.com>
+Date:   Sun Aug 11 21:18:37 2024 +0100
+
+    booking UI with preventing double booking_Noaction
+
+[33mcommit c43e3d76518732760893e86978ce768daf82f430[m[33m ([m[1;31morigin/main[m[33m)[m
+Author: Durgesh Singh <durgesh.singh90@gmail.com>
+Date:   Sun Aug 11 20:49:26 2024 +0100
+
+    Complete UI without cosmetics
+
+[33mcommit 8197dc77109678e85cdd3ffae16f33a756152548[m
+Author: Durgesh Singh <durgesh.singh90@gmail.com>
+Date:   Fri Aug 2 10:38:41 2024 +0100
+
+    using splplus
+
+[33mcommit 0573a31e5c789642b5ba219171a13c47acd8e5b3[m
+Author: Durgesh Singh <durgesh.singh90@gmail.com>
+Date:   Fri Aug 2 10:32:26 2024 +0100
+
+    oracledb
+
+[33mcommit 2d3bb48033bc0815127595b16d1d985a992be3d4[m
+Author: Durgesh Singh <durgesh.singh90@gmail.com>
+Date:   Fri Aug 2 10:28:46 2024 +0100
+
+    djangopackage
+
+[33mcommit 33fdce333b689a7ae05cb3ed5c9950ab3ba74ada[m
+Author: Durgesh Singh <durgesh.singh90@gmail.com>
+Date:   Fri Aug 2 10:12:05 2024 +0100
+
+    Binblocking_DBConnectiontesting
+
+[33mcommit 45ccee5fdf5dc39f3804e61d02b8e6191375a11a[m
+Author: Durgesh Singh <durgesh.singh90@gmail.com>
+Date:   Mon Jul 29 07:56:11 2024 +0100
+
+    Builttestcases_v1
+
+[33mcommit 1b06cdf4b057a8fb4c0631a28406bffb34366aed[m
+Author: Durgesh Singh <durgesh.singh90@gmail.com>
+Date:   Mon Jul 29 02:12:36 2024 +0100
+
+    Integrate bookings into AutoMate
+
+[33mcommit a2426a4d3a48cc7b874e174ded951e4f616d5f4c[m
+Author: Durgesh Singh <durgesh.singh90@gmail.com>
+Date:   Mon Jul 29 01:00:33 2024 +0100
+
+    Working Booking with tick options
+
+[33mcommit 962e52dcae2c08bedb350029c52c2a9e56a2d9d5[m
+Author: Durgesh Singh <durgesh.singh90@gmail.com>
+Date:   Mon Jul 29 00:59:28 2024 +0100
+
+    Bookings Final with tick options
+
+[33mcommit 2295281041f1c27953d0d83db9f9c53b01bc2edc[m
+Author: Durgesh Singh <durgesh.singh90@gmail.com>
+Date:   Fri Jul 26 05:09:47 2024 +0100
+
+    booking page with table and grid
+
+[33mcommit 042325dec2252f30fab3518d8036682128eb9cca[m
+Author: Durgesh Singh <durgesh.singh90@gmail.com>
+Date:   Wed Jul 24 01:41:05 2024 +0100
+
+    Initial commit

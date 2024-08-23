@@ -1,0 +1,70 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Beautiful Website</title>
+    <!-- Link to external CSS file -->
+    <link rel="stylesheet" href="{% static 'first_page/styles.css' %}">
+    <style>
+        .container {
+            display: flex;
+        }
+        .content {
+            flex: 3;
+        }
+        .history {
+            flex: 1;
+            margin-left: 20px;
+            border-left: 1px solid #ccc;
+            padding-left: 20px;
+        }
+        .history-entry {
+            border-bottom: 1px solid #ccc;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            position: relative;
+        }
+        .timestamp {
+            font-size: 0.9em;
+            color: #666;
+        }
+        .entry-number {
+            font-weight: bold;
+        }
+        .copy-button {
+            position: absolute;
+            right: 10px;
+            top: 1px;
+            padding: 2px 5px;
+            background-color: black;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        .copy-button:focus {
+            outline: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="nav">
+    <a href="#">Home</a>
+    <a href="{% url 'first_page:splunk2sender' %}">Splunk to sender</a>
+    <a href="{% url 'upload_log_file' %}">Filter MC EMVCo Logs</a>
+    <a href="{% url 'first_page:json2yaml' %}">Json to Yaml Converter</a>
+    <a href="{% url 'first_page:SplunkRRN' %}">SplunkRRN</a>
+    <a href="{% url 'bookings:booking' %}">Bookings</a> <!-- Added link to bookings -->
+</div>
+
+<div class="container">
+    <div class="content">
+        <!-- Your page content goes here -->
+        <h1>Welcome to My Beautiful Website!</h1>
+    </div>
+</div>
+
+</body>
+</html>

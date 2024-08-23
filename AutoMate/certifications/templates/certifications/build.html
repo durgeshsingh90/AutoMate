@@ -1,0 +1,39 @@
+<!-- certifications/templates/certifications/build.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Build Project</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <h1>Build Project</h1>
+        <form>
+            <div class="form-group">
+                <label for="projectName">Project Name</label>
+                <input type="text" class="form-control" id="projectName" placeholder="Enter project name">
+            </div>
+            <div class="form-group">
+                <label for="projectNumber">Project Number</label>
+                <input type="text" class="form-control" id="projectNumber" placeholder="Enter project number">
+            </div>
+            <div class="form-group">
+                <label for="owner">Owner</label>
+                <input type="text" class="form-control" id="owner" placeholder="Enter owner's name">
+            </div>
+            <div class="btn-group" role="group" aria-label="Project Type">
+                <button type="button" class="btn btn-primary">CP</button>
+                <button type="button" class="btn btn-primary">CNP</button>
+            </div>
+            <br><br>
+            <button type="submit" class="btn btn-success">Start Building</button>
+        </form>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

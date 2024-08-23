@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Text to JSON Converter</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #f4f7fa;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+h1 {
+    margin: 20px 0;
+    color: #333;
+}
+#container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 90%;
+    max-width: 1200px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    padding: 20px;
+    box-sizing: border-box;
+}
+.button-row {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    margin-right: 160px; /* Adjust this value to move the button further left or right */
+
+}
+.copy-button {
+    /* margin: 0px; */
+    padding: 10px 20px;
+    background: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+.copy-button:hover {
+    background: #0056b3;
+}
+.copied {
+    background: #28a745;
+}
+.text-row {
+    display: flex;
+    justify-content: flex-start;
+    width: 100%;
+}
+textarea, pre {
+    height: 500px;
+    padding: 20px;
+    font-family: monospace;
+    font-size: 14px;
+    box-sizing: border-box;
+    border: none;
+    border-radius: 8px;
+    margin: 10px;
+}
+textarea {
+    width: 45%;
+    resize: none;
+    background-color: #f0f0f0;
+}
+pre {
+    width: 45%;
+    background-color: #f4f7fa;
+    overflow: auto;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+.error-box, .warning-box {
+    padding: 10px;
+    margin-bottom: 20px;
+    width: 90%;
+    max-width: 1200px;
+    box-sizing: border-box;
+    display: none;
+    border-radius: 8px;
+}
+.error-box {
+    background: #ffe6e6;
+    border: 1px solid #ff0000;
+}
+.warning-box {
+    background: #fff3cd;
+    border: 1px solid #ffecb5;
+    color: #856404;
+}
+.json-key {
+    color: brown;
+}
+.json-value {
+    color: navy;
+}
+.json-string {
+    color: green;
+}
+
+/* Style for the Home button */
+.home-btn {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    padding: 10px 20px;
+    background-color: #007bff; /* Blue color */
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    font-weight: bold;
+    z-index: 999; /* Ensure it's on top of other elements */
+}
+
+/* Hover effect for the Home button */
+.home-btn:hover {
+    background-color: #0056b3; /* Darker shade of blue */
+}
+
+    </style>
+</head>
+<body>
+<a href="{% url 'first_page:home' %}" class="home-btn">Home</a>
+
+<h1>Splunk to sender Converter</h1>
+
+<div class="warning-box" id="warningBox"></div>
+<div class="error-box" id="errorBox"></div>
+
+<div id="container">
+    <div class="button-row">
+        <button class="copy-button" onclick="copyOutput()" id="copyButton">Copy Output</button>
+    </div>
+    <div class="text-row">
+        <textarea id="inputText" name="text" placeholder="Paste your text here..."></textarea>
+        <pre id="jsonOutput"></pre>
+    </div>
+</div>
+
+<script>
+    document.getElementById('inputText').addEventListener('input', processText);
+
+    function processText() {
+        const inputText = document.getElementById('inputText').value;
+        try {
+            const inputLines = inputText.split('\n');
+            const { jsonOutput, warnings } = processInputData(inputLines);
+            document.getElementById('jsonOutput').innerHTML = syntaxHighlight(JSON.stringify(jsonOutput, null, 4));
+            displayWarnings(warnings);
+            hideError();
+        } catch (error) {
+            displayError(error.message);
+        }
+    }
+
+    function processInputData(inputLines) {
+        const visa_card_number = ['4970110000000005'];
+        const mc_card_number = ['5534218827246242', '6759050000000096'];
+        const diners_card_number = ['3970110000000005'];
+        const jcb_card_number = [];
+        const dummy_track2_BM35 = '=1212000000000000000';
+        const default_inst_num_BM32 = '000050';
+        const default_merchant_num_BM42 = '226000000021357';
+        const default_cvv2_BM48 = '861';
+        const default_pinblock_BM52 = '9CAE2E2A395F8564';
+        const default_emvdata_BM55 = '9F6E04230000005F2A02097882021A2B95051A2B3C4D5F9A032404199C01009F02060000000003019F03060000000000009F1006010003A410009F1A0209789F1E0831323334353637389F26080123456789ABCDEF9F2701809F3303E0E8809F34030000009F3501219F3602C3D49F3704CCDDEEFF';
+        
+        const current_date = new Date();
+        const matches = [];
+        const regex = /in\[ *(\d+): *\]<(.+?)>/g;
+        let match;
+        while ((match = regex.exec(inputLines.join('\n'))) !== null) {
+            matches.push([match[1], match[2]]);
+        }
+        
+        const indices_to_concatenate = [7, 43];
+        const json_data = {
+            "mti": 100,
+            "data_elements": {}
+        };
+        const warnings = [];
+
+        matches.forEach(match => {
+            const index = parseInt(match[0]);
+            let value = match[1];
+
+            if (index === 129) {
+                return;
+            }
+
+            if (indices_to_concatenate.includes(index)) {
+                if (`DE${index.toString().padStart(3, '0')}` in json_data.data_elements) {
+                    json_data.data_elements[`DE${index.toString().padStart(3, '0')}`] += value;
+                } else {
+                    json_data.data_elements[`DE${index.toString().padStart(3, '0')}`] = value;
+                }
+            } else {
+                switch (index) {
+                    case 2:
+                        if (value.startsWith('3')) {
+                            warnings.push(`Replacing, BM002: ${value} with ${diners_card_number[0]}`);
+                            json_data.data_elements[`DE${index.toString().padStart(3, '0')}`] = diners_card_number[0];
+                        } else if (value.startsWith('4')) {
+                            warnings.push(`Replacing, BM002: ${value} with ${visa_card_number[0]}`);
+                            json_data.data_elements[`DE${index.toString().padStart(3, '0')}`] = visa_card_number[0];
+                        } else if (value.startsWith('5')) {
+                            warnings.push(`Replacing, BM002: ${value} with ${mc_card_number[0]}`);
+                            json_data.data_elements[`DE${index.toString().padStart(3, '0')}`] = mc_card_number[0];
+                        } else if (value.startsWith('6')) {
+                            warnings.push(`Replacing, BM002: ${value} with ${mc_card_number[1]}`);
+                            json_data.data_elements[`DE${index.toString().padStart(3, '0')}`] = mc_card_number[1];
+                        } else {
+                            json_data.data_elements[`DE${index.toString().padStart(3, '0')}`] = value;
+                        }
+                        break;
+                    case 3:
+                        json_data.data_elements[`DE${index.toString().padStart(3, '0')}`] = value.padEnd(6, '0');
+                        break;
+                    case 4:
+                    case 49:
+                        json_data.data_elements[`DE${index.toString().padStart(3, '0')}`] = parseInt(value, 10);
+                        break;
+                    case 11:
+                    case 12:
+                        json_data.data_elements[`DE${index.toString().padStart(3, '0')}`] = value.padStart(6, '0');
+                        break;
+                    case 13:
+                        json_data.data_elements[`DE${index.toString().padStart(3, '0')}`] = value.padStart(4, '0');
+                        break;
+                    case 14:
+                        if (value.includes('*')) {
+                            const threeYearsFromNow = new Date(current_date.getFullYear() + 3, current_date.getMonth(), current_date.getDate());
+                            const newValue = threeYearsFromNow.toISOString().slice(2, 7).replace('-', '');
+                            warnings.push(`Replacing, BM014: ${value} with ${newValue}`);
+                            value = newValue;
+                        }
+                        json_data.data_elements[`DE${index.toString().padStart(3, '0')}`] = value;
+                        break;
+                    case 22:
+                    case 23:
+                        json_data.data_elements[`DE${index.toString().padStart(3, '0')}`] = value.padStart(3, '0');
+                        break;
+                    case 25:
+                        json_data.data_elements[`DE${index.toString().padStart(3, '0')}`] = value.padStart(2, '0');
+                        break;
+                    case 32:
+                        json_data.data_elements[`DE${index.toString().padStart(3, '0')}`] = default_inst_num_BM32;
+                        warnings.push(`Using default institution number:, BM032 ${default_inst_num_BM32}`);
+                        break;
+                    case 35:
+                        json_data.data_elements[`DE${index.toString().padStart(3, '0')}`] = json_data.data_elements["DE002"] + dummy_track2_BM35;
+                        warnings.push(`Using dummy track2, BM035: ${dummy_track2_BM35}`);
+                        break;
+                    case 42:
+                        json_data.data_elements[`DE${index.toString().padStart(3, '0')}`] = default_merchant_num_BM42;
+                        warnings.push(`Using default merchant number, BM042: ${default_merchant_num_BM42}`);
+                        break;
+                    case 48:
+                        json_data.data_elements[`DE${index.toString().padStart(3, '0')}`] = default_cvv2_BM48;
+                        warnings.push(`Using default CVV2, BM048: ${default_cvv2_BM48}`);
+                        break;
+                    case 52:
+                        json_data.data_elements[`DE${index.toString().padStart(3, '0')}`] = default_pinblock_BM52;
+                        warnings.push(`Using default PIN block, BM052: ${default_pinblock_BM52}`);
+                        break;
+                    case 55:
+                        json_data.data_elements[`DE${index.toString().padStart(3, '0')}`] = default_emvdata_BM55;
+                        warnings.push(`Using default EMV data, BM055: ${default_emvdata_BM55}`);
+                        break;
+                    case 60:
+                    case 61:
+                    case 62:
+                    case 63:
+                    case 64:
+                        const subfields = [];
+                        const values = [];
+                        let i = 0;
+                        while (i < value.length) {
+                            const subfield_length = parseInt(value.slice(i, i + 3), 10);
+                            const subfield = value.slice(i + 3, i + 5);
+                            subfields.push(subfield);
+                            values.push(value.slice(i + 5, i + 5 + subfield_length - 2));
+                            i += 5 + subfield_length - 2;
+                        }
+                        const index_6x_dict = {};
+                        subfields.forEach((subfield, idx) => {
+                            index_6x_dict[subfield] = values[idx];
+                        });
+                        json_data.data_elements[`DE${index.toString().padStart(3, '0')}`] = index_6x_dict;
+                        break;
+                    default:
+                        json_data.data_elements[`DE${index.toString().padStart(3, '0')}`] = value;
+                        break;
+                }
+            }
+        });
+
+        if (json_data.data_elements["DE007"]) {
+            json_data.data_elements["DE007"] = json_data.data_elements["DE007"].padStart(10, '0');
+        }
+
+        return { jsonOutput: json_data, warnings: warnings };
+    }
+
+    function displayError(message) {
+        const errorBox = document.getElementById('errorBox');
+        errorBox.style.display = 'block';
+        errorBox.innerHTML = `<strong>Error:</strong> ${message}`;
+    }
+
+    function displayWarnings(warnings) {
+        const warningBox = document.getElementById('warningBox');
+        if (warnings.length > 0) {
+            warningBox.style.display = 'block';
+            warningBox.innerHTML = `<strong>Warnings:</strong><br>` + warnings.join('<br>');
+        } else {
+            warningBox.style.display = 'none';
+        }
+    }
+
+    function hideError() {
+        const errorBox = document.getElementById('errorBox');
+        errorBox.style.display = 'none';
+    }
+
+    function copyOutput() {
+        const jsonOutput = document.getElementById('jsonOutput').textContent;
+        navigator.clipboard.writeText(jsonOutput).then(() => {
+            const copyButton = document.getElementById('copyButton');
+            copyButton.textContent = 'Copied!';
+            copyButton.classList.add('copied');
+            setTimeout(() => {
+                copyButton.textContent = 'Copy Output';
+                copyButton.classList.remove('copied');
+            }, 1000);
+        });
+    }
+
+    function syntaxHighlight(json) {
+        json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:\s*)?|true|false|null|\d+)/g, function (match) {
+            let cls = 'json-value';
+            if (/^"/.test(match)) {
+                if (/:$/.test(match)) {
+                    cls = 'json-key';
+                } else {
+                    cls = 'json-string';
+                }
+            } else if (/true|false/.test(match)) {
+                cls = 'json-boolean';
+            } else if (/null/.test(match)) {
+                cls = 'json-null';
+            }
+            return '<span class="' + cls + '">' + match + '</span>';
+        });
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Splunk RRN</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+        .container {
+            display: flex;
+            flex-direction: row;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+        .textarea-container {
+            display: flex;
+            flex-direction: column;
+            margin-right: 20px;
+        }
+        textarea {
+            width: 300px;
+            height: 300px;
+            margin-bottom: 10px;
+            padding: 10px;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .textarea-container label {
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        #copyButton {
+            margin-top: 10px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #copyButton:hover {
+            background-color: #0056b3;
+        }
+        /* Style for the Home button */
+        .home-btn {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            padding: 10px 20px;
+            background-color: #007bff; /* Blue color */
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            z-index: 999; /* Ensure it's on top of other elements */
+        }
+
+        /* Hover effect for the Home button */
+        .home-btn:hover {
+            background-color: #0056b3; /* Darker shade of blue */
+        }
+    </style>
+</head>
+<body>
+    <a href="{% url 'first_page:home' %}" class="home-btn">Home</a>
+    {% comment %} <h1>Splunk RRN response generator</h1> {% endcomment %}
+
+    <div class="container">
+        <div class="textarea-container">
+            <label for="inputNumbers">Enter RRN numbers:</label>
+            <textarea id="inputNumbers" rows="10" cols="30" oninput="modifyNumbers()"></textarea>
+        </div>
+        <div class="textarea-container">
+            <label for="outputNumbers">Splunk Search:</label>
+            <textarea id="outputNumbers" rows="10" cols="30" readonly></textarea>
+            <button id="copyButton" onclick="copyToClipboard()">Copy</button>
+        </div>
+    </div>
+
+    <script>
+        function modifyNumbers() {
+            const input = document.getElementById('inputNumbers').value;
+            const lines = input.split('\n');
+            let modifiedLines = [];
+
+            for (let line of lines) {
+                let modifiedLine = line;
+                let match = line.match(/"(\d{12})"/) || line.match(/(\d{12})/);
+                if (match) {
+                    let originalNumber = match[1];
+                    let modifiedNumber = '';
+                    for (let i = 0; i < originalNumber.length; i++) {
+                        modifiedNumber += '3' + originalNumber[i];
+                    }
+                    if (line.includes(`"${originalNumber}"`)) {
+                        modifiedLine = line.replace(`"${originalNumber}"`, `"${originalNumber}" OR "${modifiedNumber}"`);
+                    } else {
+                        modifiedLine = line.replace(originalNumber, `"${originalNumber}" OR "${modifiedNumber}"`);
+                    }
+                }
+                modifiedLines.push(modifiedLine);
+            }
+
+            document.getElementById('outputNumbers').value = modifiedLines.join(' OR ');
+        }
+
+        function copyToClipboard() {
+            const output = document.getElementById('outputNumbers');
+            output.select();
+            output.setSelectionRange(0, 99999); // For mobile devices
+
+            document.execCommand('copy');
+
+            const copyButton = document.getElementById('copyButton');
+            copyButton.textContent = 'Copied!';
+            setTimeout(() => {
+                copyButton.textContent = 'Copy';
+            }, 1000);
+        }
+    </script>
+</body>
+</html>

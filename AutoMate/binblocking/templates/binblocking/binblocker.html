@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Bin Blocking</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; display: flex; }
+        .box { width: 33%; padding: 10px; }
+        textarea { width: 100%; height: 200px; }
+        button { padding: 10px 20px; margin-top: 10px; }
+        .result, .log { margin-top: 20px; }
+        .log { 
+            background: #f9f9f9; 
+            padding: 10px; 
+            border: 1px solid #ccc; 
+            height: 200px; 
+            overflow-y: auto; 
+            animation: fadeIn 2s;
+        }
+        @keyframes fadeIn {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+        .log-message {
+            opacity: 0;
+            animation: slideIn 1s forwards;
+        }
+        @keyframes slideIn {
+            0% { 
+                transform: translateY(20px);
+                opacity: 0;
+            }
+            100% { 
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="box">
+            <h1>Bin Blocking</h1>
+            <form method="POST" action="{% url 'binblocking:process_bins' %}">
+                {% csrf_token %}
+                <textarea name="bins" placeholder="Enter card BINs here, one per line..."></textarea>
+                <button type="submit">Process</button>
+            </form>
+        </div>
+        <div class="box">
+            {% if result %}
+                <div class="result">
+                    <h2>Processed BINs</h2>
+                    <textarea readonly>{{ result }}</textarea>
+                </div>
+            {% endif %}
+        </div>
+        <div class="box">
+            {% if log_with_delays %}
+                <div class="log">
+                    <h2>Log</h2>
+                    <div id="log-container">
+                        {% for message, delay in log_with_delays %}
+                            <div class="log-message" style="animation-delay: {{ delay }}s;">{{ message }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

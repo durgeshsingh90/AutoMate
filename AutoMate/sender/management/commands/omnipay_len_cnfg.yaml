@@ -1,0 +1,192 @@
+---
+mti:
+  len: 4
+BM002:
+  len: llvar
+BM003:
+  len: 6
+BM004:
+  len: 12
+BM005: {}
+BM006: {}
+BM007:
+  len: 10
+BM008: {}
+BM009: {}
+BM010: {}
+BM011:
+  len: 6
+BM012:
+  len: 6
+BM013:
+  len: 4
+BM014:
+  len: 4
+BM015:
+  len: 4
+BM016: {}
+BM017: {}
+BM018:
+  len: 4
+BM019:
+  len: 3
+BM020: {}
+BM021: {}
+BM022:
+  len: 3
+BM023:
+  len: 3
+BM024: {}
+BM025:
+  len: 2
+BM026:
+  len: 2
+BM027: {}
+BM028: {}
+BM029: {}
+BM030: {}
+BM031: {}
+BM032:
+  len: llvar
+BM033: {}
+BM034:
+  len: llvar
+BM035:
+  len: llvar
+BM036: {}
+BM037:
+  len: 12
+BM038:
+  len: 6
+BM039:
+  len: 2
+BM040: {}
+BM041:
+  len: 8
+BM042:
+  len: 15
+BM043:
+  len: 40
+BM044:
+  len: llvar
+BM045:
+  len: llvar
+BM046: {}
+BM047: {}
+BM048:
+  len: lllvar
+BM049:
+  len: 3
+BM050: {}
+BM051: {}
+BM052:
+  len: 16
+BM053:
+  len: llvar
+BM054:
+  len: lllvar
+BM055: {}
+BM056: {}
+BM057: {}
+BM058: {}
+BM059: {}
+BM060:
+	sf31:
+		tag_id_len: 2
+		tag_value_len:4
+	sf32:
+	tag_id_len: 2
+	tag_value_len:4
+BM061:
+  len: lllvar
+  tag_id_val_len: lllvar
+  tag_id:
+    len: 2
+  tag_val:
+BM062:
+  len: lllvar
+  tag_id_val_len: lllvar
+  tag_id:
+    len: 2
+  tag_val:
+BM063:
+  len: lllvar
+  tag_id_val_len: lllvar
+  tag_id:
+    len: 2
+  tag_val:
+BM064:
+  len: 16
+BM065:
+  len: lllvar
+  tag_id_val_len: lllvar
+  tag_id:
+    len: 2
+  tag_val:
+BM066: {}
+BM067: {}
+BM068: {}
+BM069: {}
+BM070:
+  len: 3
+BM071: {}
+BM072: {}
+BM073: {}
+BM074: {}
+BM075: {}
+BM076: {}
+BM077: {}
+BM078: {}
+BM079: {}
+BM080: {}
+BM081: {}
+BM082: {}
+BM083: {}
+BM084: {}
+BM085: {}
+BM086: {}
+BM087: {}
+BM088: {}
+BM089: {}
+BM090: {}
+BM091: {}
+BM092: {}
+BM093: {}
+BM094: {}
+BM095:
+  len: 12
+BM096: {}
+BM097: {}
+BM098: {}
+BM099: {}
+BM100: {}
+BM101: {}
+BM102:
+  len: llvar
+BM103: {}
+BM104: {}
+BM105: {}
+BM106: {}
+BM107: {}
+BM108: {}
+BM109: {}
+BM110: {}
+BM111: {}
+BM112: {}
+BM113: {}
+BM114: {}
+BM115: {}
+BM116: {}
+BM117: {}
+BM118: {}
+BM119: {}
+BM120: {}
+BM121: {}
+BM122: {}
+BM123: {}
+BM124: {}
+BM125: {}
+BM126: {}
+BM127: {}
+BM128:
+  len: 16

@@ -1,0 +1,179 @@
+2024-08-23 20:43:15,209 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-23 20:45:48,400 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\bookings\views.py changed, reloading.
+2024-08-23 20:45:48,897 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-23 20:46:20,367 [INFO] bookings.views: Received delete request for Booking ID: 50
+2024-08-23 20:46:20,371 [INFO] bookings.views: Preparing to delete Booking with internal ID: 50 - Owner: f94gdos
+2024-08-23 20:46:20,373 [INFO] bookings.views: SSH Command: ssh f94gdos@3.252.249.135
+2024-08-23 20:46:20,411 [INFO] paramiko.transport: Connected (version 2.0, client OpenSSH_8.7)
+2024-08-23 20:46:20,743 [INFO] paramiko.transport: Authentication (publickey) successful!
+2024-08-23 20:46:20,949 [INFO] bookings.views: Cron entries to be deleted for Booking ID 3:
+0 8 25 8 * booking.sh VisaRoute 10.20.7.18 # Booking ID: 3
+0 13 25 8 * booking.sh VisaRoute 10.20.7.18 # Booking ID: 3
+0 13 23 8 * bookings.sh VisaRoute 10.20.7.18 # Booking ID: 3
+0 18 23 8 * bookings.sh VisaRoute 10.20.7.18 # Booking ID: 3
+2024-08-23 20:46:21,574 [INFO] bookings.views: Successfully deleted Booking with internal ID: 3
+2024-08-23 20:46:32,613 [INFO] bookings.views: Received delete request for Booking ID: 49
+2024-08-23 20:46:32,616 [INFO] bookings.views: Preparing to delete Booking with internal ID: 49 - Owner: f94gdos
+2024-08-23 20:46:32,617 [INFO] bookings.views: SSH Command: ssh f94gdos@3.252.249.135
+2024-08-23 20:46:32,657 [INFO] paramiko.transport: Connected (version 2.0, client OpenSSH_8.7)
+2024-08-23 20:46:32,995 [INFO] paramiko.transport: Authentication (publickey) successful!
+2024-08-23 20:46:33,182 [INFO] bookings.views: Cron entries to be deleted for Booking ID 2:
+0 13 24 8 * booking.sh VisaRoute 10.20.7.18 # Booking ID: 2
+0 18 24 8 * booking.sh VisaRoute 10.20.7.18 # Booking ID: 2
+0 8 24 8 * bookings.sh VisaRoute 10.20.7.18 # Booking ID: 2
+0 13 24 8 * bookings.sh VisaRoute 10.20.7.18 # Booking ID: 2
+2024-08-23 20:46:33,542 [INFO] bookings.views: Successfully deleted Booking with internal ID: 2
+2024-08-23 20:49:59,292 [INFO] paramiko.transport: Connected (version 2.0, client OpenSSH_8.7)
+2024-08-23 20:49:59,618 [INFO] paramiko.transport: Authentication (publickey) successful!
+2024-08-23 20:49:59,619 [INFO] bookings.forms: Successfully connected to 3.252.249.135 via SSH for Booking ID: 5
+2024-08-23 20:49:59,969 [INFO] bookings.forms: Added Cron Job for Booking ID: 5, Command: 0 8 27 8 * bookings.sh VisaRoute 10.20.7.18 # Booking ID: 5
+2024-08-23 20:50:00,162 [INFO] bookings.forms: Added Cron Job for Booking ID: 5, Command: 0 13 27 8 * bookings.sh VisaRoute 10.20.7.18 # Booking ID: 5
+2024-08-23 20:50:00,577 [INFO] bookings.views: New booking created successfully
+2024-08-23 20:50:00,587 [INFO] bookings.views: Accessed the calendar view
+2024-08-23 20:54:26,078 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\bookings\forms.py changed, reloading.
+2024-08-23 20:54:26,650 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-23 20:54:47,897 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\bookings\admin.py changed, reloading.
+2024-08-23 20:54:48,453 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-23 20:55:50,877 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\bookings\models.py changed, reloading.
+2024-08-23 20:55:51,476 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-23 20:56:55,878 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\bookings\models.py changed, reloading.
+2024-08-23 20:56:56,430 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-23 20:57:16,566 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\bookings\models.py changed, reloading.
+2024-08-23 20:57:17,144 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-23 20:57:29,008 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\bookings\models.py changed, reloading.
+2024-08-23 20:57:29,566 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-23 20:57:36,274 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\bookings\models.py changed, reloading.
+2024-08-23 20:57:36,935 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-23 21:21:27,445 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-23 21:21:35,738 [INFO] bookings.views: Accessed the calendar view
+2024-08-23 21:21:55,247 [INFO] bookings.forms: Scheme types have been updated based on the scheme selection.
+2024-08-23 21:21:55,249 [INFO] bookings.forms: Date range parsed and validated.
+2024-08-23 21:21:55,258 [INFO] bookings.forms: Form validation completed successfully.
+2024-08-23 21:21:55,271 [INFO] bookings.models: Created new Booking with ID: 6
+2024-08-23 21:21:55,302 [ERROR] django.request: Internal Server Error: /bookings/book/
+Traceback (most recent call last):
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\bookings\views.py", line 161, in book_booking
+    form.save()
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\bookings\forms.py", line 135, in save
+    ssh_client = self._generate_ssh_command(instance)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'BookingForm' object has no attribute '_generate_ssh_command'
+2024-08-23 21:22:06,951 [INFO] bookings.forms: Scheme types have been updated based on the scheme selection.
+2024-08-23 21:22:06,951 [INFO] bookings.forms: Date range parsed and validated.
+2024-08-23 21:22:06,983 [INFO] bookings.forms: Form validation completed successfully.
+2024-08-23 21:22:07,005 [INFO] bookings.models: Created new Booking with ID: 6
+2024-08-23 21:22:07,027 [ERROR] django.request: Internal Server Error: /bookings/book/
+Traceback (most recent call last):
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\bookings\views.py", line 161, in book_booking
+    form.save()
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\bookings\forms.py", line 135, in save
+    ssh_client = self._generate_ssh_command(instance)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'BookingForm' object has no attribute '_generate_ssh_command'
+2024-08-23 21:31:27,164 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\bookings\forms.py changed, reloading.
+2024-08-23 21:31:27,733 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-23 21:31:31,324 [INFO] bookings.models: Created new Booking with ID: 6
+2024-08-23 21:31:31,368 [INFO] paramiko.transport: Connected (version 2.0, client OpenSSH_8.7)
+2024-08-23 21:31:31,705 [INFO] paramiko.transport: Authentication (publickey) successful!
+2024-08-23 21:31:31,706 [INFO] bookings.forms: Successfully connected to 3.252.249.135 via SSH for Booking ID: 6
+2024-08-23 21:31:32,030 [INFO] bookings.forms: Added Cron Job for Booking ID: 6, Command: 0 13 1 8 * bookings.sh VisaRoute 10.20.7.18 # Booking ID: 6
+2024-08-23 21:31:32,216 [INFO] bookings.forms: Added Cron Job for Booking ID: 6, Command: 0 18 1 8 * bookings.sh VisaRoute 10.20.7.18 # Booking ID: 6
+2024-08-23 21:31:32,408 [INFO] bookings.forms: Added Cron Job for Booking ID: 6, Command: 0 13 2 8 * bookings.sh VisaRoute 10.20.7.18 # Booking ID: 6
+2024-08-23 21:31:32,587 [INFO] bookings.forms: Added Cron Job for Booking ID: 6, Command: 0 18 2 8 * bookings.sh VisaRoute 10.20.7.18 # Booking ID: 6
+2024-08-23 21:31:32,765 [INFO] bookings.forms: Added Cron Job for Booking ID: 6, Command: 0 13 3 8 * bookings.sh VisaRoute 10.20.7.18 # Booking ID: 6
+2024-08-23 21:31:32,944 [INFO] bookings.forms: Added Cron Job for Booking ID: 6, Command: 0 18 3 8 * bookings.sh VisaRoute 10.20.7.18 # Booking ID: 6
+2024-08-23 21:31:33,130 [INFO] bookings.forms: Added Cron Job for Booking ID: 6, Command: 0 13 4 8 * bookings.sh VisaRoute 10.20.7.18 # Booking ID: 6
+2024-08-23 21:31:33,316 [INFO] bookings.forms: Added Cron Job for Booking ID: 6, Command: 0 18 4 8 * bookings.sh VisaRoute 10.20.7.18 # Booking ID: 6
+2024-08-23 21:31:33,494 [INFO] bookings.forms: Added Cron Job for Booking ID: 6, Command: 0 13 5 8 * bookings.sh VisaRoute 10.20.7.18 # Booking ID: 6
+2024-08-23 21:31:33,674 [INFO] bookings.forms: Added Cron Job for Booking ID: 6, Command: 0 18 5 8 * bookings.sh VisaRoute 10.20.7.18 # Booking ID: 6
+2024-08-23 21:31:33,857 [INFO] bookings.forms: Added Cron Job for Booking ID: 6, Command: 0 13 6 8 * bookings.sh VisaRoute 10.20.7.18 # Booking ID: 6
+2024-08-23 21:31:34,045 [INFO] bookings.forms: Added Cron Job for Booking ID: 6, Command: 0 18 6 8 * bookings.sh VisaRoute 10.20.7.18 # Booking ID: 6
+2024-08-23 21:31:34,226 [INFO] bookings.forms: Added Cron Job for Booking ID: 6, Command: 0 13 7 8 * bookings.sh VisaRoute 10.20.7.18 # Booking ID: 6
+2024-08-23 21:31:34,434 [INFO] bookings.forms: Added Cron Job for Booking ID: 6, Command: 0 18 7 8 * bookings.sh VisaRoute 10.20.7.18 # Booking ID: 6
+2024-08-23 21:31:34,616 [INFO] bookings.forms: Added Cron Job for Booking ID: 6, Command: 0 13 8 8 * bookings.sh VisaRoute 10.20.7.18 # Booking ID: 6
+2024-08-23 21:31:34,808 [INFO] bookings.forms: Added Cron Job for Booking ID: 6, Command: 0 18 8 8 * bookings.sh VisaRoute 10.20.7.18 # Booking ID: 6
+2024-08-23 21:31:35,002 [INFO] bookings.forms: Added Cron Job for Booking ID: 6, Command: 0 13 9 8 * bookings.sh VisaRoute 10.20.7.18 # Booking ID: 6
+2024-08-23 21:31:35,183 [INFO] bookings.forms: Added Cron Job for Booking ID: 6, Command: 0 18 9 8 * bookings.sh VisaRoute 10.20.7.18 # Booking ID: 6
+2024-08-23 21:31:35,367 [INFO] bookings.forms: Added Cron Job for Booking ID: 6, Command: 0 13 10 8 * bookings.sh VisaRoute 10.20.7.18 # Booking ID: 6
+2024-08-23 21:31:35,554 [INFO] bookings.forms: Added Cron Job for Booking ID: 6, Command: 0 18 10 8 * bookings.sh VisaRoute 10.20.7.18 # Booking ID: 6
+2024-08-23 21:31:35,737 [INFO] bookings.forms: Added Cron Job for Booking ID: 6, Command: 0 13 11 8 * bookings.sh VisaRoute 10.20.7.18 # Booking ID: 6
+2024-08-23 21:31:35,932 [INFO] bookings.forms: Added Cron Job for Booking ID: 6, Command: 0 18 11 8 * bookings.sh VisaRoute 10.20.7.18 # Booking ID: 6
+2024-08-23 21:31:36,122 [INFO] bookings.forms: Added Cron Job for Booking ID: 6, Command: 0 13 12 8 * bookings.sh VisaRoute 10.20.7.18 # Booking ID: 6
+2024-08-23 21:31:36,309 [INFO] bookings.forms: Added Cron Job for Booking ID: 6, Command: 0 18 12 8 * bookings.sh VisaRoute 10.20.7.18 # Booking ID: 6
+2024-08-23 21:31:36,497 [INFO] bookings.forms: Added Cron Job for Booking ID: 6, Command: 0 13 13 8 * bookings.sh VisaRoute 10.20.7.18 # Booking ID: 6
+2024-08-23 21:31:36,690 [INFO] bookings.forms: Added Cron Job for Booking ID: 6, Command: 0 18 13 8 * bookings.sh VisaRoute 10.20.7.18 # Booking ID: 6
+2024-08-23 21:31:36,879 [INFO] bookings.forms: Added Cron Job for Booking ID: 6, Command: 0 13 14 8 * bookings.sh VisaRoute 10.20.7.18 # Booking ID: 6
+2024-08-23 21:31:37,072 [INFO] bookings.forms: Added Cron Job for Booking ID: 6, Command: 0 18 14 8 * bookings.sh VisaRoute 10.20.7.18 # Booking ID: 6
+2024-08-23 21:31:37,263 [INFO] bookings.forms: Added Cron Job for Booking ID: 6, Command: 0 13 15 8 * bookings.sh VisaRoute 10.20.7.18 # Booking ID: 6
+2024-08-23 21:31:37,464 [INFO] bookings.forms: Added Cron Job for Booking ID: 6, Command: 0 18 15 8 * bookings.sh VisaRoute 10.20.7.18 # Booking ID: 6
+2024-08-23 21:31:37,650 [INFO] bookings.forms: Added Cron Job for Booking ID: 6, Command: 0 13 16 8 * bookings.sh VisaRoute 10.20.7.18 # Booking ID: 6
+2024-08-23 21:31:37,838 [INFO] bookings.forms: Added Cron Job for Booking ID: 6, Command: 0 18 16 8 * bookings.sh VisaRoute 10.20.7.18 # Booking ID: 6
+2024-08-23 21:31:38,036 [INFO] bookings.forms: Added Cron Job for Booking ID: 6, Command: 0 13 17 8 * bookings.sh VisaRoute 10.20.7.18 # Booking ID: 6
+2024-08-23 21:31:38,225 [INFO] bookings.forms: Added Cron Job for Booking ID: 6, Command: 0 18 17 8 * bookings.sh VisaRoute 10.20.7.18 # Booking ID: 6
+2024-08-23 21:31:38,411 [INFO] bookings.forms: Added Cron Job for Booking ID: 6, Command: 0 13 18 8 * bookings.sh VisaRoute 10.20.7.18 # Booking ID: 6
+2024-08-23 21:31:38,598 [INFO] bookings.forms: Added Cron Job for Booking ID: 6, Command: 0 18 18 8 * bookings.sh VisaRoute 10.20.7.18 # Booking ID: 6
+2024-08-23 21:31:38,786 [INFO] bookings.forms: Added Cron Job for Booking ID: 6, Command: 0 13 19 8 * bookings.sh VisaRoute 10.20.7.18 # Booking ID: 6
+2024-08-23 21:31:38,978 [INFO] bookings.forms: Added Cron Job for Booking ID: 6, Command: 0 18 19 8 * bookings.sh VisaRoute 10.20.7.18 # Booking ID: 6
+2024-08-23 21:31:39,168 [INFO] bookings.forms: Added Cron Job for Booking ID: 6, Command: 0 13 20 8 * bookings.sh VisaRoute 10.20.7.18 # Booking ID: 6
+2024-08-23 21:31:39,357 [INFO] bookings.forms: Added Cron Job for Booking ID: 6, Command: 0 18 20 8 * bookings.sh VisaRoute 10.20.7.18 # Booking ID: 6
+2024-08-23 21:31:39,547 [INFO] bookings.forms: Added Cron Job for Booking ID: 6, Command: 0 13 21 8 * bookings.sh VisaRoute 10.20.7.18 # Booking ID: 6
+2024-08-23 21:31:39,745 [INFO] bookings.forms: Added Cron Job for Booking ID: 6, Command: 0 18 21 8 * bookings.sh VisaRoute 10.20.7.18 # Booking ID: 6
+2024-08-23 21:31:39,936 [INFO] bookings.forms: Added Cron Job for Booking ID: 6, Command: 0 13 22 8 * bookings.sh VisaRoute 10.20.7.18 # Booking ID: 6
+2024-08-23 21:31:40,120 [INFO] bookings.forms: Added Cron Job for Booking ID: 6, Command: 0 18 22 8 * bookings.sh VisaRoute 10.20.7.18 # Booking ID: 6
+2024-08-23 21:31:40,312 [INFO] bookings.forms: Added Cron Job for Booking ID: 6, Command: 0 13 23 8 * bookings.sh VisaRoute 10.20.7.18 # Booking ID: 6
+2024-08-23 21:31:40,504 [INFO] bookings.forms: Added Cron Job for Booking ID: 6, Command: 0 18 23 8 * bookings.sh VisaRoute 10.20.7.18 # Booking ID: 6
+2024-08-23 21:31:40,688 [INFO] bookings.forms: Added Cron Job for Booking ID: 6, Command: 0 13 24 8 * bookings.sh VisaRoute 10.20.7.18 # Booking ID: 6
+2024-08-23 21:31:40,870 [INFO] bookings.forms: Added Cron Job for Booking ID: 6, Command: 0 18 24 8 * bookings.sh VisaRoute 10.20.7.18 # Booking ID: 6
+2024-08-23 21:31:41,056 [INFO] bookings.forms: Added Cron Job for Booking ID: 6, Command: 0 13 25 8 * bookings.sh VisaRoute 10.20.7.18 # Booking ID: 6
+2024-08-23 21:31:41,255 [INFO] bookings.forms: Added Cron Job for Booking ID: 6, Command: 0 18 25 8 * bookings.sh VisaRoute 10.20.7.18 # Booking ID: 6
+2024-08-23 21:31:41,435 [INFO] bookings.forms: Added Cron Job for Booking ID: 6, Command: 0 13 26 8 * bookings.sh VisaRoute 10.20.7.18 # Booking ID: 6
+2024-08-23 21:31:41,617 [INFO] bookings.forms: Added Cron Job for Booking ID: 6, Command: 0 18 26 8 * bookings.sh VisaRoute 10.20.7.18 # Booking ID: 6
+2024-08-23 21:31:41,797 [INFO] bookings.forms: Added Cron Job for Booking ID: 6, Command: 0 13 27 8 * bookings.sh VisaRoute 10.20.7.18 # Booking ID: 6
+2024-08-23 21:31:41,986 [INFO] bookings.forms: Added Cron Job for Booking ID: 6, Command: 0 18 27 8 * bookings.sh VisaRoute 10.20.7.18 # Booking ID: 6
+2024-08-23 21:31:42,173 [INFO] bookings.forms: Added Cron Job for Booking ID: 6, Command: 0 13 28 8 * bookings.sh VisaRoute 10.20.7.18 # Booking ID: 6
+2024-08-23 21:31:42,360 [INFO] bookings.forms: Added Cron Job for Booking ID: 6, Command: 0 18 28 8 * bookings.sh VisaRoute 10.20.7.18 # Booking ID: 6
+2024-08-23 21:31:42,549 [INFO] bookings.forms: Added Cron Job for Booking ID: 6, Command: 0 13 29 8 * bookings.sh VisaRoute 10.20.7.18 # Booking ID: 6
+2024-08-23 21:31:42,736 [INFO] bookings.forms: Added Cron Job for Booking ID: 6, Command: 0 18 29 8 * bookings.sh VisaRoute 10.20.7.18 # Booking ID: 6
+2024-08-23 21:31:42,917 [INFO] bookings.forms: Added Cron Job for Booking ID: 6, Command: 0 13 30 8 * bookings.sh VisaRoute 10.20.7.18 # Booking ID: 6
+2024-08-23 21:31:43,100 [INFO] bookings.forms: Added Cron Job for Booking ID: 6, Command: 0 18 30 8 * bookings.sh VisaRoute 10.20.7.18 # Booking ID: 6
+2024-08-23 21:31:43,334 [INFO] bookings.forms: Added Cron Job for Booking ID: 6, Command: 0 13 31 8 * bookings.sh VisaRoute 10.20.7.18 # Booking ID: 6
+2024-08-23 21:31:43,518 [INFO] bookings.forms: Added Cron Job for Booking ID: 6, Command: 0 18 31 8 * bookings.sh VisaRoute 10.20.7.18 # Booking ID: 6
+2024-08-23 21:31:43,608 [INFO] bookings.views: New booking created successfully
+2024-08-23 21:31:43,619 [INFO] bookings.views: Accessed the calendar view
+2024-08-23 22:12:18,191 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\bookings\forms.py changed, reloading.
+2024-08-23 22:12:18,736 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-23 22:50:23,313 [WARNING] django.request: Not Found: /binlocking
+2024-08-23 22:50:30,149 [WARNING] django.request: Not Found: /binbocking
+2024-08-23 22:50:37,268 [WARNING] django.request: Not Found: /binblocking
+2024-08-23 22:50:49,726 [WARNING] django.request: Not Found: /binblocking
+2024-08-23 22:51:55,442 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\AutoMate\settings.py changed, reloading.
+2024-08-23 22:51:56,116 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-23 22:52:00,826 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\AutoMate\settings.py changed, reloading.
+2024-08-23 22:52:01,332 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-23 22:52:03,599 [WARNING] django.request: Not Found: /binblocking
+2024-08-23 22:52:06,020 [WARNING] django.request: Not Found: /binblocking
+2024-08-23 22:52:11,350 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\AutoMate\settings.py changed, reloading.
+2024-08-23 22:52:11,839 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-23 22:52:26,791 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\AutoMate\urls.py changed, reloading.
+2024-08-23 22:52:27,323 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-23 22:54:08,754 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-23 22:54:09,286 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-23 22:54:18,911 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-23 22:54:19,422 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-23 22:54:46,555 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-23 22:54:47,118 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-23 22:54:52,829 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-23 22:54:53,364 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-23 22:55:28,900 [INFO] django.utils.autoreload: Watching for file changes with StatReloader

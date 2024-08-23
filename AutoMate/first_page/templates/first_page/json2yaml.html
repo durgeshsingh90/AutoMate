@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON to YAML Converter</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
+    <style>
+        #container {
+            display: flex;
+            justify-content: space-between;
+        }
+        textarea {
+            width: 45%;
+            height: 400px;
+        }
+        .copy-button {
+            margin-bottom: 10px;
+        }
+        .copy-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        #status {
+            padding: 10px;
+            background-color: #f0f0f0;
+            color: #333;
+            font-weight: bold;
+        }
+        /* Style for the Home button */
+.home-btn {
+    position: relative;
+    top: 10px;
+    left: 10px;
+    padding: 10px 20px;
+    background-color: #007bff; /* Blue color */
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    font-weight: bold;
+    z-index: 999; /* Ensure it's on top of other elements */
+}
+
+.home-btn:hover {
+    background-color: #0056b3; /* Darker shade of blue */
+}
+
+    </style>
+</head>
+<body>
+    <a href="{% url 'first_page:home' %}" class="home-btn">Home</a>
+
+    <h1>JSON to YAML Converter</h1>
+    <div id="status"></div>
+    <div class="copy-buttons">
+        <button class="copy-button" onclick="copyToClipboard('jsonInput')">Copy JSON</button>
+        <button class="copy-button" onclick="copyToClipboard('yamlInput')">Copy YAML</button>
+    </div>
+    <div id="container">
+        <textarea id="jsonInput" placeholder="Enter JSON here" oninput="convertToJson()"></textarea>
+        <textarea id="yamlInput" placeholder="Enter YAML here" oninput="convertToYaml()"></textarea>
+    </div>
+    <script>
+        function setStatus(message, isError = false) {
+            const statusElement = document.getElementById('status');
+            statusElement.textContent = message;
+            if (isError) {
+                statusElement.style.color = 'red';
+            } else {
+                statusElement.style.color = 'green';
+            }
+        }
+
+        function copyToClipboard(inputId) {
+            const input = document.getElementById(inputId);
+            input.select();
+            input.setSelectionRange(0, 99999); /* For mobile devices */
+            document.execCommand('copy');
+            const copyButton = document.querySelector(`#${inputId} + .copy-button`);
+            copyButton.textContent = 'Copied!';
+            setTimeout(() => {
+                copyButton.textContent = 'Copy ' + (inputId === 'jsonInput' ? 'JSON' : 'YAML');
+            }, 1000);
+            setStatus(`Copied ${inputId === 'jsonInput' ? 'JSON' : 'YAML'} to clipboard`);
+        }
+
+        function convertToJson() {
+            const jsonText = document.getElementById('jsonInput').value;
+            try {
+                const yamlText = jsyaml.dump(JSON.parse(jsonText));
+                document.getElementById('yamlInput').value = yamlText;
+                setStatus('Conversion successful');
+            } catch (error) {
+                document.getElementById('yamlInput').value = '';
+                setStatus('Invalid JSON format', true);
+            }
+        }
+
+        function convertToYaml() {
+            const yamlText = document.getElementById('yamlInput').value;
+            try {
+                const jsonObject = jsyaml.load(yamlText);
+                document.getElementById('jsonInput').value = JSON.stringify(jsonObject, null, 4);
+                setStatus('Conversion successful');
+            } catch (error) {
+                document.getElementById('jsonInput').value = '';
+                setStatus('Invalid YAML format', true);
+            }
+        }
+    </script>
+</body>
+</html>

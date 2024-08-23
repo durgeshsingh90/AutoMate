@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Random Number Generator</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .copied {
+            background-color: green;
+            border-color: green;
+            color: white;
+        }
+        .form-inline .form-group {
+            margin-right: 15px;
+        }
+        #generatedNumbers {
+            height: 150px;
+            overflow-y: scroll;
+            white-space: pre-wrap; /* To ensure new lines are respected */
+        }
+    </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+            // Retrieve and set saved values
+            if (localStorage.getItem('min')) {
+                document.getElementById('min').value = localStorage.getItem('min');
+            }
+            if (localStorage.getItem('max')) {
+                document.getElementById('max').value = localStorage.getItem('max');
+            }
+            if (localStorage.getItem('count')) {
+                document.getElementById('count').value = localStorage.getItem('count');
+            }
+        });
+
+        function saveInputValues() {
+            // Save current values to local storage
+            localStorage.setItem('min', document.getElementById('min').value);
+            localStorage.setItem('max', document.getElementById('max').value);
+            localStorage.setItem('count', document.getElementById('count').value);
+        }
+
+        function generateRandomNumbers() {
+            const min = parseInt(document.getElementById('min').value);
+            const max = parseInt(document.getElementById('max').value);
+            const count = parseInt(document.getElementById('count').value);
+
+            if (isNaN(min) || isNaN(max) || isNaN(count) || min > max || count <= 0) {
+                alert('Please enter valid input values.');
+                return;
+            }
+
+            let numbers = [];
+
+            // Generate initial random numbers
+            for (let i = 0; i < Math.floor(count * 0.4); i++) {
+                const randomNum = Math.floor(Math.random() * (max - min + 1)) + min;
+                numbers.push(randomNum);
+            }
+
+            // Ensure 30% are duplicate values
+            while (numbers.length < count * 0.7) {
+                const index = Math.floor(Math.random() * numbers.length);
+                numbers.push(numbers[index]); // Adding duplicate from existing numbers
+            }
+
+            // Ensure 30% are consecutive values
+            while (numbers.length < count) {
+                const baseValue = numbers[numbers.length - 1] || Math.floor(Math.random() * (max - min + 1)) + min;
+                numbers.push(baseValue + 1); // Adding a consecutive value
+            }
+
+            // Shuffle the numbers to mix duplicates and consecutive values
+            numbers.sort(() => Math.random() - 0.5);
+
+            const numbersText = numbers.join('\n');
+            document.getElementById('generatedNumbers').innerText = numbersText;
+
+            // Copy to clipboard
+            navigator.clipboard.writeText(numbersText).then(() => {
+                const generateButton = document.getElementById('generateButton');
+                generateButton.innerText = 'Generated and Copied';
+                generateButton.classList.add('copied');
+
+                setTimeout(() => {
+                    generateButton.innerText = 'Generate';
+                    generateButton.classList.remove('copied');
+                }, 3000);
+            });
+
+            saveInputValues();
+            displayStatistics(numbers);
+        }
+
+        function displayStatistics(numbers) {
+            const uniqueNumbers = [...new Set(numbers)];
+            const duplicatesCount = numbers.length - uniqueNumbers.length;
+            let consecutiveExamples = [];
+            let consecutiveCount = 0;
+
+            for (let i = 0; i < numbers.length - 1; i++) {
+                if (numbers[i] + 1 === numbers[i + 1]) {
+                    consecutiveCount++;
+                    if (consecutiveExamples.length < 3) {
+                        consecutiveExamples.push(`(${numbers[i]}, ${numbers[i + 1]})`);
+                    }
+                }
+            }
+
+            document.getElementById('stats').innerHTML = `
+                <p>Total Values: ${numbers.length}</p>
+                <p>Duplicate Values: ${duplicatesCount}</p>
+                <p>Unique Values: ${uniqueNumbers.length}</p>
+                <p>Consecutive Values: ${consecutiveCount}</p>
+                <p>Examples: ${consecutiveExamples.join(', ') || 'None'}</p>
+            `;
+        }
+    </script>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="mb-4">Random Number Generator</h1>
+        <form class="form-inline">
+            <div class="form-group">
+                <label for="min" class="sr-only">Min:</label>
+                <input type="number" class="form-control" id="min" name="min" placeholder="Min">
+            </div>
+            <div class="form-group">
+                <label for="max" class="sr-only">Max:</label>
+                <input type="number" class="form-control" id="max" name="max" placeholder="Max">
+            </div>
+            <div class="form-group">
+                <label for="count" class="sr-only">Count:</label>
+                <input type="number" class="form-control" id="count" name="count" placeholder="Count">
+            </div>
+            <button type="button" id="generateButton" class="btn btn-primary" onclick="generateRandomNumbers()">Generate</button>
+        </form>
+        <h2 class="mt-4">Generated Numbers:</h2>
+        <div id="generatedNumbers" class="border p-3"></div>
+        <h2 class="mt-4">Statistics:</h2>
+        <div id="stats" class="border p-3"></div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

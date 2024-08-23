@@ -1,0 +1,17 @@
+folders:
+- name: Folder 1
+  test_cases:
+  - details: Details of Test Case 2
+    id: '2'
+    name: Test Case 2
+  - details: Details of Test Case 1
+    id: '1'
+    name: Test Case 1
+- name: Tokenization
+  test_cases:
+  - details: Details of Test Case 3
+    id: '3'
+    name: Test Case 3
+  - details: Details of Test Case 4
+    id: '4'
+    name: Test Case 4
