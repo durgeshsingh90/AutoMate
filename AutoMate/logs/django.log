@@ -178,3 +178,5 @@ AttributeError: 'BookingForm' object has no attribute '_generate_ssh_command'
 2024-08-23 22:54:53,364 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
 2024-08-23 22:55:28,900 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
 2024-08-24 08:00:13,308 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-24 18:57:04,364 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-24 18:57:19,443 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\AutoMate\settings.py changed, reloading.

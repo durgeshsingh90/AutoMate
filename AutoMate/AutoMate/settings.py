@@ -51,35 +51,35 @@ INSTALLED_APPS = [
 ]
 
 # Logging configuration
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'standard': {
-            'format': '%(asctime)s [%(levelname)s] %(name)s: %(message)s'
-        },
-    },
-    'handlers': {
-        'file': {
-            'level': 'INFO',
-            'class': 'logging.FileHandler',
-            'filename': str(LOG_DIR / 'django.log'),  # Dynamic path for the log file
-            'formatter': 'standard',
-        },
-        'console': {
-            'level': 'DEBUG',
-            'class': 'logging.StreamHandler',
-            'formatter': 'standard',
-        },
-    },
-    'loggers': {
-        '': {  # 'root' logger
-            'handlers': ['file', 'console'],
-            'level': 'DEBUG',
-            'propagate': True
-        },
-    }
-}
+# LOGGING = {
+#     'version': 1,
+#     'disable_existing_loggers': False,
+#     'formatters': {
+#         'standard': {
+#             'format': '%(asctime)s [%(levelname)s] %(name)s: %(message)s'
+#         },
+#     },
+#     'handlers': {
+#         'file': {
+#             'level': 'INFO',
+#             'class': 'logging.FileHandler',
+#             'filename': str(LOG_DIR / 'django.log'),  # Dynamic path for the log file
+#             'formatter': 'standard',
+#         },
+#         'console': {
+#             'level': 'DEBUG',
+#             'class': 'logging.StreamHandler',
+#             'formatter': 'standard',
+#         },
+#     },
+#     'loggers': {
+#         '': {  # 'root' logger
+#             'handlers': ['file', 'console'],
+#             'level': 'DEBUG',
+#             'propagate': True
+#         },
+#     }
+# }
 
 
 MIDDLEWARE = [
@@ -97,7 +97,7 @@ ROOT_URLCONF = 'AutoMate.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'html')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -164,7 +164,6 @@ STATICFILES_DIRS = [
     BASE_DIR / "first_page/static",
     BASE_DIR / "mclogsfilter/static",
     BASE_DIR / "sender/static",
-    BASE_DIR / "certifications/static",
     BASE_DIR / "bookings/static",
     BASE_DIR / "bookings/static",
     BASE_DIR / "binblocking/static",

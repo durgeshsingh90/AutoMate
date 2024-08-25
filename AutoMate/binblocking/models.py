@@ -11,7 +11,7 @@ class DatabaseConnection(models.Model):
     name = models.CharField(max_length=100, blank=True, null=True, help_text="Optional name or description for the connection")
     username = models.CharField(max_length=100)
     password = models.CharField(max_length=100)
-    table_name = models.CharField(max_length=100)
+    DatabaseTNS = models.CharField(max_length=100)
     
     def __str__(self):
         return f"{self.environment} - {self.name if self.name else self.username}"

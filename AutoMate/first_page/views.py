@@ -10,8 +10,5 @@ def home(request):
 def SplunkRRN(request):
     return render(request, 'first_page/SplunkRRN.html')
 
-def splunk2sender(request):
-    return render(request, 'first_page/splunk2sender.html')
-
 def json2yaml(request):
     return render(request, 'first_page/json2yaml.html')

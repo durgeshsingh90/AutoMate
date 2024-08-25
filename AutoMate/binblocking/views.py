@@ -1,14 +1,9 @@
 #AutoMate\binblocking\views.py
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_exempt
 from .db_utils import run_sqlplus_query
-from django.shortcuts import render
-from django.shortcuts import render
-from django.shortcuts import render
-from .db_utils import run_sqlplus_query
-from django.shortcuts import render
-from .db_utils import run_sqlplus_query
 from .models import DatabaseConnection
+from django.http import HttpResponseRedirect
 
 @csrf_exempt
 def process_bins(request):
@@ -51,18 +46,27 @@ def process_bins(request):
         log.append(f"Consecutive values combined: {consecutive_values}")
         log.append(f"Number of lines after processing consecutive values: {len(combined_bins)}")
         
-        result = '\n'.join(combined_bins)
-    
-    # Add animation delays to log entries
-    log_with_delays = [(message, index * 0.5) for index, message in enumerate(log)]
-    
-    return render(request, 'binblocking/binblocker.html', {
-        'result': result, 
-        'log_with_delays': log_with_delays, 
-        'total_values': total_values, 
-        'duplicates_removed': duplicates_removed, 
-        'unique_values': unique_values,
-        'consecutive_values': consecutive_values
+        # Assuming final processed BINs are in `combined_bins`
+        processed_bins = '\n'.join(combined_bins)
+        print("Debug Processed Bins:", processed_bins)  # This will print in your console where the server is running
+
+        # Store the processed data in session
+        request.session['processed_bins'] = processed_bins
+        
+        # Redirect to the view that displays the processed bins
+        return render(request, 'binblocking/binblocker_output.html', {'processed_bins': processed_bins})
+
+        # return render(request, 'binblocking/binblocker_output.html', {'processed_bins': 'Test data to display in textarea'})
+
+    else:
+        return render(request, 'binblocking/binblocker.html')
+
+
+def display_processed_bins(request):
+    # This view captures the redirected data and displays it
+    processed_bins = request.GET.get('processed_bins', '')
+    return render(request, 'binblocking/binblocker_output.html', {
+        'processed_bins': processed_bins
     })
 
 def combine_consecutives(bins, log):
@@ -108,11 +112,11 @@ def query_view(request):
     # Extract connection details
     prod_username = prod_connection.username
     prod_password = prod_connection.password
-    prod_connection_string = prod_connection.table_name  # Assuming `table_name` field holds the connection string
+    prod_connection_string = prod_connection.DatabaseTNS  # Assuming `DatabaseTNS` field holds the connection string
 
     uat_username = uat_connection.username
     uat_password = uat_connection.password
-    uat_connection_string = uat_connection.table_name  # Assuming `table_name` field holds the connection string
+    uat_connection_string = uat_connection.DatabaseTNS  # Assuming `DatabaseTNS` field holds the connection string
 
     # Define your queries
     prod_query = "SELECT * FROM your_production_table WHERE ROWNUM <= 10"

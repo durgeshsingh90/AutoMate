@@ -13,6 +13,6 @@ class DatabaseConnectionForm(forms.ModelForm):
 @admin.register(DatabaseConnection)
 class DatabaseConnectionAdmin(admin.ModelAdmin):
     form = DatabaseConnectionForm
-    list_display = ('environment', 'name', 'username', 'table_name')
+    list_display = ('environment', 'name', 'username', 'DatabaseTNS')
     list_filter = ('environment',)
-    search_fields = ('username', 'table_name', 'name')
+    search_fields = ('username', 'DatabaseTNS', 'name')
