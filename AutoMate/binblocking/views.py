@@ -1,30 +1,30 @@
-#AutoMate\binblocking\views.py
 from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_exempt
 from .db_utils import run_sqlplus_query
 from .models import DatabaseConnection
 from django.http import HttpResponseRedirect
+import mysql.connector  # Import MySQL connector
+import logging
+import json
+from datetime import date
+
+# Get an instance of a logger
+logger = logging.getLogger(__name__)
 
 @csrf_exempt
 def process_bins(request):
-    result = None
-    log = []
-    total_values = 0
-    duplicates_removed = 0
-    unique_values = 0
-    consecutive_values = 0
-    
+    logger.info("Started processing bins")
     if request.method == 'POST':
         bins = request.POST.get('bins', '')
         bin_list = bins.splitlines()
         total_values = len(bin_list)
         
-        log.append(f"Total input values: {total_values}")
+        logger.info(f"Total input values: {total_values}")
         
         # Remove duplicates
         bin_set = set(bin_list)
         duplicates_removed = total_values - len(bin_set)
-        log.append(f"Duplicates removed: {duplicates_removed}")
+        logger.info(f"Duplicates removed: {duplicates_removed}")
         
         # Sort bins
         sorted_bins = sorted(bin_set, key=lambda x: (len(x), x))
@@ -36,40 +36,32 @@ def process_bins(request):
                 final_bins.append(bin)
         
         unique_values = len(final_bins)
-        log.append(f"Unique values after removing subsets: {unique_values}")
+        logger.info(f"Unique values after removing subsets: {unique_values}")
         
         # Combine consecutive numbers
-        combined_bins, consecutive_count = combine_consecutives(final_bins, log)
-        consecutive_values = consecutive_count
+        combined_bins, consecutive_count = combine_consecutives(final_bins)
+        logger.info(f"Consecutive values combined: {consecutive_count}")
         
-        log.append(f"Final unique values: {unique_values}")
-        log.append(f"Consecutive values combined: {consecutive_values}")
-        log.append(f"Number of lines after processing consecutive values: {len(combined_bins)}")
-        
-        # Assuming final processed BINs are in `combined_bins`
-        processed_bins = '\n'.join(combined_bins)
-        print("Debug Processed Bins:", processed_bins)  # This will print in your console where the server is running
-
         # Store the processed data in session
+        processed_bins = '\n'.join(combined_bins)
         request.session['processed_bins'] = processed_bins
+        logger.info("Processed bins stored in session")
         
-        # Redirect to the view that displays the processed bins
-        return render(request, 'binblocking/binblocker_output.html', {'processed_bins': processed_bins})
-
-        # return render(request, 'binblocking/binblocker_output.html', {'processed_bins': 'Test data to display in textarea'})
+        # Call query_view to continue processing
+        return query_view(request)
 
     else:
+        logger.info("Received a non-POST request")
         return render(request, 'binblocking/binblocker.html')
 
-
 def display_processed_bins(request):
-    # This view captures the redirected data and displays it
-    processed_bins = request.GET.get('processed_bins', '')
+    processed_bins = request.session.get('processed_bins', '')
     return render(request, 'binblocking/binblocker_output.html', {
         'processed_bins': processed_bins
     })
 
-def combine_consecutives(bins, log):
+def combine_consecutives(bins):
+    logger.info("Combining consecutive bins")
     combined = []
     consecutive_count = 0
     i = 0
@@ -82,51 +74,96 @@ def combine_consecutives(bins, log):
             current_bin = bins[i + 1]
             i += 1
             consecutive_count += 1
-        if start_bin == end_bin:
-            combined.append(start_bin)
-        else:
-            combined.append(f"{start_bin}-{end_bin}")
+        combined.append(f"{start_bin}-{end_bin}" if start_bin != end_bin else start_bin)
         i += 1
+    logger.info(f"Total consecutive bins combined: {consecutive_count}")
     return combined, consecutive_count
 
 def is_consecutive(bin1, bin2):
-    # Check if bin2 is the next consecutive number of bin1
-    if len(bin1) != len(bin2):
-        return False
-    try:
-        return int(bin2) == int(bin1) + 1
-    except ValueError:
-        return False
+    return len(bin1) == len(bin2) and int(bin2) == int(bin1) + 1
+
+
+class CustomJSONEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, date):
+            return obj.isoformat()  # Convert date to a string in ISO format (YYYY-MM-DD)
+        return super().default(obj)
+
 
 def query_view(request):
-    # Fetch connection details for PROD and UAT from the DatabaseConnection model
+    logger.info('Attempting to fetch PROD and UAT database connection details')
+    
+    prod_insert_statements = []
+    uat_insert_statements = []
+
     try:
+        # Fetch PROD and UAT database connection details
         prod_connection = DatabaseConnection.objects.get(environment='PROD')
         uat_connection = DatabaseConnection.objects.get(environment='UAT')
+        logger.info(f"Fetched database connections for PROD: {prod_connection.name}, UAT: {uat_connection.name}")
+
+        # Run queries and generate insert statements for both PROD and UAT
+        prod_insert_statements = generate_insert_statements(prod_connection)
+        uat_insert_statements = generate_insert_statements(uat_connection)
+
     except DatabaseConnection.DoesNotExist as e:
-        return render(request, 'your_template.html', {
-            'prod_results': 'No connection details found for PROD environment',
-            'uat_results': 'No connection details found for UAT environment'
+        logger.error(f"No connection details found for environment: {str(e)}")
+        return render(request, 'binblocking/binblocker_output.html', {
+            'error': f"No connection details found for environment: {str(e)}",
+            'processed_bins': request.session.get('processed_bins', '')
         })
 
-    # Extract connection details
-    prod_username = prod_connection.username
-    prod_password = prod_connection.password
-    prod_connection_string = prod_connection.DatabaseTNS  # Assuming `DatabaseTNS` field holds the connection string
+    except Exception as e:
+        logger.error(f"Unexpected error: {e}")
+        return render(request, 'binblocking/binblocker_output.html', {
+            'error': str(e),
+            'processed_bins': request.session.get('processed_bins', '')
+        })
 
-    uat_username = uat_connection.username
-    uat_password = uat_connection.password
-    uat_connection_string = uat_connection.DatabaseTNS  # Assuming `DatabaseTNS` field holds the connection string
-
-    # Define your queries
-    prod_query = "SELECT * FROM your_production_table WHERE ROWNUM <= 10"
-    uat_query = "SELECT * FROM your_uat_table WHERE ROWNUM <= 10"
-
-    # Run the queries using sqlplus
-    prod_results = run_sqlplus_query(prod_username, prod_password, prod_connection_string, prod_query)
-    uat_results = run_sqlplus_query(uat_username, uat_password, uat_connection_string, uat_query)
-
-    return render(request, 'your_template.html', {
-        'prod_results': prod_results,
-        'uat_results': uat_results
+    # Include both processed bins and SQL insert statements in the rendering context
+    return render(request, 'binblocking/binblocker_output.html', {
+        'production_data': '\n'.join(prod_insert_statements),
+        'uat_data': '\n'.join(uat_insert_statements),
+        'processed_bins': request.session.get('processed_bins', '')
     })
+
+def generate_insert_statements(connection):
+    """Generate SQL INSERT statements for the data retrieved from the database."""
+    try:
+        conn = mysql.connector.connect(
+            host=connection.DatabaseTNS,
+            user=connection.username,
+            password=connection.password,
+            database=connection.environment.lower()
+        )
+        query = f"SELECT * FROM {connection.table_name} ORDER BY LOWBIN"
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute(query)
+        data = cursor.fetchall()
+        cursor.close()
+        conn.close()
+
+        insert_statements = []
+        for row in data:
+            # Reorder the columns
+            ordered_columns = ['LOWBIN', 'HIGHBIN', 'DESCRIPTION']
+            remaining_columns = [col for col in row.keys() if col not in ordered_columns]
+            final_columns = ordered_columns + remaining_columns
+
+            columns = ', '.join(final_columns)
+            values = ', '.join(
+                [f"'{str(row[col]).replace('\'', '\'\'')}'" if isinstance(row[col], str) else str(row[col]) for col in final_columns]
+            )
+            insert_statement = f"INSERT INTO {connection.table_name} ({columns}) VALUES ({values});"
+            insert_statements.append(insert_statement)
+
+        logger.debug(f"Generated insert statements for {connection.environment}: {insert_statements}")
+        return insert_statements
+
+    except mysql.connector.Error as err:
+        logger.error(f"Database error for {connection.environment}: {err}")
+        return []
+
+    except Exception as e:
+        logger.error(f"Unexpected error for {connection.environment}: {e}")
+        return []

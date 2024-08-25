@@ -17,6 +17,29 @@
     background-color: green;
     color: white;
   }
+  .textarea-container {
+    display: flex;
+    width: 100%;
+  }
+  .line-numbers {
+    padding: 10px;
+    background: #f0f0f0;
+    border-right: 1px solid #ddd;
+    text-align: right;
+    user-select: none;
+    color: #888;
+  }
+  .textarea {
+    width: 100%;
+    border: none;
+    resize: none;
+    padding: 10px;
+    font-family: monospace;
+    white-space: pre;
+  }
+  .textarea:focus {
+    outline: none;
+  }
 </style>
 </head>
 <body>
@@ -26,7 +49,10 @@
       <div class="card">
         <div class="card-body">
           <h5 class="card-title">1. Processed Bins</h5>
-          <textarea id="processedBins" class="form-control" placeholder="Enter details...">{{ processed_bins }}</textarea>
+          <div class="textarea-container">
+            <div id="lineNumbers1" class="line-numbers"></div>
+            <textarea id="processedBins" class="form-control textarea" rows="12" placeholder="Enter details..." oninput="updateLineNumbers(this, 'lineNumbers1')">{{ processed_bins }}</textarea>
+          </div>
           <button onclick="copyText('processedBins', this)" class="btn btn-primary copy-btn">Copy</button>
         </div>        
       </div>
@@ -35,7 +61,10 @@
       <div class="card">
         <div class="card-body">
           <h5 class="card-title">2. Production Table Export</h5>
-          <textarea id="productionExport" class="form-control" placeholder="Enter details..."></textarea>
+          <div class="textarea-container">
+            <div id="lineNumbers2" class="line-numbers"></div>
+            <textarea id="productionExport" class="form-control textarea" rows="12" placeholder="Enter details..." oninput="updateLineNumbers(this, 'lineNumbers2')">{{ production_data }}</textarea>
+          </div>
           <button onclick="copyText('productionExport', this)" class="btn btn-primary copy-btn">Copy</button>
         </div>
       </div>
@@ -44,7 +73,10 @@
       <div class="card">
         <div class="card-body">
           <h5 class="card-title">3. UAT Table Export</h5>
-          <textarea id="uatExport" class="form-control" placeholder="Enter details..."></textarea>
+          <div class="textarea-container">
+            <div id="lineNumbers3" class="line-numbers"></div>
+            <textarea id="uatExport" class="form-control textarea" rows="12" placeholder="Enter details..." oninput="updateLineNumbers(this, 'lineNumbers3')">{{ uat_data }}</textarea>
+          </div>
           <button onclick="copyText('uatExport', this)" class="btn btn-primary copy-btn">Copy</button>
         </div>
       </div>
@@ -53,7 +85,10 @@
       <div class="card">
         <div class="card-body">
           <h5 class="card-title">4. Processed Insert Statement</h5>
-          <textarea id="insertStatement" class="form-control" placeholder="Enter details..."></textarea>
+          <div class="textarea-container">
+            <div id="lineNumbers4" class="line-numbers"></div>
+            <textarea id="insertStatement" class="form-control textarea" rows="12" placeholder="Enter details..." oninput="updateLineNumbers(this, 'lineNumbers4')"></textarea>
+          </div>
           <button onclick="copyText('insertStatement', this)" class="btn btn-primary copy-btn">Copy</button>
         </div>
       </div>
@@ -62,8 +97,24 @@
 </div>
 
 <script>
+function updateLineNumbers(textarea, lineNumberId) {
+  const lines = textarea.value.split('\n').length;
+  const lineNumberElement = document.getElementById(lineNumberId);
+  lineNumberElement.innerHTML = '';
+  for (let i = 1; i <= lines; i++) {
+    lineNumberElement.innerHTML += i + '<br>';
+  }
+}
+
+// Initialize line numbers when the page loads
+window.onload = function() {
+  document.querySelectorAll('.textarea').forEach((textarea, index) => {
+    updateLineNumbers(textarea, 'lineNumbers' + (index + 1));
+  });
+};
+
 function copyText(elementId, buttonElement) {
-  var copyText = document.getElementById(elementId);
+  const copyText = document.getElementById(elementId);
   copyText.select();
   document.execCommand("copy");
   

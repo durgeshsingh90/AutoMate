@@ -51,35 +51,35 @@ INSTALLED_APPS = [
 ]
 
 # Logging configuration
-# LOGGING = {
-#     'version': 1,
-#     'disable_existing_loggers': False,
-#     'formatters': {
-#         'standard': {
-#             'format': '%(asctime)s [%(levelname)s] %(name)s: %(message)s'
-#         },
-#     },
-#     'handlers': {
-#         'file': {
-#             'level': 'INFO',
-#             'class': 'logging.FileHandler',
-#             'filename': str(LOG_DIR / 'django.log'),  # Dynamic path for the log file
-#             'formatter': 'standard',
-#         },
-#         'console': {
-#             'level': 'DEBUG',
-#             'class': 'logging.StreamHandler',
-#             'formatter': 'standard',
-#         },
-#     },
-#     'loggers': {
-#         '': {  # 'root' logger
-#             'handlers': ['file', 'console'],
-#             'level': 'DEBUG',
-#             'propagate': True
-#         },
-#     }
-# }
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'standard': {
+            'format': '%(asctime)s [%(levelname)s] %(name)s: %(message)s'
+        },
+    },
+    'handlers': {
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': str(LOG_DIR / 'django.log'),  # Dynamic path for the log file
+            'formatter': 'standard',
+        },
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'standard',
+        },
+    },
+    'loggers': {
+        '': {  # 'root' logger
+            'handlers': ['file', 'console'],
+            'level': 'DEBUG',
+            'propagate': True
+        },
+    }
+}
 
 
 MIDDLEWARE = [
