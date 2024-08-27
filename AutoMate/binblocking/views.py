@@ -19,6 +19,7 @@ def process_bins(request):
         bin_list = bins.splitlines()
         total_values = len(bin_list)
         
+        
         #logger.info(f"Total input values: {total_values}")
         
         # Remove duplicates
@@ -90,6 +91,8 @@ class CustomJSONEncoder(json.JSONEncoder):
         return super().default(obj)
 
 
+from datetime import datetime
+
 def print_processed_data(processed_bins, production_data):
     """Print processed_bins and production_data to the console, and check for matches."""
     print("Processed Bins:")
@@ -101,6 +104,14 @@ def print_processed_data(processed_bins, production_data):
     # Split processed_bins into a list
     processed_bin_list = processed_bins.splitlines()
     
+    # Initialize variables to store the new Russian entry details
+    russian_lowbin = None
+    russian_highbin = None
+    modified_row_1 = None
+
+    # Get today's date in the format YYYY-MM-DD
+    today_date = datetime.today().strftime('%Y-%m-%d')
+
     # Loop through each bin or range in processed_bins and check against production_data
     for bin_range in processed_bin_list:
         bin_range = bin_range.strip()  # Clean up any extra spaces
@@ -121,31 +132,48 @@ def print_processed_data(processed_bins, production_data):
                 lowbin = values_part.split(',')[0].strip()
                 highbin = values_part.split(',')[1].strip()
 
-                # Print for debugging purposes
-                print(f"Checking row {i + 1}:")
-                print(f"LOWBIN: {lowbin}, HIGHBIN: {highbin}, start_bin: {start_bin}, end_bin: {end_bin}")
+                # First Modified Row based on the start_bin
+                modified_highbin = (start_bin + '0' * (len(highbin) - len(start_bin)))
+                modified_highbin = str(int(modified_highbin) - 1).zfill(len(highbin))
+                modified_row = row.replace(f"{highbin}", f"{modified_highbin}")
 
-                # Check if the start_bin or end_bin is within the range of LOWBIN and HIGHBIN by matching as a prefix
-                if (
-                    lowbin.startswith(start_bin)
-                    or highbin.startswith(end_bin)
-                    or lowbin.startswith(end_bin)
-                    or highbin.startswith(start_bin)
-                    or (int(start_bin) >= int(lowbin[:len(start_bin)]) and int(end_bin) <= int(highbin[:len(end_bin)]))
-                ):
-                    print(f"Bin range {start_bin} - {end_bin} found in row {i + 1}:")
-                    print(row)
-                    found = True
-                    break
+                # Modified Row 1 with LOWBIN as (end_bin + 1) and keeping original HIGHBIN
+                incremented_end_bin = str(int(end_bin) + 1)
+                modified_lowbin_1 = incremented_end_bin + '0' * (len(lowbin) - len(incremented_end_bin))
+                modified_row_1 = row.replace(f"{lowbin}", f"{modified_lowbin_1}")
+
+                print(f"Bin range {start_bin} - {end_bin} found in row {i + 1}:")
+                print(f"Original row: {row}")
+                print(f"Modified Row: {modified_row}")
+                found = True
+                break
             except (IndexError, ValueError) as e:
                 print(f"Error processing row {i + 1}: {e}")
                 continue
             
         if not found:
             print(f"Bin range {start_bin} - {end_bin} not found in production data.")
+        
+        # Store the processed number for the Russian entry creation based on the end_bin
+        if not russian_lowbin and not russian_highbin:
+            # Calculate the required length of the BIN (assuming it's the same as the existing lowbin length)
+            required_length = len(lowbin)
 
+            # Create the lowbin by appending zeros to the end of the start_bin
+            russian_lowbin = start_bin + '0' * (required_length - len(start_bin))
+            
+            # Create the highbin by appending nines to the end of the end_bin
+            russian_highbin = end_bin + '9' * (required_length - len(end_bin))
 
+    # After processing, add the new Russian entry if we have valid data
+    if russian_lowbin and russian_highbin:
+        russian_insert_statement = f"INSERT INTO PROD_SHCEXTBINDB (LOWBIN, HIGHBIN, DESCRIPTION, BIN_LENGTH, CARDPRODUCT, COUNTRY_CODE, DESTINATION, ENTITY_ID, FILE_DATE, FILE_NAME, FILE_VERSION, NETWORK_CONFIG, NETWORK_DATA, LEVEL, STATUS) VALUES ({russian_lowbin}, {russian_highbin}, 'Russian', None, 'Russian', None, '500', None, '{today_date}', 'EUFILE', '1.10', None, None, 0, 'B');"
+        print("New Russian Entry:")
+        print(russian_insert_statement)
 
+    # Print Modified Row 1 after the Russian entry
+    if modified_row_1:
+        print(f"Modified Row 1: {modified_row_1}")
 
 
 def query_view(request):
