@@ -87,7 +87,7 @@
           <h5 class="card-title">4. Processed Insert Statement</h5>
           <div class="textarea-container">
             <div id="lineNumbers4" class="line-numbers"></div>
-            <textarea id="insertStatement" class="form-control textarea" rows="12" placeholder="Enter details..." oninput="updateLineNumbers(this, 'lineNumbers4')"></textarea>
+            <textarea id="insertStatement" class="form-control textarea" rows="12" placeholder="Enter details..." oninput="updateLineNumbers(this, 'lineNumbers4')">{{ insert_statement }}</textarea>
           </div>
           <button onclick="copyText('insertStatement', this)" class="btn btn-primary copy-btn">Copy</button>
         </div>

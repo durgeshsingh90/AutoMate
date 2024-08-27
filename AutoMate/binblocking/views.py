@@ -13,18 +13,18 @@ logger = logging.getLogger(__name__)
 
 @csrf_exempt
 def process_bins(request):
-    logger.info("Started processing bins")
+    #logger.info("Started processing bins")
     if request.method == 'POST':
         bins = request.POST.get('bins', '')
         bin_list = bins.splitlines()
         total_values = len(bin_list)
         
-        logger.info(f"Total input values: {total_values}")
+        #logger.info(f"Total input values: {total_values}")
         
         # Remove duplicates
         bin_set = set(bin_list)
         duplicates_removed = total_values - len(bin_set)
-        logger.info(f"Duplicates removed: {duplicates_removed}")
+        #logger.info(f"Duplicates removed: {duplicates_removed}")
         
         # Sort bins
         sorted_bins = sorted(bin_set, key=lambda x: (len(x), x))
@@ -36,22 +36,22 @@ def process_bins(request):
                 final_bins.append(bin)
         
         unique_values = len(final_bins)
-        logger.info(f"Unique values after removing subsets: {unique_values}")
+        #logger.info(f"Unique values after removing subsets: {unique_values}")
         
         # Combine consecutive numbers
         combined_bins, consecutive_count = combine_consecutives(final_bins)
-        logger.info(f"Consecutive values combined: {consecutive_count}")
+        #logger.info(f"Consecutive values combined: {consecutive_count}")
         
         # Store the processed data in session
         processed_bins = '\n'.join(combined_bins)
         request.session['processed_bins'] = processed_bins
-        logger.info("Processed bins stored in session")
+        #logger.info("Processed bins stored in session")
         
         # Call query_view to continue processing
         return query_view(request)
 
     else:
-        logger.info("Received a non-POST request")
+        #logger.info("Received a non-POST request")
         return render(request, 'binblocking/binblocker.html')
 
 def display_processed_bins(request):
@@ -61,7 +61,7 @@ def display_processed_bins(request):
     })
 
 def combine_consecutives(bins):
-    logger.info("Combining consecutive bins")
+    #logger.info("Combining consecutive bins")
     combined = []
     consecutive_count = 0
     i = 0
@@ -76,7 +76,7 @@ def combine_consecutives(bins):
             consecutive_count += 1
         combined.append(f"{start_bin}-{end_bin}" if start_bin != end_bin else start_bin)
         i += 1
-    logger.info(f"Total consecutive bins combined: {consecutive_count}")
+    #logger.info(f"Total consecutive bins combined: {consecutive_count}")
     return combined, consecutive_count
 
 def is_consecutive(bin1, bin2):
@@ -90,8 +90,66 @@ class CustomJSONEncoder(json.JSONEncoder):
         return super().default(obj)
 
 
+def print_processed_data(processed_bins, production_data):
+    """Print processed_bins and production_data to the console, and check for matches."""
+    print("Processed Bins:")
+    print(processed_bins)
+    
+    # Convert production_data into a list of rows
+    production_rows = production_data.splitlines()
+
+    # Split processed_bins into a list
+    processed_bin_list = processed_bins.splitlines()
+    
+    # Loop through each bin or range in processed_bins and check against production_data
+    for bin_range in processed_bin_list:
+        bin_range = bin_range.strip()  # Clean up any extra spaces
+        found = False
+
+        # Check if the processed_bin is a range
+        if '-' in bin_range:
+            start_bin, end_bin = bin_range.split('-')
+            start_bin = start_bin.strip()
+            end_bin = end_bin.strip()
+        else:
+            start_bin = end_bin = bin_range.strip()
+
+        for i, row in enumerate(production_rows):
+            try:
+                # Extract the LOWBIN and HIGHBIN from the row (assuming fixed format as in your example)
+                values_part = row.split('VALUES (')[1]
+                lowbin = values_part.split(',')[0].strip()
+                highbin = values_part.split(',')[1].strip()
+
+                # Print for debugging purposes
+                print(f"Checking row {i + 1}:")
+                print(f"LOWBIN: {lowbin}, HIGHBIN: {highbin}, start_bin: {start_bin}, end_bin: {end_bin}")
+
+                # Check if the start_bin or end_bin is within the range of LOWBIN and HIGHBIN by matching as a prefix
+                if (
+                    lowbin.startswith(start_bin)
+                    or highbin.startswith(end_bin)
+                    or lowbin.startswith(end_bin)
+                    or highbin.startswith(start_bin)
+                    or (int(start_bin) >= int(lowbin[:len(start_bin)]) and int(end_bin) <= int(highbin[:len(end_bin)]))
+                ):
+                    print(f"Bin range {start_bin} - {end_bin} found in row {i + 1}:")
+                    print(row)
+                    found = True
+                    break
+            except (IndexError, ValueError) as e:
+                print(f"Error processing row {i + 1}: {e}")
+                continue
+            
+        if not found:
+            print(f"Bin range {start_bin} - {end_bin} not found in production data.")
+
+
+
+
+
 def query_view(request):
-    logger.info('Attempting to fetch PROD and UAT database connection details')
+    #logger.info('Attempting to fetch PROD and UAT database connection details')
     
     prod_insert_statements = []
     uat_insert_statements = []
@@ -100,26 +158,30 @@ def query_view(request):
         # Fetch PROD and UAT database connection details
         prod_connection = DatabaseConnection.objects.get(environment='PROD')
         uat_connection = DatabaseConnection.objects.get(environment='UAT')
-        logger.info(f"Fetched database connections for PROD: {prod_connection.name}, UAT: {uat_connection.name}")
+        #logger.info(f"Fetched database connections for PROD: {prod_connection.name}, UAT: {uat_connection.name}")
 
         # Run queries and generate insert statements for both PROD and UAT
         prod_insert_statements = generate_insert_statements(prod_connection)
         uat_insert_statements = generate_insert_statements(uat_connection)
 
     except DatabaseConnection.DoesNotExist as e:
-        logger.error(f"No connection details found for environment: {str(e)}")
+        #logger.error(f"No connection details found for environment: {str(e)}")
         return render(request, 'binblocking/binblocker_output.html', {
             'error': f"No connection details found for environment: {str(e)}",
             'processed_bins': request.session.get('processed_bins', '')
         })
 
     except Exception as e:
-        logger.error(f"Unexpected error: {e}")
+        #logger.error(f"Unexpected error: {e}")
         return render(request, 'binblocking/binblocker_output.html', {
             'error': str(e),
             'processed_bins': request.session.get('processed_bins', '')
         })
+   # Get processed bins from session
+    processed_bins = request.session.get('processed_bins', '')
 
+    # Print processed_bins and production_data to console
+    print_processed_data(processed_bins, '\n'.join(prod_insert_statements))
     # Include both processed bins and SQL insert statements in the rendering context
     return render(request, 'binblocking/binblocker_output.html', {
         'production_data': '\n'.join(prod_insert_statements),
@@ -157,13 +219,14 @@ def generate_insert_statements(connection):
             insert_statement = f"INSERT INTO {connection.table_name} ({columns}) VALUES ({values});"
             insert_statements.append(insert_statement)
 
-        logger.debug(f"Generated insert statements for {connection.environment}: {insert_statements}")
+        #logger.debug(f"Generated insert statements for {connection.environment}: {insert_statements}")
         return insert_statements
 
     except mysql.connector.Error as err:
-        logger.error(f"Database error for {connection.environment}: {err}")
+        #logger.error(f"Database error for {connection.environment}: {err}")
         return []
 
     except Exception as e:
-        logger.error(f"Unexpected error for {connection.environment}: {e}")
+        #logger.error(f"Unexpected error for {connection.environment}: {e}")
         return []
+
