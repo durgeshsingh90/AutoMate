@@ -1980,3 +1980,43 @@ django.template.exceptions.TemplateSyntaxError: Invalid filter: 'trim'
 2024-08-29 00:36:23,437 [INFO] binblocking.views: New Russian entry created.
 2024-08-29 00:36:23,438 [INFO] binblocking.views: Processed data printing complete.
 2024-08-29 00:36:23,438 [INFO] binblocking.views: Query view executed successfully.
+2024-08-29 00:39:41,263 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-29 00:39:41,928 [INFO] binblocking.views: Processing bins request started.
+2024-08-29 00:39:41,929 [WARNING] binblocking.views: Received a non-POST request for processing bins.
+2024-08-29 00:47:39,577 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-29 00:47:49,946 [INFO] binblocking.views: Processing bins request started.
+2024-08-29 00:47:49,947 [INFO] binblocking.views: Duplicates and subsets removed. Unique bins count: 1
+2024-08-29 00:47:49,948 [INFO] binblocking.views: Total unique bins after removing duplicates and subsets: 1
+2024-08-29 00:47:49,948 [INFO] binblocking.views: Combining consecutive bins.
+2024-08-29 00:47:49,948 [INFO] binblocking.views: Total consecutive bins combined: 0
+2024-08-29 00:47:49,948 [INFO] binblocking.views: Total consecutive bins combined: 0
+2024-08-29 00:47:49,950 [INFO] binblocking.views: Processed bins stored in session successfully.
+2024-08-29 00:47:49,950 [INFO] binblocking.views: Query view execution started.
+2024-08-29 00:47:49,951 [INFO] binblocking.views: Fetched database connections for PROD: prod_mysql, UAT: UAT_mysql
+2024-08-29 00:47:49,951 [INFO] binblocking.views: Generating SQL insert statements for environment: PROD
+2024-08-29 00:47:49,951 [ERROR] binblocking.views: Unexpected error for PROD: connect() got an unexpected keyword argument 'database'
+2024-08-29 00:47:49,952 [INFO] binblocking.views: Generating SQL insert statements for environment: UAT
+2024-08-29 00:47:49,952 [ERROR] binblocking.views: Unexpected error for UAT: connect() got an unexpected keyword argument 'database'
+2024-08-29 00:47:49,953 [INFO] binblocking.views: Printing and processing production data.
+2024-08-29 00:47:49,953 [WARNING] binblocking.views: Bin range 221673 - 221673 not found in production data.
+2024-08-29 00:47:49,983 [ERROR] django.request: Internal Server Error: /binblocking/
+Traceback (most recent call last):
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py", line 41, in process_bins
+    return query_view(request)
+           ^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py", line 236, in query_view
+    sorted_production_rows_copy = print_processed_data(processed_bins, '\n'.join(prod_insert_statements))
+                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py", line 175, in print_processed_data
+    required_length = len(lowbin)
+                          ^^^^^^
+UnboundLocalError: cannot access local variable 'lowbin' where it is not associated with a value

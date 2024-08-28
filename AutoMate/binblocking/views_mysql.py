@@ -3,7 +3,7 @@ from django.views.decorators.csrf import csrf_exempt
 from .db_utils import run_sqlplus_query
 from .models import DatabaseConnection
 from django.http import HttpResponseRedirect
-import oracledb  # Import oracledb for Oracle database connectivity
+import mysql.connector
 import logging
 import json
 from datetime import date, datetime
@@ -251,8 +251,8 @@ def generate_insert_statements(connection):
     logger.info(f"Generating SQL insert statements for environment: {connection.environment}")
     try:
         # Connect to the database
-        conn = oracledb.connect(
-            dsn=connection.DatabaseTNS,
+        conn = mysql.connector.connect(
+            host=connection.DatabaseTNS,
             user=connection.username,
             password=connection.password,
             database=connection.environment.lower()
@@ -282,7 +282,7 @@ def generate_insert_statements(connection):
         logger.debug(f"Generated insert statements for {connection.environment}: {len(insert_statements)} statements.")
         return insert_statements
 
-    except oracledb.DatabaseError as err:
+    except mysql.connector.Error as err:
         logger.error(f"Database error for {connection.environment}: {err}")
         return []
 
