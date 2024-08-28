@@ -1645,3 +1645,338 @@ UnboundLocalError: cannot access local variable 'production_rows_copy' where it 
 2024-08-28 23:36:39,454 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
 2024-08-28 23:43:35,263 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
 2024-08-28 23:43:35,790 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 23:44:54,897 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 23:45:01,789 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 23:45:02,410 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 23:46:13,303 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 23:46:13,836 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 23:46:22,664 [ERROR] django.request: Internal Server Error: /binblocking/
+Traceback (most recent call last):
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py", line 52, in process_bins
+    return query_view(request)
+           ^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py", line 230, in query_view
+    print_processed_data(processed_bins, '\n'.join(prod_insert_statements))
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py", line 191, in print_processed_data
+    return render(request, 'binblocking/binblocker_output.html', {
+                  ^^^^^^^
+NameError: name 'request' is not defined
+2024-08-28 23:49:16,684 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 23:49:17,212 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 23:49:26,137 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 23:49:26,663 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 23:49:52,918 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 23:49:53,423 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 23:50:18,922 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 23:50:19,432 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 23:51:29,048 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 23:51:29,647 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 23:53:11,587 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 23:53:12,153 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-29 00:05:47,474 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-29 00:05:48,075 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-29 00:06:17,671 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-29 00:06:18,243 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-29 00:06:30,026 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-29 00:06:30,594 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-29 00:10:30,929 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-29 00:10:31,551 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-29 00:10:53,762 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-29 00:10:54,376 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-29 00:11:06,197 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-29 00:11:06,768 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-29 00:12:52,379 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-29 00:13:52,292 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-29 00:13:52,873 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-29 00:21:57,992 [ERROR] django.request: Internal Server Error: /binblocking/
+Traceback (most recent call last):
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py", line 52, in process_bins
+    return query_view(request)
+           ^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py", line 234, in query_view
+    return render(request, 'binblocking/binblocker_output.html', {
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\template\loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\template\backends\django.py", line 33, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\template\engine.py", line 177, in get_template
+    template, origin = self.find_template(template_name)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+           ^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\template\base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\template\base.py", line 196, in compile_nodelist
+    return parser.parse()
+           ^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\template\base.py", line 481, in parse
+    raise self.error(token, e)
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\template\base.py", line 479, in parse
+    filter_expression = self.compile_filter(token.contents)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\template\base.py", line 597, in compile_filter
+    return FilterExpression(token, self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\template\base.py", line 693, in __init__
+    filter_func = parser.find_filter(filter_name)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\template\base.py", line 603, in find_filter
+    raise TemplateSyntaxError("Invalid filter: '%s'" % filter_name)
+django.template.exceptions.TemplateSyntaxError: Invalid filter: 'trim'
+2024-08-29 00:22:42,371 [ERROR] django.request: Internal Server Error: /binblocking/
+Traceback (most recent call last):
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py", line 52, in process_bins
+    return query_view(request)
+           ^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py", line 234, in query_view
+    return render(request, 'binblocking/binblocker_output.html', {
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\template\loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\template\backends\django.py", line 33, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\template\engine.py", line 177, in get_template
+    template, origin = self.find_template(template_name)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+           ^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\template\base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\template\base.py", line 196, in compile_nodelist
+    return parser.parse()
+           ^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\template\base.py", line 481, in parse
+    raise self.error(token, e)
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\template\base.py", line 479, in parse
+    filter_expression = self.compile_filter(token.contents)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\template\base.py", line 597, in compile_filter
+    return FilterExpression(token, self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\template\base.py", line 693, in __init__
+    filter_func = parser.find_filter(filter_name)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\template\base.py", line 603, in find_filter
+    raise TemplateSyntaxError("Invalid filter: '%s'" % filter_name)
+django.template.exceptions.TemplateSyntaxError: Invalid filter: 'strip'
+2024-08-29 00:23:37,819 [ERROR] django.request: Internal Server Error: /binblocking/
+Traceback (most recent call last):
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py", line 52, in process_bins
+    return query_view(request)
+           ^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py", line 234, in query_view
+    return render(request, 'binblocking/binblocker_output.html', {
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\template\loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\template\backends\django.py", line 33, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\template\engine.py", line 177, in get_template
+    template, origin = self.find_template(template_name)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+           ^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\template\base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\template\base.py", line 196, in compile_nodelist
+    return parser.parse()
+           ^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\template\base.py", line 481, in parse
+    raise self.error(token, e)
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\template\base.py", line 479, in parse
+    filter_expression = self.compile_filter(token.contents)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\template\base.py", line 597, in compile_filter
+    return FilterExpression(token, self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\template\base.py", line 693, in __init__
+    filter_func = parser.find_filter(filter_name)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\template\base.py", line 603, in find_filter
+    raise TemplateSyntaxError("Invalid filter: '%s'" % filter_name)
+django.template.exceptions.TemplateSyntaxError: Invalid filter: 'strip'
+2024-08-29 00:24:08,208 [ERROR] django.request: Internal Server Error: /binblocking/
+Traceback (most recent call last):
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py", line 52, in process_bins
+    return query_view(request)
+           ^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py", line 234, in query_view
+    return render(request, 'binblocking/binblocker_output.html', {
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\template\loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\template\backends\django.py", line 33, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\template\engine.py", line 177, in get_template
+    template, origin = self.find_template(template_name)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+           ^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\template\base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\template\base.py", line 196, in compile_nodelist
+    return parser.parse()
+           ^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\template\base.py", line 481, in parse
+    raise self.error(token, e)
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\template\base.py", line 479, in parse
+    filter_expression = self.compile_filter(token.contents)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\template\base.py", line 597, in compile_filter
+    return FilterExpression(token, self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\template\base.py", line 693, in __init__
+    filter_func = parser.find_filter(filter_name)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\template\base.py", line 603, in find_filter
+    raise TemplateSyntaxError("Invalid filter: '%s'" % filter_name)
+django.template.exceptions.TemplateSyntaxError: Invalid filter: 'trim'
+2024-08-29 00:25:46,104 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-29 00:25:46,678 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-29 00:25:50,471 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-29 00:25:51,027 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-29 00:26:03,181 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-29 00:26:03,795 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-29 00:27:22,033 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-29 00:27:22,641 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-29 00:27:24,441 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-29 00:27:25,103 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-29 00:27:32,236 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-29 00:27:32,869 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-29 00:27:59,984 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-29 00:28:00,621 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-29 00:30:12,550 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-29 00:30:13,175 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-29 00:30:30,611 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-29 00:30:31,294 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-29 00:30:41,412 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-29 00:30:42,076 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-29 00:36:12,148 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-29 00:36:12,716 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-29 00:36:21,400 [INFO] binblocking.views: Processing bins request started.
+2024-08-29 00:36:21,401 [WARNING] binblocking.views: Received a non-POST request for processing bins.
+2024-08-29 00:36:23,351 [INFO] binblocking.views: Processing bins request started.
+2024-08-29 00:36:23,352 [INFO] binblocking.views: Duplicates and subsets removed. Unique bins count: 1
+2024-08-29 00:36:23,353 [INFO] binblocking.views: Total unique bins after removing duplicates and subsets: 1
+2024-08-29 00:36:23,354 [INFO] binblocking.views: Combining consecutive bins.
+2024-08-29 00:36:23,354 [INFO] binblocking.views: Total consecutive bins combined: 0
+2024-08-29 00:36:23,354 [INFO] binblocking.views: Total consecutive bins combined: 0
+2024-08-29 00:36:23,357 [INFO] binblocking.views: Processed bins stored in session successfully.
+2024-08-29 00:36:23,357 [INFO] binblocking.views: Query view execution started.
+2024-08-29 00:36:23,359 [INFO] binblocking.views: Fetched database connections for PROD: prod_mysql, UAT: UAT_mysql
+2024-08-29 00:36:23,359 [INFO] binblocking.views: Generating SQL insert statements for environment: PROD
+2024-08-29 00:36:23,427 [INFO] binblocking.views: Generating SQL insert statements for environment: UAT
+2024-08-29 00:36:23,435 [INFO] binblocking.views: Printing and processing production data.
+2024-08-29 00:36:23,437 [INFO] binblocking.views: New Russian entry created.
+2024-08-29 00:36:23,438 [INFO] binblocking.views: Processed data printing complete.
+2024-08-29 00:36:23,438 [INFO] binblocking.views: Query view executed successfully.
