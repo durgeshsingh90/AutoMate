@@ -7,7 +7,7 @@ import mysql.connector  # Import MySQL connector
 import logging
 import json
 from datetime import date
-
+import re
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
 
@@ -57,6 +57,8 @@ def process_bins(request):
 
 def display_processed_bins(request):
     processed_bins = request.session.get('processed_bins', '')
+    sorted_production_rows_copy = request.session.get('sorted_production_rows_copy', '')  # Assuming you have this data in the session
+
     return render(request, 'binblocking/binblocker_output.html', {
         'processed_bins': processed_bins
     })
@@ -101,6 +103,9 @@ def print_processed_data(processed_bins, production_data):
     # Convert production_data into a list of rows
     production_rows = production_data.splitlines()
 
+    # Create a copy of production_rows
+    production_rows_copy = production_rows.copy()
+
     # Split processed_bins into a list
     processed_bin_list = processed_bins.splitlines()
     
@@ -136,12 +141,13 @@ def print_processed_data(processed_bins, production_data):
                 modified_highbin = (start_bin + '0' * (len(highbin) - len(start_bin)))
                 modified_highbin = str(int(modified_highbin) - 1).zfill(len(highbin))
                 modified_row = row.replace(f"{highbin}", f"{modified_highbin}")
+                production_rows_copy[i]=modified_row
 
                 # Modified Row 1 with LOWBIN as (end_bin + 1) and keeping original HIGHBIN
                 incremented_end_bin = str(int(end_bin) + 1)
                 modified_lowbin_1 = incremented_end_bin + '0' * (len(lowbin) - len(incremented_end_bin))
                 modified_row_1 = row.replace(f"{lowbin}", f"{modified_lowbin_1}")
-
+                production_rows_copy.append(modified_row_1)
                 print(f"Bin range {start_bin} - {end_bin} found in row {i + 1}:")
                 print(f"Original row: {row}")
                 print(f"Modified Row: {modified_row}")
@@ -167,14 +173,22 @@ def print_processed_data(processed_bins, production_data):
 
     # After processing, add the new Russian entry if we have valid data
     if russian_lowbin and russian_highbin:
-        russian_insert_statement = f"INSERT INTO PROD_SHCEXTBINDB (LOWBIN, HIGHBIN, DESCRIPTION, BIN_LENGTH, CARDPRODUCT, COUNTRY_CODE, DESTINATION, ENTITY_ID, FILE_DATE, FILE_NAME, FILE_VERSION, NETWORK_CONFIG, NETWORK_DATA, LEVEL, STATUS) VALUES ({russian_lowbin}, {russian_highbin}, 'Russian', None, 'Russian', None, '500', None, '{today_date}', 'EUFILE', '1.10', None, None, 0, 'B');"
+        russian_insert_statement = f"INSERT INTO PROD_SHCEXTBINDB (LOWBIN, HIGHBIN, DESCRIPTION, BIN_LENGTH, CARDPRODUCT, COUNTRY_CODE, DESTINATION, ENTITY_ID, FILE_DATE, FILE_NAME, FILE_VERSION, NETWORK_CONFIG, NETWORK_DATA, LEVEL, STATUS) VALUES ({russian_lowbin}, {russian_highbin}, 'Russian', None, 'Russian', None, '500', None, {today_date}, 'EUFILE', '1.10', None, None, 0, 'B');"
         print("New Russian Entry:")
         print(russian_insert_statement)
+        production_rows_copy.append(russian_insert_statement)
+    
+    print ('production_rows_copy')
+    for i in production_rows_copy:
+        print (i)
 
-    # Print Modified Row 1 after the Russian entry
-    if modified_row_1:
-        print(f"Modified Row 1: {modified_row_1}")
+    # Extract LOWBIN and sort the SQL statements
+    sorted_production_rows_copy = sorted(production_rows_copy, key=lambda x: int(re.search(r"VALUES \((\d+),", x).group(1)))
 
+    print ('sorted_production_rows_copy')
+    # Display the sorted SQL statements
+    for i in sorted_production_rows_copy:
+        print(i)
 
 def query_view(request):
     #logger.info('Attempting to fetch PROD and UAT database connection details')

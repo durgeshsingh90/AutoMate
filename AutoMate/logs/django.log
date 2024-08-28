@@ -1363,3 +1363,285 @@ TypeError: string indices must be integers, not 'str'
 2024-08-27 15:17:36,772 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
 2024-08-27 15:18:45,827 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
 2024-08-27 15:18:46,392 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-27 15:21:03,543 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-27 15:23:08,394 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-27 15:23:09,055 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-27 15:23:24,750 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-27 15:23:25,350 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-27 15:23:27,224 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-27 15:23:28,063 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-27 15:23:32,975 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-27 15:23:33,666 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-27 15:25:46,693 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-27 15:25:47,553 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-27 15:26:36,704 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-27 15:26:37,438 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-27 15:26:49,131 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-27 15:26:49,701 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-27 15:27:35,593 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-27 15:27:36,314 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-27 15:31:35,093 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-27 15:31:35,713 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-27 20:45:46,787 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-27 20:45:49,578 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 12:50:42,285 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 12:50:45,049 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 13:10:49,028 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 13:10:49,561 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 13:11:04,712 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 13:11:05,265 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 13:13:39,745 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 13:13:40,446 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 13:13:49,100 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 13:13:49,648 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 13:19:14,353 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 13:19:14,911 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 13:19:24,914 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 13:19:25,575 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 13:19:57,309 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 13:19:57,830 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 13:20:00,594 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 13:20:01,228 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 13:21:14,255 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 13:21:14,804 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 13:22:55,298 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 13:22:55,831 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 13:37:01,900 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 13:37:02,458 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 13:37:57,072 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 13:37:57,582 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 13:38:15,413 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 13:38:15,915 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 13:40:03,195 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 13:40:03,699 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 13:40:34,348 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 13:45:59,552 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 13:46:00,216 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 13:46:48,911 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 13:57:44,964 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 13:57:45,541 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 13:58:02,753 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 13:58:03,319 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 13:58:09,173 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 13:58:09,801 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 13:58:39,431 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 13:58:40,024 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 14:00:35,392 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 14:00:35,920 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 14:01:42,819 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 14:01:43,364 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 14:01:48,234 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 14:01:48,793 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 14:04:56,413 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 14:04:57,048 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 14:06:03,887 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 14:06:04,446 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 14:06:33,000 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 14:06:33,532 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 14:06:52,778 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 14:06:53,357 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 14:07:13,735 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 14:07:14,311 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 14:07:40,791 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 14:07:41,351 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 14:07:53,367 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 14:07:53,913 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 14:07:57,722 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 14:07:58,246 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 14:08:43,654 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 14:09:32,072 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 14:09:32,633 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 14:09:47,779 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 14:09:48,307 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 14:10:16,296 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 14:12:55,222 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 14:12:55,765 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 14:14:20,208 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 14:14:20,747 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 14:14:29,953 [INFO] binblocking.views: Processed Bins:
+2024-08-28 14:14:29,953 [INFO] binblocking.views: 221673
+2024-08-28 14:14:29,954 [INFO] binblocking.views: Bin range 221673 - 221673 found in row 1:
+2024-08-28 14:14:29,954 [INFO] binblocking.views: Original row: INSERT INTO PROD_SHCEXTBINDB (LOWBIN, HIGHBIN, DESCRIPTION, BIN_LENGTH, CARDPRODUCT, COUNTRY_CODE, DESTINATION, ENTITY_ID, FILE_DATE, FILE_NAME, FILE_VERSION, NETWORK_CONFIG, NETWORK_DATA, LEVEL, STATUS) VALUES (221000000000000, 222776999999999, 'Europay', None, 'Europay', None, '500', None, 2003-06-25, 'EUFILE', '1.10', None, None, 0, 'A');
+2024-08-28 14:14:29,955 [INFO] binblocking.views: Modified Row: INSERT INTO PROD_SHCEXTBINDB (LOWBIN, HIGHBIN, DESCRIPTION, BIN_LENGTH, CARDPRODUCT, COUNTRY_CODE, DESTINATION, ENTITY_ID, FILE_DATE, FILE_NAME, FILE_VERSION, NETWORK_CONFIG, NETWORK_DATA, LEVEL, STATUS) VALUES (221000000000000, 221672999999999, 'Europay', None, 'Europay', None, '500', None, 2003-06-25, 'EUFILE', '1.10', None, None, 0, 'A');
+2024-08-28 14:14:29,956 [INFO] binblocking.views: Bin range 221673 - 221673 found in row 2:
+2024-08-28 14:14:29,957 [INFO] binblocking.views: Original row: INSERT INTO PROD_SHCEXTBINDB (LOWBIN, HIGHBIN, DESCRIPTION, BIN_LENGTH, CARDPRODUCT, COUNTRY_CODE, DESTINATION, ENTITY_ID, FILE_DATE, FILE_NAME, FILE_VERSION, NETWORK_CONFIG, NETWORK_DATA, LEVEL, STATUS) VALUES (222777000000000, 222777999999999, 'Russian', None, 'Russian', None, '500', None, 2003-06-25, 'EUFILE', '1.10', None, None, 0, 'B');
+2024-08-28 14:14:29,957 [INFO] binblocking.views: Modified Row: INSERT INTO PROD_SHCEXTBINDB (LOWBIN, HIGHBIN, DESCRIPTION, BIN_LENGTH, CARDPRODUCT, COUNTRY_CODE, DESTINATION, ENTITY_ID, FILE_DATE, FILE_NAME, FILE_VERSION, NETWORK_CONFIG, NETWORK_DATA, LEVEL, STATUS) VALUES (222777000000000, 221672999999999, 'Russian', None, 'Russian', None, '500', None, 2003-06-25, 'EUFILE', '1.10', None, None, 0, 'B');
+2024-08-28 14:14:29,959 [INFO] binblocking.views: Bin range 221673 - 221673 found in row 3:
+2024-08-28 14:14:29,960 [INFO] binblocking.views: Original row: INSERT INTO PROD_SHCEXTBINDB (LOWBIN, HIGHBIN, DESCRIPTION, BIN_LENGTH, CARDPRODUCT, COUNTRY_CODE, DESTINATION, ENTITY_ID, FILE_DATE, FILE_NAME, FILE_VERSION, NETWORK_CONFIG, NETWORK_DATA, LEVEL, STATUS) VALUES (222778000000000, 222968999999999, 'Europay', None, 'Europay', None, '500', None, 2003-06-25, 'EUFILE', '1.10', None, None, 0, 'A');
+2024-08-28 14:14:29,961 [INFO] binblocking.views: Modified Row: INSERT INTO PROD_SHCEXTBINDB (LOWBIN, HIGHBIN, DESCRIPTION, BIN_LENGTH, CARDPRODUCT, COUNTRY_CODE, DESTINATION, ENTITY_ID, FILE_DATE, FILE_NAME, FILE_VERSION, NETWORK_CONFIG, NETWORK_DATA, LEVEL, STATUS) VALUES (222778000000000, 221672999999999, 'Europay', None, 'Europay', None, '500', None, 2003-06-25, 'EUFILE', '1.10', None, None, 0, 'A');
+2024-08-28 14:14:29,962 [INFO] binblocking.views: Bin range 221673 - 221673 found in row 4:
+2024-08-28 14:14:29,962 [INFO] binblocking.views: Original row: INSERT INTO PROD_SHCEXTBINDB (LOWBIN, HIGHBIN, DESCRIPTION, BIN_LENGTH, CARDPRODUCT, COUNTRY_CODE, DESTINATION, ENTITY_ID, FILE_DATE, FILE_NAME, FILE_VERSION, NETWORK_CONFIG, NETWORK_DATA, LEVEL, STATUS) VALUES (222969000000000, 222969999999999, 'Russian', None, 'Russian', None, '500', None, 2003-06-25, 'EUFILE', '1.10', None, None, 0, 'B');
+2024-08-28 14:14:29,963 [INFO] binblocking.views: Modified Row: INSERT INTO PROD_SHCEXTBINDB (LOWBIN, HIGHBIN, DESCRIPTION, BIN_LENGTH, CARDPRODUCT, COUNTRY_CODE, DESTINATION, ENTITY_ID, FILE_DATE, FILE_NAME, FILE_VERSION, NETWORK_CONFIG, NETWORK_DATA, LEVEL, STATUS) VALUES (222969000000000, 221672999999999, 'Russian', None, 'Russian', None, '500', None, 2003-06-25, 'EUFILE', '1.10', None, None, 0, 'B');
+2024-08-28 14:14:29,964 [INFO] binblocking.views: Bin range 221673 - 221673 found in row 5:
+2024-08-28 14:14:29,965 [INFO] binblocking.views: Original row: INSERT INTO PROD_SHCEXTBINDB (LOWBIN, HIGHBIN, DESCRIPTION, BIN_LENGTH, CARDPRODUCT, COUNTRY_CODE, DESTINATION, ENTITY_ID, FILE_DATE, FILE_NAME, FILE_VERSION, NETWORK_CONFIG, NETWORK_DATA, LEVEL, STATUS) VALUES (222970000000000, 230324999999999, 'Europay', None, 'Europay', None, '500', None, 2003-06-25, 'EUFILE', '1.10', None, None, 0, 'A');
+2024-08-28 14:14:29,965 [INFO] binblocking.views: Modified Row: INSERT INTO PROD_SHCEXTBINDB (LOWBIN, HIGHBIN, DESCRIPTION, BIN_LENGTH, CARDPRODUCT, COUNTRY_CODE, DESTINATION, ENTITY_ID, FILE_DATE, FILE_NAME, FILE_VERSION, NETWORK_CONFIG, NETWORK_DATA, LEVEL, STATUS) VALUES (222970000000000, 221672999999999, 'Europay', None, 'Europay', None, '500', None, 2003-06-25, 'EUFILE', '1.10', None, None, 0, 'A');
+2024-08-28 14:14:29,966 [INFO] binblocking.views: Bin range 221673 - 221673 found in row 6:
+2024-08-28 14:14:29,967 [INFO] binblocking.views: Original row: INSERT INTO PROD_SHCEXTBINDB (LOWBIN, HIGHBIN, DESCRIPTION, BIN_LENGTH, CARDPRODUCT, COUNTRY_CODE, DESTINATION, ENTITY_ID, FILE_DATE, FILE_NAME, FILE_VERSION, NETWORK_CONFIG, NETWORK_DATA, LEVEL, STATUS) VALUES (230325000000000, 230325999999999, 'Russian', None, 'Russian', None, '500', None, 2003-06-25, 'EUFILE', '1.10', None, None, 0, 'B');
+2024-08-28 14:14:29,967 [INFO] binblocking.views: Modified Row: INSERT INTO PROD_SHCEXTBINDB (LOWBIN, HIGHBIN, DESCRIPTION, BIN_LENGTH, CARDPRODUCT, COUNTRY_CODE, DESTINATION, ENTITY_ID, FILE_DATE, FILE_NAME, FILE_VERSION, NETWORK_CONFIG, NETWORK_DATA, LEVEL, STATUS) VALUES (230325000000000, 221672999999999, 'Russian', None, 'Russian', None, '500', None, 2003-06-25, 'EUFILE', '1.10', None, None, 0, 'B');
+2024-08-28 14:14:29,968 [INFO] binblocking.views: New Russian Entry:
+2024-08-28 14:14:29,968 [INFO] binblocking.views: INSERT INTO PROD_SHCEXTBINDB (...) VALUES (221673000000000, 221673999999999, 'Russian', ...);
+2024-08-28 14:14:29,969 [INFO] binblocking.views: Modified Row 1: INSERT INTO PROD_SHCEXTBINDB (LOWBIN, HIGHBIN, DESCRIPTION, BIN_LENGTH, CARDPRODUCT, COUNTRY_CODE, DESTINATION, ENTITY_ID, FILE_DATE, FILE_NAME, FILE_VERSION, NETWORK_CONFIG, NETWORK_DATA, LEVEL, STATUS) VALUES (221674000000000, 230325999999999, 'Russian', None, 'Russian', None, '500', None, 2003-06-25, 'EUFILE', '1.10', None, None, 0, 'B');
+2024-08-28 14:15:59,804 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 14:16:00,390 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 14:16:20,755 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 14:16:21,301 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 14:16:33,318 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 14:16:33,816 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 14:16:49,973 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 14:16:50,601 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 14:17:43,189 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 14:17:43,794 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 14:20:02,981 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 14:20:03,576 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 14:20:06,338 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 14:20:06,858 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 14:25:06,999 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 14:25:53,363 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 14:25:53,913 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 14:26:31,912 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 14:26:32,506 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 14:27:15,145 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 14:27:15,675 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 21:06:45,053 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 21:08:59,196 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 21:08:59,719 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 21:09:05,569 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 21:09:06,091 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 21:09:11,887 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 21:09:12,452 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 21:09:14,146 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 21:09:14,649 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 21:09:25,570 [ERROR] django.request: Internal Server Error: /binblocking/
+Traceback (most recent call last):
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py", line 52, in process_bins
+    return query_view(request)
+           ^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py", line 222, in query_view
+    print_processed_data(processed_bins, '\n'.join(prod_insert_statements))
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py", line 103, in print_processed_data
+    production_rows_copy.append(i)
+    ^^^^^^^^^^^^^^^^^^^^
+UnboundLocalError: cannot access local variable 'production_rows_copy' where it is not associated with a value
+2024-08-28 21:11:23,923 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 21:11:24,448 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 21:12:21,215 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 21:12:21,744 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 21:12:24,654 [ERROR] django.request: Internal Server Error: /binblocking/
+Traceback (most recent call last):
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py", line 52, in process_bins
+    return query_view(request)
+           ^^^^^^^^^^^^^^^^^^^
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py", line 222, in query_view
+    print_processed_data(processed_bins, '\n'.join(prod_insert_statements))
+  File "D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py", line 103, in print_processed_data
+    production_rows_copy.append(i)
+    ^^^^^^^^^^^^^^^^^^^^
+UnboundLocalError: cannot access local variable 'production_rows_copy' where it is not associated with a value
+2024-08-28 21:13:24,663 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 21:13:25,179 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 21:13:55,026 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 21:13:55,532 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 21:14:32,770 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 21:14:33,318 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 21:15:47,666 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 21:15:48,263 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 21:15:52,007 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 21:16:21,825 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 21:16:22,369 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 21:16:25,827 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 21:19:49,261 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 21:19:49,782 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 21:20:06,670 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 22:32:33,283 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 22:32:40,355 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 22:33:49,676 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 22:33:50,243 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 22:33:57,266 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 22:33:57,927 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 22:34:16,573 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 22:34:17,258 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 22:35:24,365 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 22:36:10,499 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 22:36:11,083 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 22:38:30,368 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 22:38:31,058 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 22:39:08,537 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 22:39:09,133 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 22:39:55,828 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 22:39:56,482 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 22:40:48,974 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 22:40:49,583 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 22:42:07,356 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 22:42:07,949 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 22:42:14,903 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 22:42:15,518 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 22:42:26,400 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 22:42:26,989 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 22:42:51,858 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 22:42:52,569 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 22:43:16,730 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 22:43:49,064 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 22:43:49,659 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 22:45:23,058 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 22:45:23,716 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 22:45:59,768 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 22:46:15,552 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 22:46:16,206 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 22:46:36,696 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 22:50:28,815 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 22:50:29,498 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 22:53:23,823 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 22:53:24,411 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 22:53:39,646 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 22:53:40,203 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 22:56:20,433 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 22:56:21,005 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 22:56:26,928 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 22:56:27,572 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 22:56:32,503 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 22:56:33,156 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 22:56:52,802 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 22:56:53,454 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 22:57:08,820 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 22:58:31,529 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 22:58:32,120 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 22:59:24,038 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 22:59:24,639 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 22:59:56,680 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 22:59:57,244 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 23:00:27,190 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 23:00:27,797 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 23:32:54,365 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 23:32:55,704 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 23:33:10,188 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 23:33:10,721 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 23:33:19,624 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 23:33:20,126 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 23:33:37,315 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 23:33:37,872 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 23:34:09,734 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 23:34:10,330 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 23:36:09,828 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 23:36:10,352 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 23:36:38,947 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 23:36:39,454 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-28 23:43:35,263 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-28 23:43:35,790 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
