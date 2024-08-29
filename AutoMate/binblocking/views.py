@@ -3,7 +3,7 @@ from django.views.decorators.csrf import csrf_exempt
 from .db_utils import run_sqlplus_query
 from .models import DatabaseConnection
 from django.http import HttpResponseRedirect
-import oracledb  # Import oracledb for Oracle database connectivity
+import subprocess  
 import logging
 import json
 from datetime import date, datetime
@@ -196,6 +196,38 @@ def print_processed_data(processed_bins, production_data):
     logger.info("Processed data printing complete.")
     return sorted_production_rows_copy
 
+def run_sqlplus_query(username, password, dsn, sql_script):
+    """
+    Run a SQL*Plus query or script using subprocess.
+    """
+    try:
+        # Construct the SQL*Plus command
+        sqlplus_command = f'sqlplus -S {username}/{password}@{dsn}'
+        
+        # Run the SQL script using SQL*Plus
+        process = subprocess.Popen(
+            sqlplus_command,
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            shell=True,
+            text=True
+        )
+        
+        # Pass the SQL script to SQL*Plus
+        stdout, stderr = process.communicate(sql_script)
+        
+        if process.returncode != 0:
+            logger.error(f"SQL*Plus error: {stderr}")
+            return None
+        else:
+            logger.info(f"SQL*Plus output: {stdout}")
+            return stdout.strip()
+        
+    except Exception as e:
+        logger.error(f"An error occurred while running SQL*Plus: {e}")
+        return None
+
 def query_view(request):
     """
     View function to handle database queries and generate insert statements.
@@ -244,30 +276,42 @@ def query_view(request):
         'insert_statement': '\n'.join(sorted_production_rows_copy),
     })
 
+import subprocess
+
 def generate_insert_statements(connection):
     """
-    Generate SQL INSERT statements for the data retrieved from the database.
+    Generate SQL INSERT statements for the data retrieved from the Oracle database using SQL*Plus.
     """
     logger.info(f"Generating SQL insert statements for environment: {connection.environment}")
     try:
-        # Connect to the database
-        conn = oracledb.connect(
-            dsn=connection.DatabaseTNS,
-            user=connection.username,
-            password=connection.password,
-            database=connection.environment.lower()
-        )
-        query = f"SELECT * FROM {connection.table_name} ORDER BY LOWBIN"
-        cursor = conn.cursor(dictionary=True)
-        cursor.execute(query)
-        data = cursor.fetchall()
-        cursor.close()
-        conn.close()
+        # Construct the SQL*Plus connection string
+        conn_str = f"{connection.username}/{connection.password}@{connection.DatabaseTNS}"
+
+        # Construct the query to fetch data
+        query = f"SELECT * FROM {connection.table_name} ORDER BY LOWBIN;"
+
+        # Command to execute using SQL*Plus
+        sqlplus_command = f"sqlplus -S {conn_str}"
+
+        # Run the SQL query using subprocess
+        result = subprocess.run(sqlplus_command, input=query, text=True, capture_output=True, shell=True)
+
+        # Check for errors in SQL*Plus execution
+        if result.returncode != 0:
+            logger.error(f"SQL*Plus error for {connection.environment}: {result.stderr}")
+            return []
+
+        # Parse the output from SQL*Plus
+        output = result.stdout.strip().splitlines()
+
+        # Skip lines until we find the result set
+        data_start_index = output.index('---') + 1 if '---' in output else 0
+        data = output[data_start_index:]
 
         insert_statements = []
-        # Generate INSERT statements for the data
-        for row in data:
-            # Reorder the columns
+        # Process each line of data
+        for line in data:
+            row = dict(zip(['LOWBIN', 'HIGHBIN', 'DESCRIPTION'], line.split()))
             ordered_columns = ['LOWBIN', 'HIGHBIN', 'DESCRIPTION']
             remaining_columns = [col for col in row.keys() if col not in ordered_columns]
             final_columns = ordered_columns + remaining_columns
@@ -282,10 +326,9 @@ def generate_insert_statements(connection):
         logger.debug(f"Generated insert statements for {connection.environment}: {len(insert_statements)} statements.")
         return insert_statements
 
-    except oracledb.DatabaseError as err:
-        logger.error(f"Database error for {connection.environment}: {err}")
+    except FileNotFoundError as fnf_error:
+        logger.error(f"SQL*Plus executable not found: {fnf_error}")
         return []
-
     except Exception as e:
         logger.error(f"Unexpected error for {connection.environment}: {e}")
         return []

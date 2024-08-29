@@ -2020,3 +2020,7 @@ Traceback (most recent call last):
     required_length = len(lowbin)
                           ^^^^^^
 UnboundLocalError: cannot access local variable 'lowbin' where it is not associated with a value
+2024-08-29 21:07:35,561 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
+2024-08-29 21:07:39,025 [WARNING] django.request: Not Found: /favicon.ico
+2024-08-29 21:10:43,066 [INFO] django.utils.autoreload: D:\Durgesh\Projects\VSCode\Fiserv\Automate\AutoMate\binblocking\views.py changed, reloading.
+2024-08-29 21:10:43,575 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
