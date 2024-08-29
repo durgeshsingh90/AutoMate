@@ -1,13 +1,11 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
-from .db_utils import run_sqlplus_query
 from .models import DatabaseConnection
-from django.http import HttpResponseRedirect
 import subprocess  
 import logging
-import json
-from datetime import date, datetime
+from datetime import datetime
 import re
+import subprocess
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -199,38 +197,6 @@ def print_processed_data(processed_bins, production_data):
     logger.info("Processed data printing complete.")
     return sorted_production_rows_copy
 
-def run_sqlplus_query(username, password, dsn, sql_script):
-    """
-    Run a SQL*Plus query or script using subprocess.
-    """
-    try:
-        # Construct the SQL*Plus command
-        sqlplus_command = f'sqlplus -S {username}/{password}@{dsn}'
-        
-        # Run the SQL script using SQL*Plus
-        process = subprocess.Popen(
-            sqlplus_command,
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            shell=True,
-            text=True
-        )
-        
-        # Pass the SQL script to SQL*Plus
-        stdout, stderr = process.communicate(sql_script)
-        
-        if process.returncode != 0:
-            logger.error(f"SQL*Plus error: {stderr}")
-            return None
-        else:
-            logger.info(f"SQL*Plus output: {stdout}")
-            return stdout.strip()
-        
-    except Exception as e:
-        logger.error(f"An error occurred while running SQL*Plus: {e}")
-        return None
-
 def query_view(request):
     """
     View function to handle database queries and generate insert statements.
@@ -279,7 +245,7 @@ def query_view(request):
         'insert_statement': '\n'.join(sorted_production_rows_copy),
     })
 
-import subprocess
+
 
 def connect_to_oracle_sqlplus(connection):
     """
@@ -321,7 +287,7 @@ def connect_to_oracle_sqlplus(connection):
 
             columns = ', '.join(final_columns)
             values = ', '.join(
-                [f"'{str(row[col]).replace('\'', '\'\'')}'" if isinstance(row[col], str) else str(row[col]) for col in final_columns]
+  [f"""'{str(row[col]).replace("'", "''")}'""" if isinstance(row[col], str) else str(row[col]) for col in final_columns]
             )
             insert_statement = f"INSERT INTO {connection.table_name} ({columns}) VALUES ({values});"
             insert_statements.append(insert_statement)
