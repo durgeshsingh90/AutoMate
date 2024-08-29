@@ -123,9 +123,6 @@ def print_processed_data(processed_bins, production_data):
     russian_highbin = None
     modified_row_1 = None
 
-    # Initialize lowbin to handle cases where it might not be set inside the loop
-    lowbin = None
-
     # Get today's date in the format YYYY-MM-DD
     today_date = datetime.today().strftime('%Y-%m-%d')
 
@@ -173,7 +170,7 @@ def print_processed_data(processed_bins, production_data):
             logger.warning(f"Bin range {start_bin} - {end_bin} not found in production data.")
 
         # Store the processed number for the Russian entry creation based on the end_bin
-        if not russian_lowbin and not russian_highbin and lowbin:
+        if not russian_lowbin and not russian_highbin:
             # Calculate the required length of the BIN (assuming it's the same as the existing lowbin length)
             required_length = len(lowbin)
 
@@ -321,7 +318,7 @@ def connect_to_oracle_sqlplus(connection):
 
             columns = ', '.join(final_columns)
             values = ', '.join(
-                [f"'{str(row[col]).replace('\'', '\'\'')}'" if isinstance(row[col], str) else str(row[col]) for col in final_columns]
+[f"""'{str(row[col]).replace("'", "''")}'""" if isinstance(row[col], str) else str(row[col]) for col in final_columns]
             )
             insert_statement = f"INSERT INTO {connection.table_name} ({columns}) VALUES ({values});"
             insert_statements.append(insert_statement)
