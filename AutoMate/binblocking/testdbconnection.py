@@ -19,10 +19,15 @@ def connect_to_oracle_sqlplus(query):
     try:
         # Run the command using subprocess
         result = subprocess.run(sqlplus_command, input=query, text=True, capture_output=True, shell=True)
-        # Return the output
-        return result.stdout if result.returncode == 0 else result.stderr
+        
+        # Check if the connection and query execution were successful
+        if result.returncode == 0 and not result.stderr:
+            return f"Connection successful.\nOutput:\n{result.stdout}"
+        else:
+            return f"Connection failed or SQL*Plus error occurred:\n{result.stderr}"
     except Exception as e:
-        return str(e)
+        return f"An error occurred: {str(e)}"
+    
 
 # Example usage with a multiline query
 query = """
