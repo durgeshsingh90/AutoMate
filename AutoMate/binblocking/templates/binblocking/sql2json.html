@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQL to JSON Converter</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .container {
+            margin-top: 20px;
+        }
+        .textarea-wrapper {
+            position: relative;
+        }
+        .line-numbers {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 30px;
+            background: #f0f0f0;
+            text-align: right;
+            padding-right: 5px;
+            border-right: 1px solid #ddd;
+            user-select: none;
+        }
+        textarea {
+            height: 300px;
+            padding-left: 35px;
+        }
+        .length-display {
+            margin-top: 10px;
+        }
+        .copy-btn {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <h5>SQL Input</h5>
+                <div class="textarea-wrapper">
+                    <div id="sqlLineNumbers" class="line-numbers"></div>
+                    <textarea id="sqlInput" class="form-control" placeholder="Enter SQL INSERT statement here"></textarea>
+                </div>
+                <button id="copySqlBtn" class="btn btn-primary copy-btn" onclick="copyText('sqlInput', 'copySqlBtn')">Copy</button>
+                <div id="sqlLength" class="length-display"></div>
+            </div>
+            <div class="col-md-6">
+                <h5>JSON Output</h5>
+                <div class="textarea-wrapper">
+                    <div id="jsonLineNumbers" class="line-numbers"></div>
+                    <textarea id="jsonOutput" class="form-control" placeholder="JSON output will appear here"></textarea>
+                </div>
+                <button id="copyJsonBtn" class="btn btn-primary copy-btn" onclick="copyText('jsonOutput', 'copyJsonBtn')">Copy</button>
+                <div id="jsonLength" class="length-display"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('sqlInput').addEventListener('input', convertToJSON);
+        document.getElementById('sqlInput').addEventListener('input', updateLineNumbers);
+        document.getElementById('sqlInput').addEventListener('scroll', syncScroll);
+        document.getElementById('sqlInput').addEventListener('select', displayLength);
+        document.getElementById('jsonOutput').addEventListener('input', convertToSQL);
+        document.getElementById('jsonOutput').addEventListener('input', updateLineNumbers);
+        document.getElementById('jsonOutput').addEventListener('scroll', syncScroll);
+        document.getElementById('jsonOutput').addEventListener('select', displayLength);
+
+        function convertToJSON() {
+            const sql = document.getElementById('sqlInput').value;
+            const match = sql.match(/INSERT INTO (\w+\.\w+) \(([^)]+)\) VALUES \(([^)]+)\)/i);
+            if (match) {
+                const table = match[1];
+                const columns = match[2].split(',').map(col => col.trim());
+                const values = match[3].split(',').map(val => val.trim().replace(/'/g, ''));
+                const json = {};
+                columns.forEach((col, index) => {
+                    json[col] = values[index];
+                });
+                document.getElementById('jsonOutput').value = JSON.stringify({ table, data: json }, null, 2);
+            } else {
+                document.getElementById('jsonOutput').value = 'Invalid SQL INSERT statement';
+            }
+        }
+
+        function convertToSQL() {
+            try {
+                const json = JSON.parse(document.getElementById('jsonOutput').value);
+                const table = json.table;
+                const columns = Object.keys(json.data).join(', ');
+                const values = Object.values(json.data).map(val => `'${val}'`).join(', ');
+                const sql = `INSERT INTO ${table} (${columns}) VALUES (${values})`;
+                document.getElementById('sqlInput').value = sql;
+            } catch (e) {
+                document.getElementById('sqlInput').value = 'Invalid JSON';
+            }
+        }
+
+        function displayLength(event) {
+            const length = event.target.selectionEnd - event.target.selectionStart;
+            const lengthDisplayId = event.target.id === 'sqlInput' ? 'sqlLength' : 'jsonLength';
+            document.getElementById(lengthDisplayId).innerText = `Selected text length: ${length}`;
+        }
+
+        function copyText(elementId, buttonId) {
+            const textarea = document.getElementById(elementId);
+            textarea.select();
+            document.execCommand('copy');
+            const button = document.getElementById(buttonId);
+            button.innerText = 'Copied!';
+            button.classList.remove('btn-primary');
+            button.classList.add('btn-success');
+            setTimeout(() => {
+                button.innerText = 'Copy';
+                button.classList.remove('btn-success');
+                button.classList.add('btn-primary');
+            }, 1000);
+        }
+
+        function updateLineNumbers(event) {
+            const textarea = event.target;
+            const lineNumbers = textarea.id === 'sqlInput' ? 'sqlLineNumbers' : 'jsonLineNumbers';
+            const lines = textarea.value.split('\n').length;
+            let lineNumberHtml = '';
+            for (let i = 1; i <= lines; i++) {
+                lineNumberHtml += `${i}<br>`;
+            }
+            document.getElementById(lineNumbers).innerHTML = lineNumberHtml;
+        }
+
+        function syncScroll(event) {
+            const textarea = event.target;
+            const lineNumbers = textarea.id === 'sqlInput' ? 'sqlLineNumbers' : 'jsonLineNumbers';
+            document.getElementById(lineNumbers).scrollTop = textarea.scrollTop;
+        }
+
+        // Initialize line numbers
+        updateLineNumbers({ target: document.getElementById('sqlInput') });
+        updateLineNumbers({ target: document.getElementById('jsonOutput') });
+    </script>
+</body>
+</html>
