@@ -29,5 +29,7 @@ urlpatterns = [
     path('certifications/', include('certifications.urls')),
     path('bookings/', include('bookings.urls')),
     path('binblocking/', include('binblocking.urls')),
+    path('sql2json/', TemplateView.as_view(template_name='sql2json.html'), name='sql2json'),
+    path('sql2json_object/', TemplateView.as_view(template_name='sql2json_object.html'), name='sql2json_object'),
 
 ]
