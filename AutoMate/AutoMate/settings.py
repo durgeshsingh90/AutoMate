@@ -61,7 +61,7 @@ LOGGING = {
     },
     'handlers': {
         'file': {
-            'level': 'INFO',
+            'level': 'DEBUG',
             'class': 'logging.FileHandler',
             'filename': str(LOG_DIR / 'django.log'),  # Dynamic path for the log file
             'formatter': 'standard',
