@@ -1,14 +1,11 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
-from .db_utils import run_sqlplus_query
 from .models import DatabaseConnection
-from django.http import HttpResponseRedirect
+from datetime import datetime
 import subprocess  
 import logging
-import json
-from datetime import date, datetime
 import re
-
+import json
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
 
@@ -107,21 +104,17 @@ def is_consecutive(bin1, bin2):
     return len(bin1) == len(bin2) and int(bin2) == int(bin1) + 1
 
 def print_processed_data(processed_bins, production_data):
-    """
-    Process and print the production data by matching with processed bins.
-    """
-    logger.info("Printing and processing production data.")
-    logger.debug(f"Processed bins: {processed_bins}")
-
     # Convert production data into a list of rows
     production_rows = production_data.splitlines()
     production_rows_copy = production_rows.copy()
 
     # Split processed_bins into a list
     processed_bin_list = processed_bins.splitlines()
-    russian_lowbin = None
-    russian_highbin = None
     modified_row_1 = None
+    modified = False  # Flag to indicate if any modification has been made
+
+    # Initialize lowbin to handle cases where it might not be set inside the loop
+    lowbin = None
 
     # Get today's date in the format YYYY-MM-DD
     today_date = datetime.today().strftime('%Y-%m-%d')
@@ -129,104 +122,74 @@ def print_processed_data(processed_bins, production_data):
     # Loop through each bin or range in processed_bins and check against production_data
     for bin_range in processed_bin_list:
         bin_range = bin_range.strip()  # Clean up any extra spaces
-        found = False
 
         # Check if the processed_bin is a range
         if '-' in bin_range:
             start_bin, end_bin = bin_range.split('-')
             start_bin = start_bin.strip()
+            start_bin = start_bin.ljust(15, '0')
             end_bin = end_bin.strip()
+            end_bin = end_bin.ljust(15, '9')
+
         else:
             start_bin = end_bin = bin_range.strip()
-
+            start_bin = start_bin.ljust(15, '0')
+            end_bin = end_bin.ljust(15, '9')
+        
+        logger.debug(f"bin_range: {bin_range}")
+        logger.debug(f"start_bin: {start_bin}, end_bin: {end_bin}")
         # Process production rows and modify as required
         for i, row in enumerate(production_rows):
+            # Ensure the row contains 'VALUES ('
+            if 'VALUES (' not in row:
+                continue
+            
+            # Extract the LOWBIN and HIGHBIN from the row
+            values_part = row.split('VALUES (')[1]
             try:
-                # Extract the LOWBIN and HIGHBIN from the row (assuming fixed format as in your example)
-                values_part = row.split('VALUES (')[1]
                 lowbin = values_part.split(',')[0].strip()
                 highbin = values_part.split(',')[1].strip()
+                logger.debug(f"lowbin: {lowbin}, highbin: {highbin}")
+                logger.debug(f"Comparing start_bin: {start_bin} with lowbin: {lowbin} and highbin: {highbin}")
+                logger.debug(f"Entering the loop for row {i}")
+                logger.debug(f"lowbin: {lowbin}, highbin: {highbin}")
+                logger.debug(f"Comparing start_bin: {start_bin} with lowbin: {lowbin} and highbin: {highbin}")
+                if int(start_bin) >= int(lowbin) and int(start_bin) <= int(highbin):
+                    logger.debug(f"Condition met for start_bin: {start_bin}")
+                    logger.debug(f"Working")
+                    modified_highbin = (start_bin + '0' * (len(highbin) - len(start_bin)))
+                    modified_highbin = str(int(modified_highbin) - 1).zfill(len(highbin))
+                    modified_row = row.replace(f"{highbin}", f"{modified_highbin}")
+                    production_rows_copy[i] = modified_row
 
-                # Modify highbin for start_bin range
-                modified_highbin = (start_bin + '0' * (len(highbin) - len(start_bin)))
-                modified_highbin = str(int(modified_highbin) - 1).zfill(len(highbin))
-                modified_row = row.replace(f"{highbin}", f"{modified_highbin}")
-                production_rows_copy[i] = modified_row
-
-                # Modify lowbin for end_bin range
-                incremented_end_bin = str(int(end_bin) + 1)
-                modified_lowbin_1 = incremented_end_bin + '0' * (len(lowbin) - len(incremented_end_bin))
-                modified_row_1 = row.replace(f"{lowbin}", f"{modified_lowbin_1}")
-                production_rows_copy.append(modified_row_1)
-
-                logger.debug(f"Bin range {start_bin} - {end_bin} found and modified in row {i + 1}.")
-                found = True
-                break
+                    # Modify lowbin for end_bin range
+                    incremented_end_bin = str(int(end_bin) + 1)
+                    modified_lowbin_1 = incremented_end_bin + '0' * (len(lowbin) - len(incremented_end_bin))
+                    modified_row_1 = row.replace(f"{lowbin}", f"{modified_lowbin_1}")
+                    production_rows_copy.append(modified_row_1)
+                    logger.debug(f"modified_row: {modified_row}, modified_row_1: {modified_row_1}")
+                    logger.debug(f"production_rows_copy: {production_rows_copy}")
+                    modified = True  # Set the flag to true since modification was done
+                    break
+                
             except (IndexError, ValueError) as e:
-                logger.error(f"Error processing row {i + 1}: {e}")
+                # Handle potential parsing or conversion errors gracefully
+                print(f"Error processing row {i + 1}: {e}")
                 continue
 
-        if not found:
-            logger.warning(f"Bin range {start_bin} - {end_bin} not found in production data.")
-
-        # Store the processed number for the Russian entry creation based on the end_bin
-        if not russian_lowbin and not russian_highbin:
-            # Calculate the required length of the BIN (assuming it's the same as the existing lowbin length)
-            required_length = len(lowbin)
-
-            # Create the lowbin by appending zeros to the end of the start_bin
-            russian_lowbin = start_bin + '0' * (required_length - len(start_bin))
-            
-            # Create the highbin by appending nines to the end of the end_bin
-            russian_highbin = end_bin + '9' * (required_length - len(end_bin))
-
-    # After processing, add the new Russian entry if we have valid data
-    if russian_lowbin and russian_highbin:
+    # After processing, add the new Russian entry if we have valid data and modifications were made
+    if modified and start_bin and end_bin:
         russian_insert_statement = (
-            f"INSERT INTO PROD_SHCEXTBINDB (LOWBIN, HIGHBIN, DESCRIPTION, BIN_LENGTH, CARDPRODUCT, COUNTRY_CODE, DESTINATION, ENTITY_ID, FILE_DATE, FILE_NAME, FILE_VERSION, NETWORK_CONFIG, NETWORK_DATA, LEVEL, STATUS) "
-            f"VALUES ({russian_lowbin}, {russian_highbin}, 'Russian', None, 'Russian', None, '500', None, {today_date}, 'EUFILE', '1.10', None, None, 0, 'B');"
+            f"INSERT INTO oasis77.SHCEXTBINDB (LOWBIN, HIGHBIN, O_LEVEL, STATUS, DESCRIPTION, DESTINATION, ENTITY_ID, CARDPRODUCT, NETWORK_DATA, FILE_NAME, FILE_VERSION, FILE_DATE, COUNTRY_CODE, NETWORK_CONFIG, BIN_LENGTH) "
+            f"VALUES ('{start_bin}', '{end_bin}', '0', 'A', 'RUSSIAN-                                          ', '500', '*', 'RUSSIAN-            ', NULL, 'EUFILE    ', '1.10    ', '{today_date}', NULL, NULL, NULL);"
         )
-        logger.info("New Russian entry created.")
         production_rows_copy.append(russian_insert_statement)
 
-    logger.debug("Sorting production rows.")
     # Sort the SQL statements by LOWBIN
-    sorted_production_rows_copy = sorted(production_rows_copy, key=lambda x: int(re.search(r"VALUES \((\d+),", x).group(1)))
+    sorted_production_rows_copy = sorted(production_rows_copy, key=lambda x: int(re.search(r"VALUES \((\d+),", x).group(1)) if re.search(r"VALUES \((\d+),", x) else float('inf'))
 
-    logger.info("Processed data printing complete.")
     return sorted_production_rows_copy
 
-def run_sqlplus_query(username, password, dsn, sql_script):
-    """
-    Run a SQL*Plus query or script using subprocess.
-    """
-    try:
-        # Construct the SQL*Plus command
-        sqlplus_command = f'sqlplus -S {username}/{password}@{dsn}'
-        
-        # Run the SQL script using SQL*Plus
-        process = subprocess.Popen(
-            sqlplus_command,
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            shell=True,
-            text=True
-        )
-        
-        # Pass the SQL script to SQL*Plus
-        stdout, stderr = process.communicate(sql_script)
-        
-        if process.returncode != 0:
-            logger.error(f"SQL*Plus error: {stderr}")
-            return None
-        else:
-            logger.info(f"SQL*Plus output: {stdout}")
-            return stdout.strip()
-        
-    except Exception as e:
-        logger.error(f"An error occurred while running SQL*Plus: {e}")
-        return None
 
 def query_view(request):
     """
@@ -276,59 +239,136 @@ def query_view(request):
         'insert_statement': '\n'.join(sorted_production_rows_copy),
     })
 
-import subprocess
+
 
 def connect_to_oracle_sqlplus(connection):
     """
     Generate SQL INSERT statements for the data retrieved from the Oracle database using SQL*Plus.
     """
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.DEBUG)  # Ensure debug messages are shown
+    handler = logging.StreamHandler()
+    handler.setLevel(logging.DEBUG)
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+
     logger.info(f"Generating SQL insert statements for environment: {connection.environment}")
+    
     try:
         # Construct the SQL*Plus connection string
         conn_str = f"{connection.username}/{connection.password}@{connection.DatabaseTNS}"
+        logger.debug(f"Connection string: {conn_str}")
 
         # Construct the query to fetch data
-        query = f"SELECT * FROM {connection.table_name} ORDER BY LOWBIN;"
+        query = f"SELECT JSON_OBJECT(*) AS JSON_DATA FROM (SELECT * FROM oasis77.SHCEXTBINDB ORDER BY LOWBIN) WHERE ROWNUM <= 2;"
+        logger.debug(f"SQL query: {query}")
 
         # Command to execute using SQL*Plus
-        sqlplus_command = f"sqlplus -S {conn_str}"
+        sqlplus_command = f"sqlplus {conn_str}"
+        logger.debug(f"SQL*Plus command: {sqlplus_command}")
 
         # Run the SQL query using subprocess
         result = subprocess.run(sqlplus_command, input=query, text=True, capture_output=True, shell=True)
+        logger.debug(f"SQL*Plus result: {result}")
+
+        # Log the query used for login
+        logger.info(f"Login query: {sqlplus_command}")
 
         # Check for errors in SQL*Plus execution
-        if result.returncode != 0:
+        if result.returncode != 0 or "ORA-" in result.stderr:
             logger.error(f"SQL*Plus error for {connection.environment}: {result.stderr}")
+            logger.info("Login failed")
             return []
 
-        # Parse the output from SQL*Plus
+        # Log the output from SQL*Plus
         output = result.stdout.strip().splitlines()
+        logger.debug(f"Output from SQL*Plus: {output}")
 
-        # Skip lines until we find the result set
-        data_start_index = output.index('---') + 1 if '---' in output else 0
-        data = output[data_start_index:]
+        # Combine lines to form complete JSON objects
+        json_lines = []
+        current_json = ""
+        inside_json = False
+        for line in output:
+            if line.startswith('{'):
+                inside_json = True
+                current_json = line
+            elif inside_json:
+                current_json += line
+                if line.endswith('}'):
+                    json_lines.append(current_json)
+                    inside_json = False
+        logger.debug(f"Combined JSON lines: {json_lines}")
 
+        # Clean control characters from JSON lines
+        cleaned_json_lines = [re.sub(r'[\x00-\x1F\x7F]', '', line) for line in json_lines]
+        logger.debug(f"Cleaned JSON lines: {cleaned_json_lines}")
+
+        # Define the length and data type for each column
+        column_definitions = {
+            "LOWBIN": {"type": "CHAR", "length": 15},
+            "HIGHBIN": {"type": "CHAR", "length": 15},
+            "O_LEVEL": {"type": "NUMBER", "length": 1},
+            "STATUS": {"type": "CHAR", "length": 1},
+            "DESCRIPTION": {"type": "CHAR", "length": 50},
+            "DESTINATION": {"type": "CHAR", "length": 3},
+            "ENTITY_ID": {"type": "CHAR", "length": 1},
+            "CARDPRODUCT": {"type": "CHAR", "length": 20},
+            "NETWORK_DATA": {"type": "CHAR", "length": 10},
+            "FILE_NAME": {"type": "CHAR", "length": 10},
+            "FILE_VERSION": {"type": "CHAR", "length": 5},
+            "FILE_DATE": {"type": "DATE", "length": None},
+            "COUNTRY_CODE": {"type": "CHAR", "length": 3},
+            "NETWORK_CONFIG": {"type": "CHAR", "length": 10},
+            "BIN_LENGTH": {"type": "NUMBER", "length": 2}
+        }
+
+        # Convert the output to SQL INSERT statements
         insert_statements = []
-        # Process each line of data
-        for line in data:
-            row = dict(zip(['LOWBIN', 'HIGHBIN', 'DESCRIPTION'], line.split()))
-            ordered_columns = ['LOWBIN', 'HIGHBIN', 'DESCRIPTION']
-            remaining_columns = [col for col in row.keys() if col not in ordered_columns]
-            final_columns = ordered_columns + remaining_columns
+        for line in cleaned_json_lines:
+            logger.debug(f"Processing line: {line}")
+            try:
+                # Parse each line as JSON
+                data = json.loads(line)
+                logger.debug(f"Parsed JSON data: {data}")
 
-            columns = ', '.join(final_columns)
-            values = ', '.join(
-[f"""'{str(row[col]).replace("'", "''")}'""" if isinstance(row[col], str) else str(row[col]) for col in final_columns]
-            )
-            insert_statement = f"INSERT INTO {connection.table_name} ({columns}) VALUES ({values});"
-            insert_statements.append(insert_statement)
+                # Log the final JSON data
+                logger.info(f"Final JSON data: {json.dumps(data, indent=2)}")
 
-        logger.debug(f"Generated insert statements for {connection.environment}: {len(insert_statements)} statements.")
+                # Extract columns and values, treating all values as strings
+                columns = ', '.join(data.keys())
+                values = []
+                for key, value in data.items():
+                    col_def = column_definitions.get(key, {"type": "CHAR", "length": 255})
+                    if col_def["type"] == "CHAR" and value is not None:
+                        value = str(value).ljust(col_def["length"])
+                    elif col_def["type"] == "NUMBER" and value is not None:
+                        value = str(value).rjust(col_def["length"], '0')
+                    elif col_def["type"] == "DATE" and value is not None:
+                        value = f"TO_DATE('{value}', 'YYYY-MM-DD\"T\"HH24:MI:SS')"
+                    else:
+                        value = 'NULL'
+                    values.append(f"'{value}'" if value != 'NULL' else value)
+
+                values_str = ', '.join(values)
+
+                # Construct the SQL INSERT statement
+                insert_statement = f"INSERT INTO {connection.table_name} ({columns}) VALUES ({values_str});"
+                insert_statements.append(insert_statement)
+                logger.debug(f"Generated SQL INSERT statement: {insert_statement}")
+                logger.info(f"Generated SQL INSERT statement: {insert_statement}")
+
+            except json.JSONDecodeError as e:
+                logger.error(f"Error decoding JSON: {e}")
+                logger.error(f"Problematic line: {line}")
+                continue
+
+        logger.info("Generated SQL INSERT Statements:")
+        for statement in insert_statements:
+            logger.info(statement)
+
         return insert_statements
 
-    except FileNotFoundError as fnf_error:
-        logger.error(f"SQL*Plus executable not found: {fnf_error}")
-        return []
     except Exception as e:
-        logger.error(f"Unexpected error for {connection.environment}: {e}")
+        logger.error(f"Error while connecting to Oracle using SQL*Plus for {connection.environment}: {e}")
         return []

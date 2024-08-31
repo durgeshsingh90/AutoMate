@@ -14,6 +14,8 @@ document.addEventListener("DOMContentLoaded", function () {
     document.addEventListener('selectionchange', function () {
         const selectedText = window.getSelection().toString();
         const selectedTextLength = selectedText.length;
+
+        // Update the existing status bar instead of creating a new one
         document.getElementById('status-bar').textContent = `Selected Text Length: ${selectedTextLength}`;
     });
 });
@@ -36,16 +38,14 @@ function getCookie(name) {
 const csrftoken = getCookie('csrftoken'); // Get CSRF token from cookies
 
 async function parseLogsToJSON() {
-    const logData = document.getElementById('splunkLogs').value.trim(); // Fetch and trim the log data
+    const logData = document.getElementById('splunkLogs').value.trim(); 
 
     if (!logData) {
         document.getElementById('notification').textContent = "Please provide log data to parse.";
-        return false; // Return false to indicate no parsing was done
+        return false;
     }
 
     try {
-        console.log("Sending log data:", logData);
-
         const response = await fetch('/splunkparser/parse_logs/', {
             method: 'POST',
             headers: {
@@ -57,13 +57,14 @@ async function parseLogsToJSON() {
 
         const data = await response.json();
 
-        if (data.status === 'error' || data.status === 'warning') {
-            document.getElementById('notification').textContent = `Warning: ${data.message}`;
-            document.getElementById('output').textContent = JSON.stringify(data.result, null, 4);
-        } else {
-            document.getElementById('notification').textContent = '';
-            document.getElementById('output').textContent = JSON.stringify(data.result, null, 4);
-        }
+        document.getElementById('output').textContent = JSON.stringify(data.result, null, 4);
+
+        // Change class to JSON for color coding
+        document.getElementById('output').className = 'output-area border p-3 bg-light language-json';
+        
+        // Highlight syntax
+        Prism.highlightElement(document.getElementById('output'));
+
         return true;
     } catch (error) {
         document.getElementById('notification').textContent = `Error: ${error.message}`;
@@ -71,36 +72,93 @@ async function parseLogsToJSON() {
     }
 }
 
+
 async function parseLogsToYAML() {
-    const output = document.getElementById('output').textContent.trim();
-    if (!output) {
-        const jsonParsed = await parseLogsToJSON();
-        if (!jsonParsed) {
-            return;
-        }
+    // Fetch the current content of the text box
+    const logData = document.getElementById('splunkLogs').value.trim();
+    
+    // Ensure there is input data to parse
+    if (!logData) {
+        document.getElementById('notification').textContent = "Please provide log data to parse.";
+        return;
     }
 
     try {
-        const jsonData = JSON.parse(document.getElementById('output').textContent);
-
-        // Ensure MTI is always on top
-        const sortedJsonData = { MTI: jsonData.MTI, ...jsonData };
-        delete sortedJsonData.MTI;
-
-        let yaml = jsyaml.dump(sortedJsonData, {
-            quotingType: '"', 
-            forceQuotes: true,
-            sortKeys: false, 
+        // Parse the logs to JSON first to get the latest data
+        const response = await fetch('/splunkparser/parse_logs/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrftoken
+            },
+            body: JSON.stringify({ log_data: logData })
         });
 
+        const data = await response.json();
+
+        // Check if there's an error in the response
+        if (data.status === 'error' || data.status === 'warning') {
+            document.getElementById('notification').textContent = `Warning: ${data.message}`;
+            document.getElementById('output').textContent = JSON.stringify(data.result, null, 4);
+            return;
+        }
+
+        const jsonData = data.result;
+
+        // Debugging: Log the JSON data to verify MTI existence
+        console.log("Parsed JSON Data:", jsonData);
+
+        // Ensure MTI is on top by creating a new object and preserving the order
+        let sortedJsonData = {};
+
+        if (jsonData && jsonData.MTI) {
+            // Add MTI first
+            sortedJsonData.MTI = jsonData.MTI;
+            // Copy the remaining properties except MTI
+            Object.keys(jsonData).forEach((key) => {
+                if (key !== 'MTI') {
+                    sortedJsonData[key] = jsonData[key];
+                }
+            });
+        } else {
+            // If MTI does not exist, use the original data
+            sortedJsonData = jsonData;
+        }
+
+        // Debugging: Log the sorted JSON data to verify MTI is on top
+        console.log("Sorted JSON Data for YAML:", sortedJsonData);
+
+        // Convert to YAML
+        let yaml = jsyaml.dump(sortedJsonData, {
+            quotingType: '"',
+            forceQuotes: true,
+            sortKeys: false,
+        });
+
+        // Remove unnecessary quotes around keys
         yaml = yaml.replace(/"([^"]+)":/g, '$1:');
 
+        // Debugging: Log the final YAML to verify the output
+        console.log("Final YAML Output:", yaml);
+
+        // Display YAML output
         document.getElementById('output').textContent = yaml;
+
+        // Change class to YAML for color coding
+        document.getElementById('output').className = 'output-area border p-3 bg-light language-yaml';
+
+        // Highlight syntax
+        Prism.highlightElement(document.getElementById('output'));
+
         document.getElementById('notification').textContent = "";
+
     } catch (error) {
-        document.getElementById('notification').textContent = `Error: Invalid JSON output. Please parse to JSON first.`;
+        document.getElementById('notification').textContent = `Error: ${error.message}`;
+        console.error("Error parsing to YAML:", error);
     }
 }
+
+
 
 function copyOutput() {
     const output = document.getElementById('output').textContent;

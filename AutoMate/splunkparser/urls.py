@@ -4,6 +4,8 @@ from django.urls import path
 from .views import parse_logs
 from django.shortcuts import render
 
+app_name = 'splunkparser'
+
 def index(request):
     return render(request, 'splunkparser/parser.html')
 
