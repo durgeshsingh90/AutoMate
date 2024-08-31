@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function () {
     // Load saved data from localStorage on page load
     const savedLogData = localStorage.getItem('splunkLogs');
     if (savedLogData) {
@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     // Save data to localStorage when input changes
-    document.getElementById('splunkLogs').addEventListener('input', function() {
+    document.getElementById('splunkLogs').addEventListener('input', function () {
         localStorage.setItem('splunkLogs', this.value);
     });
 });
@@ -29,14 +29,14 @@ function getCookie(name) {
 const csrftoken = getCookie('csrftoken'); // Get CSRF token from cookies
 
 async function parseLogsToJSON() {
+    const logData = document.getElementById('splunkLogs').value.trim(); // Fetch and trim the log data
+
+    if (!logData) {
+        document.getElementById('notification').textContent = "Please provide log data to parse.";
+        return false; // Return false to indicate no parsing was done
+    }
+
     try {
-        const logData = document.getElementById('splunkLogs').value.trim(); // Fetch and trim the log data
-
-        if (!logData) {
-            document.getElementById('notification').textContent = "Please provide log data to parse.";
-            return;
-        }
-
         // Debug: Log the data before sending it
         console.log("Sending log data:", logData);
 
@@ -58,20 +58,46 @@ async function parseLogsToJSON() {
             document.getElementById('notification').textContent = '';
             document.getElementById('output').textContent = JSON.stringify(data.result, null, 4);
         }
+        return true; // Return true to indicate parsing was done successfully
     } catch (error) {
         document.getElementById('notification').textContent = `Error: ${error.message}`;
+        return false; // Return false to indicate an error occurred
     }
 }
 
-function parseLogsToYAML() {
-    const output = document.getElementById('output').textContent;
+async function parseLogsToYAML() {
+    const output = document.getElementById('output').textContent.trim();
+    if (!output) {
+        const jsonParsed = await parseLogsToJSON();
+        if (!jsonParsed) {
+            return;
+        }
+    }
+
     try {
-        const yaml = jsyaml.dump(JSON.parse(output)); // Convert JSON to YAML
+        const jsonData = JSON.parse(document.getElementById('output').textContent);
+
+        // Ensure MTI is always on top
+        const sortedJsonData = { MTI: jsonData.MTI, ...jsonData };
+        delete sortedJsonData.MTI; // Remove duplicated MTI from the original data
+
+        // Convert JSON to YAML with quotes for all values, but remove quotes from keys manually
+        let yaml = jsyaml.dump(sortedJsonData, {
+            quotingType: '"', // Ensure all values are double-quoted
+            forceQuotes: true, // Force quotes for all values
+            sortKeys: false, // Keep the order of keys as in sortedJsonData
+        });
+
+        // Remove quotes from all keys by using regex
+        yaml = yaml.replace(/"([^"]+)":/g, '$1:');
+
         document.getElementById('output').textContent = yaml;
+        document.getElementById('notification').textContent = ""; // Clear any previous error message
     } catch (error) {
-        document.getElementById('notification').textContent = `Error: ${error.message}`;
+        document.getElementById('notification').textContent = `Error: Invalid JSON output. Please parse to JSON first.`;
     }
 }
+
 
 function copyOutput() {
     const output = document.getElementById('output').textContent;

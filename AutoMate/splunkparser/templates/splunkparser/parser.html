@@ -1,4 +1,4 @@
-{% load static%}
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -20,6 +20,16 @@
             margin-bottom: 20px;
             color: red;
             font-weight: bold;
+        }
+        #status-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: #f1f1f1;
+            padding: 10px;
+            text-align: right;
+            border-top: 1px solid #ccc;
         }
     </style>
 </head>
@@ -44,6 +54,9 @@
             </div>
         </div>
     </div>
+
+    <!-- Status bar to display the length of selected text -->
+    <div id="status-bar">Selected Text Length: 0</div>
 
     <!-- CSRF Token is included as a hidden input -->
     <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
