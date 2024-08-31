@@ -4,105 +4,157 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Splunk RRN</title>
+    <!-- Bootstrap CSS CDN -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #f0f0f0;
-        }
-        .container {
+        /* Flexbox container and input styling */
+        .flex-container {
             display: flex;
             flex-direction: row;
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-        }
-        .textarea-container {
-            display: flex;
-            flex-direction: column;
-            margin-right: 20px;
-        }
-        textarea {
-            width: 300px;
-            height: 300px;
-            margin-bottom: 10px;
-            padding: 10px;
-            font-size: 14px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-        .textarea-container label {
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        #copyButton {
-            margin-top: 10px;
-            padding: 10px 20px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        #copyButton:hover {
-            background-color: #0056b3;
-        }
-        /* Style for the Home button */
-        .home-btn {
-            position: fixed;
-            top: 10px;
-            left: 10px;
-            padding: 10px 20px;
-            background-color: #007bff; /* Blue color */
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            font-weight: bold;
-            z-index: 999; /* Ensure it's on top of other elements */
+            align-items: flex-start;
         }
 
-        /* Hover effect for the Home button */
-        .home-btn:hover {
-            background-color: #0056b3; /* Darker shade of blue */
+        .input-section {
+            margin-right: 20px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .line-numbers {
+            border: 1px solid #ced4da;
+            background-color: #f8f9fa;
+            padding: 8px;
+            text-align: right;
+            color: #6c757d;
+            user-select: none;
+            width: 30px;
+            height: 100%;
+            overflow: hidden;
+            position: absolute;
+            left: 0;
+            top: 0;
+        }
+
+        .textarea-wrapper {
+            position: relative;
+            display: flex;
+        }
+
+        #inputNumbers {
+            padding-left: 40px; /* Space for line numbers */
+            width: 100%;
+            resize: vertical;
+        }
+
+        .output-section {
+            flex: 2;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
+
+        #outputNumbers {
+            flex-grow: 1;
+            resize: both;
+            overflow: auto;
+            min-height: 300px;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .copy-button {
+            align-self: flex-start;
+        }
+
+        .line-status {
+            margin-top: 5px;
+            font-size: 14px;
+            color: #6c757d;
         }
     </style>
 </head>
-<body>
-    <a href="{% url 'first_page:home' %}" class="home-btn">Home</a>
-    {% comment %} <h1>Splunk RRN response generator</h1> {% endcomment %}
-
-    <div class="container">
-        <div class="textarea-container">
-            <label for="inputNumbers">Enter RRN numbers:</label>
-            <textarea id="inputNumbers" rows="10" cols="30" oninput="modifyNumbers()"></textarea>
-        </div>
-        <div class="textarea-container">
-            <label for="outputNumbers">Splunk Search:</label>
-            <textarea id="outputNumbers" rows="10" cols="30" readonly></textarea>
-            <button id="copyButton" onclick="copyToClipboard()">Copy</button>
+<body class="bg-light d-flex justify-content-center align-items-center vh-100">
+    <a href="{% url 'first_page:home' %}" class="btn btn-primary position-fixed" style="top: 10px; left: 10px;">Home</a>
+    
+    <div class="container bg-white p-4 rounded shadow d-flex">
+        <div class="flex-container w-100">
+            <div class="input-section">
+                <label for="inputNumbers" class="font-weight-bold">Enter RRN numbers:</label>
+                <div class="textarea-wrapper">
+                    <div id="lineNumbers" class="line-numbers">1</div>
+                    <textarea id="inputNumbers" class="form-control mb-2" rows="10" oninput="modifyNumbers(); updateLineNumbers();"></textarea>
+                </div>
+                <!-- Checkbox for Additional Options -->
+                <div class="form-check">
+                    <input type="checkbox" id="addIndex" class="form-check-input" onchange="modifyNumbers()" checked>
+                    <label for="addIndex" class="form-check-label">Add "index = 'application_omnipay'"</label>
+                </div>
+                <!-- Checkboxes for Host Options -->
+                <div class="form-check">
+                    <input type="checkbox" id="addHost1" class="form-check-input" onchange="modifyNumbers()">
+                    <label for="addHost1" class="form-check-label">Add "host = a4pvap068"</label>
+                </div>
+                <div class="form-check">
+                    <input type="checkbox" id="addHost2" class="form-check-input" onchange="modifyNumbers()">
+                    <label for="addHost2" class="form-check-label">Add "host = a5pvap039"</label>
+                </div>
+                <div class="form-check">
+                    <input type="checkbox" id="addHost3" class="form-check-input" onchange="modifyNumbers()">
+                    <label for="addHost3" class="form-check-label">Add "host = a5pvap040"</label>
+                </div>
+                <!-- Status for Total Number of Lines -->
+                <div id="lineStatus" class="line-status">Total Lines: 1</div>
+                <!-- Button to Remove Empty Lines -->
+                <button class="btn btn-secondary mt-2" onclick="removeEmptyLines()">Remove Empty Lines</button>
+            </div>
+            <div class="output-section">
+                <label for="outputNumbers" class="font-weight-bold">Splunk Search:</label>
+                <!-- Enlarged Output Textarea -->
+                <textarea id="outputNumbers" class="form-control mb-2" readonly></textarea>
+                <button id="copyButton" class="btn btn-primary copy-button" onclick="copyToClipboard()">Copy</button>
+            </div>
         </div>
     </div>
 
+    <!-- Bootstrap JS, Popper.js, and jQuery -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
     <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+            // Load input from local storage
+            const savedInput = localStorage.getItem('inputNumbers');
+            if (savedInput) {
+                document.getElementById('inputNumbers').value = savedInput;
+                modifyNumbers();
+                updateLineNumbers(); // Update line numbers on load
+            }
+        });
+
         function modifyNumbers() {
             const input = document.getElementById('inputNumbers').value;
-            const lines = input.split('\n');
-            let modifiedLines = [];
+            localStorage.setItem('inputNumbers', input); // Save input to local storage
 
-            for (let line of lines) {
+            const addIndex = document.getElementById('addIndex').checked;
+            const addHost1 = document.getElementById('addHost1').checked;
+            const addHost2 = document.getElementById('addHost2').checked;
+            const addHost3 = document.getElementById('addHost3').checked;
+            const lines = input.split('\n').filter(line => line.trim() !== ''); // Filter out empty lines
+            let modifiedLines = [];
+            let useAnd = false; // To keep track if "AND" should be used between lines
+
+            // Loop through each line to identify modifications
+            for (let i = 0; i < lines.length; i++) {
+                let line = lines[i];
                 let modifiedLine = line;
                 let match = line.match(/"(\d{12})"/) || line.match(/(\d{12})/);
                 if (match) {
                     let originalNumber = match[1];
                     let modifiedNumber = '';
-                    for (let i = 0; i < originalNumber.length; i++) {
-                        modifiedNumber += '3' + originalNumber[i];
+                    for (let j = 0; j < originalNumber.length; j++) {
+                        modifiedNumber += '3' + originalNumber[j];
                     }
                     if (line.includes(`"${originalNumber}"`)) {
                         modifiedLine = line.replace(`"${originalNumber}"`, `"${originalNumber}" OR "${modifiedNumber}"`);
@@ -110,10 +162,57 @@
                         modifiedLine = line.replace(originalNumber, `"${originalNumber}" OR "${modifiedNumber}"`);
                     }
                 }
+
+                // Check if the current line contains "AND" after a number
+                if (line.trim().endsWith(" AND")) {
+                    useAnd = true; // Set flag to use "AND" for the next line
+                    modifiedLine = modifiedLine.replace(" AND", ""); // Remove the "AND" from the line
+                }
+
                 modifiedLines.push(modifiedLine);
             }
 
-            document.getElementById('outputNumbers').value = modifiedLines.join(' OR ');
+            // Construct the output with the correct separators
+            let output = "";
+            for (let i = 0; i < modifiedLines.length; i++) {
+                output += modifiedLines[i];
+                if (i < modifiedLines.length - 1) {
+                    output += useAnd ? ' AND ' : ' OR ';
+                    useAnd = false; // Reset the flag after using "AND"
+                }
+            }
+
+            // Add index and host options if checkboxes are checked
+            if (addIndex) {
+                let hosts = '';
+                if (addHost1) hosts += ' host = a4pvap068';
+                if (addHost2) hosts += ' host = a5pvap039';
+                if (addHost3) hosts += ' host = a5pvap040';
+                output = `index = "application_omnipay" ${hosts} ${output} | reverse`;
+            }
+
+            document.getElementById('outputNumbers').value = output;
+        }
+
+        function updateLineNumbers() {
+            const input = document.getElementById('inputNumbers');
+            const lineNumbers = document.getElementById('lineNumbers');
+            const lines = input.value.split('\n').filter(line => line.trim() !== ''); // Exclude empty lines
+            const totalLines = lines.length;
+
+            // Generate line numbers
+            lineNumbers.innerHTML = Array(totalLines).fill(0).map((_, i) => i + 1).join('<br>');
+
+            // Update total line count status
+            document.getElementById('lineStatus').textContent = `Total Lines: ${totalLines}`;
+        }
+
+        function removeEmptyLines() {
+            const input = document.getElementById('inputNumbers');
+            const nonEmptyLines = input.value.split('\n').filter(line => line.trim() !== ''); // Remove empty lines
+            input.value = nonEmptyLines.join('\n');
+            updateLineNumbers(); // Update line numbers after removing empty lines
+            modifyNumbers(); // Update Splunk search after removing empty lines
         }
 
         function copyToClipboard() {
