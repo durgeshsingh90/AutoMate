@@ -1,1 +1,2 @@
 AutoMate/logs/*.log
+AutoMate/db.sqlite3
