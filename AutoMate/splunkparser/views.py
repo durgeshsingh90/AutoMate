@@ -3,7 +3,6 @@ import re
 import logging
 import json
 import os
-
 # Configure logger for detailed logging
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -11,7 +10,7 @@ logger.setLevel(logging.DEBUG)
 # Load field definitions from the JSON file
 def load_field_definitions():
     try:
-        with open(os.path.join(os.path.dirname(__file__), 'field_definitions.json')) as f:
+        with open(os.path.join(os.path.dirname(__file__), 'omnipay_fields_definitions.json')) as f:
             field_definitions = json.load(f)
             logger.debug("Field definitions loaded successfully.")
             return field_definitions.get("fields", {})
@@ -88,19 +87,6 @@ def parse_iso8583(log_data):
             value = match.group(2)
             logger.debug(f"Field {field_number} detected with value: {value}")
 
-            # Retrieve field definition
-            field_def = FIELD_DEFINITIONS.get(field_number)
-            if field_def:
-                field_length = field_def.get('length')
-                
-                # Adjust the length if needed
-                if field_length:
-                    if field_number == '003':
-                        value = value.ljust(field_length, '0')
-                    elif field_number == '004':
-                        value = value.zfill(field_length)
-                    logger.debug(f"Adjusted {field_number} value to match length: {value}")
-
             # Special handling for BM 60, 61, and 62
             if field_number in ['060', '061', '062']:
                 value = parse_bm6x(value)
@@ -158,8 +144,14 @@ def parse_iso8583(log_data):
     return sorted_message
 
 def parse_emv_field_55(emv_data):
+    """
+    Parses the EMV field 55, which consists of multiple TLV (Tag-Length-Value) elements.
+    """
     parsed_tlvs = {}
     index = 0
+
+    # Get the subfield definitions for DE055
+    de055_subfields = FIELD_DEFINITIONS.get("DE055", {}).get("subfields", {})
 
     logger.debug(f"Parsing DE 55 data: {emv_data}")
 
@@ -173,7 +165,12 @@ def parse_emv_field_55(emv_data):
             tag += emv_data[index:index + 2]
             index += 2
 
-        # Read Length (1 byte or multiple bytes)
+        # Check if the tag is defined in the subfields of DE055
+        if tag not in de055_subfields:
+            logger.warning(f"Unknown tag {tag} found in DE 55 data")
+            continue
+
+        # Read Length (1 or more bytes)
         length = int(emv_data[index:index + 2], 16)
         index += 2
 
@@ -183,11 +180,17 @@ def parse_emv_field_55(emv_data):
             length = int(emv_data[index:index + length_of_length * 2], 16)
             index += length_of_length * 2
 
+        # Ensure that the value does not exceed the max length defined
+        max_length = de055_subfields[tag]["max_length"]
+        if length > max_length:
+            logger.warning(f"Value for tag {tag} exceeds max length; truncating to {max_length}")
+            length = max_length
+
         # Read Value based on the length
         value = emv_data[index:index + length * 2]
         index += length * 2
 
-        # Store the parsed TLV
+        # Store the parsed TLV using tag as key
         parsed_tlvs[tag] = value
         logger.debug(f"Parsed TLV {tag}: {value}")
 
