@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'certifications',
     'bookings',
     'binblocking',
+    'splunkparser',
 ]
 
 # Logging configuration
@@ -158,7 +159,10 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
+# Define the directory where collectstatic will collect all static files
+STATIC_ROOT = BASE_DIR / "staticfiles"  # or os.path.join(BASE_DIR, 'staticfiles')
 
+# Additional directories for static files from different apps
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     BASE_DIR / "first_page/static",
@@ -167,6 +171,7 @@ STATICFILES_DIRS = [
     BASE_DIR / "bookings/static",
     BASE_DIR / "bookings/static",
     BASE_DIR / "binblocking/static",
+    BASE_DIR / "splunkparser/static",
 
     # Add other app static directories as needed
 ]

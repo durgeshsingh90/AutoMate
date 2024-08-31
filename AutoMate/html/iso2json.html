@@ -40,12 +40,36 @@
 
     <script>
         let message = {};
+        let de007Parts = []; // Array to store parts of DE007
+        let bm43Parts = []; // Array to store parts of BM 43
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDataFromLocalStorage(); // Load data from localStorage on page load
+        });
+
+        document.getElementById('splunkLogs').addEventListener('input', function() {
+            saveDataToLocalStorage(); // Save data to localStorage whenever input changes
+        });
+
+        function saveDataToLocalStorage() {
+            const splunkLogs = document.getElementById('splunkLogs').value;
+            localStorage.setItem('splunkLogs', splunkLogs);
+        }
+
+        function loadDataFromLocalStorage() {
+            const savedData = localStorage.getItem('splunkLogs');
+            if (savedData) {
+                document.getElementById('splunkLogs').value = savedData;
+            }
+        }
 
         function parseIso8583() {
             const input = document.getElementById("splunkLogs").value;
             const lines = input.split("\n");
             message = {}; // Reset message object
-            
+            de007Parts = []; // Reset DE007 parts
+            bm43Parts = []; // Reset BM 43 parts
+
             // Extract MTI
             const mtiMatch = lines[0].match(/msgno\[\s*\d+\]<(.+)>/);
             if (mtiMatch) {
@@ -69,9 +93,40 @@
                         value = parseBM6x(value); // Parse BM 60, 61, 62 with custom logic
                     }
 
+                    // Special handling for EMV Field 55
+                    if (fieldNumber === '055') {
+                        value = parseEMVField55(value); // Parse EMV Field 55 using TLV logic
+                    }
+
+                    // Handling for DE007
+                    if (fieldNumber === '007') {
+                        de007Parts.push(value); // Collect parts of DE007
+                        continue; // Skip adding to message directly for now
+                    }
+
+                    // Handling for BM 43
+                    if (fieldNumber === '043') {
+                        bm43Parts.push(value.trim()); // Collect parts of BM 43, trim to remove any extra spaces
+                        continue; // Skip adding to message directly for now
+                    }
+
                     message[`DE${fieldNumber}`] = value; // Store value (object or string) directly
                 }
             }
+
+            // Combine and pad DE007
+            if (de007Parts.length > 0) {
+                let combinedDE007 = de007Parts.join(''); // Merge all parts
+                message["DE007"] = combinedDE007.padStart(10, '0'); // Pad to 10 characters with leading zeros
+            }
+
+            // Combine parts of BM 43
+            if (bm43Parts.length > 0) {
+                message["DE043"] = bm43Parts.join(' ').trim(); // Merge parts with a space separator and trim any extra spaces
+            }
+
+            // Sort message by keys in ascending order
+            message = sortObjectByKey(message);
         }
 
         function parseBM6x(value) {
@@ -93,6 +148,52 @@
             });
 
             return parsedFields;
+        }
+
+        function parseEMVField55(emvData) {
+            const parsedTLVs = {};
+            let index = 0;
+
+            while (index < emvData.length) {
+                // Read Tag
+                let tag = emvData.substr(index, 2);
+                index += 2;
+
+                // Check if the tag is a two-byte tag
+                if ((parseInt(tag, 16) & 0x1F) === 0x1F) {
+                    tag += emvData.substr(index, 2);
+                    index += 2;
+                }
+
+                // Read Length
+                let length = parseInt(emvData.substr(index, 2), 16);
+                index += 2;
+
+                // Check for lengths greater than 127, which means the length is extended
+                if (length > 127) {
+                    const lengthOfLength = length - 128; // Number of bytes for length
+                    length = parseInt(emvData.substr(index, lengthOfLength * 2), 16);
+                    index += lengthOfLength * 2;
+                }
+
+                // Read Value
+                const value = emvData.substr(index, length * 2);
+                index += length * 2;
+
+                // Store the parsed TLV
+                parsedTLVs[tag] = value;
+            }
+
+            return parsedTLVs;
+        }
+
+        function sortObjectByKey(obj) {
+            const sortedKeys = Object.keys(obj).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+            const sortedObj = {};
+            sortedKeys.forEach(key => {
+                sortedObj[key] = obj[key];
+            });
+            return sortedObj;
         }
 
         function parseToJSON() {
