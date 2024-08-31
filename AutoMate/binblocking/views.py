@@ -5,7 +5,7 @@ from datetime import datetime
 import subprocess  
 import logging
 import re
-
+import json
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
 
@@ -110,8 +110,6 @@ def print_processed_data(processed_bins, production_data):
 
     # Split processed_bins into a list
     processed_bin_list = processed_bins.splitlines()
-    russian_lowbin = None
-    russian_highbin = None
     modified_row_1 = None
     modified = False  # Flag to indicate if any modification has been made
 
@@ -124,31 +122,41 @@ def print_processed_data(processed_bins, production_data):
     # Loop through each bin or range in processed_bins and check against production_data
     for bin_range in processed_bin_list:
         bin_range = bin_range.strip()  # Clean up any extra spaces
-        found = False
 
         # Check if the processed_bin is a range
         if '-' in bin_range:
             start_bin, end_bin = bin_range.split('-')
             start_bin = start_bin.strip()
+            start_bin = start_bin.ljust(15, '0')
             end_bin = end_bin.strip()
+            end_bin = end_bin.ljust(15, '9')
+
         else:
             start_bin = end_bin = bin_range.strip()
-
+            start_bin = start_bin.ljust(15, '0')
+            end_bin = end_bin.ljust(15, '9')
+        
+        logger.debug(f"bin_range: {bin_range}")
+        logger.debug(f"start_bin: {start_bin}, end_bin: {end_bin}")
         # Process production rows and modify as required
         for i, row in enumerate(production_rows):
             # Ensure the row contains 'VALUES ('
             if 'VALUES (' not in row:
                 continue
-
+            
             # Extract the LOWBIN and HIGHBIN from the row
             values_part = row.split('VALUES (')[1]
             try:
                 lowbin = values_part.split(',')[0].strip()
                 highbin = values_part.split(',')[1].strip()
-                
-                # Check if bin_range falls within lowbin and highbin
-                if int(start_bin) >= int(lowbin) and int(end_bin) <= int(highbin):
-                    # Modify highbin for start_bin range
+                logger.debug(f"lowbin: {lowbin}, highbin: {highbin}")
+                logger.debug(f"Comparing start_bin: {start_bin} with lowbin: {lowbin} and highbin: {highbin}")
+                logger.debug(f"Entering the loop for row {i}")
+                logger.debug(f"lowbin: {lowbin}, highbin: {highbin}")
+                logger.debug(f"Comparing start_bin: {start_bin} with lowbin: {lowbin} and highbin: {highbin}")
+                if int(start_bin) >= int(lowbin) and int(start_bin) <= int(highbin):
+                    logger.debug(f"Condition met for start_bin: {start_bin}")
+                    logger.debug(f"Working")
                     modified_highbin = (start_bin + '0' * (len(highbin) - len(start_bin)))
                     modified_highbin = str(int(modified_highbin) - 1).zfill(len(highbin))
                     modified_row = row.replace(f"{highbin}", f"{modified_highbin}")
@@ -159,32 +167,21 @@ def print_processed_data(processed_bins, production_data):
                     modified_lowbin_1 = incremented_end_bin + '0' * (len(lowbin) - len(incremented_end_bin))
                     modified_row_1 = row.replace(f"{lowbin}", f"{modified_lowbin_1}")
                     production_rows_copy.append(modified_row_1)
-
-                    found = True
+                    logger.debug(f"modified_row: {modified_row}, modified_row_1: {modified_row_1}")
+                    logger.debug(f"production_rows_copy: {production_rows_copy}")
                     modified = True  # Set the flag to true since modification was done
                     break
-
+                
             except (IndexError, ValueError) as e:
                 # Handle potential parsing or conversion errors gracefully
                 print(f"Error processing row {i + 1}: {e}")
                 continue
 
-        # Store the processed number for the Russian entry creation based on the end_bin
-        if modified and not russian_lowbin and not russian_highbin and lowbin:
-            # Calculate the required length of the BIN (assuming it's the same as the existing lowbin length)
-            required_length = len(lowbin)
-
-            # Create the lowbin by appending zeros to the end of the start_bin
-            russian_lowbin = start_bin + '0' * (required_length - len(start_bin))
-            
-            # Create the highbin by appending nines to the end of the end_bin
-            russian_highbin = end_bin + '9' * (required_length - len(end_bin))
-
     # After processing, add the new Russian entry if we have valid data and modifications were made
-    if modified and russian_lowbin and russian_highbin:
+    if modified and start_bin and end_bin:
         russian_insert_statement = (
             f"INSERT INTO oasis77.SHCEXTBINDB (LOWBIN, HIGHBIN, O_LEVEL, STATUS, DESCRIPTION, DESTINATION, ENTITY_ID, CARDPRODUCT, NETWORK_DATA, FILE_NAME, FILE_VERSION, FILE_DATE, COUNTRY_CODE, NETWORK_CONFIG, BIN_LENGTH) "
-            f"VALUES ('{russian_lowbin}', '{russian_highbin}', '0', 'A', 'RUSSIAN-                                          ', '500', '*', 'RUSSIAN-            ', NULL, 'EUFILE    ', '1.10    ', '{today_date}', NULL, NULL, NULL);"
+            f"VALUES ('{start_bin}', '{end_bin}', '0', 'A', 'RUSSIAN-                                          ', '500', '*', 'RUSSIAN-            ', NULL, 'EUFILE    ', '1.10    ', '{today_date}', NULL, NULL, NULL);"
         )
         production_rows_copy.append(russian_insert_statement)
 
@@ -192,6 +189,7 @@ def print_processed_data(processed_bins, production_data):
     sorted_production_rows_copy = sorted(production_rows_copy, key=lambda x: int(re.search(r"VALUES \((\d+),", x).group(1)) if re.search(r"VALUES \((\d+),", x) else float('inf'))
 
     return sorted_production_rows_copy
+
 
 def query_view(request):
     """
@@ -241,15 +239,12 @@ def query_view(request):
         'insert_statement': '\n'.join(sorted_production_rows_copy),
     })
 
-import subprocess
-import json
-import logging
-import re
+
 
 def connect_to_oracle_sqlplus(connection):
     """
     Generate SQL INSERT statements for the data retrieved from the Oracle database using SQL*Plus.
-    """
+
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.DEBUG)  # Ensure debug messages are shown
     handler = logging.StreamHandler()
@@ -377,3 +372,9 @@ def connect_to_oracle_sqlplus(connection):
     except Exception as e:
         logger.error(f"Error while connecting to Oracle using SQL*Plus for {connection.environment}: {e}")
         return []
+"""
+    insert_statements = [
+    "INSERT INTO PROD_SHCEXTBINDB (LOWBIN, HIGHBIN, DESCRIPTION, BIN_LENGTH, CARDPRODUCT, COUNTRY_CODE, DESTINATION, ENTITY_ID, FILE_DATE, FILE_NAME, FILE_VERSION, NETWORK_CONFIG, NETWORK_DATA, LEVEL, STATUS) VALUES (221000000000000, 221672999999999, 'Europay', None, 'Europay', None, '500', None, '2003-06-25', 'EUFILE', '1.10', None, None, 0, 'A');",
+    "INSERT INTO PROD_SHCEXTBINDB (LOWBIN, HIGHBIN, DESCRIPTION, BIN_LENGTH, CARDPRODUCT, COUNTRY_CODE, DESTINATION, ENTITY_ID, FILE_DATE, FILE_NAME, FILE_VERSION, NETWORK_CONFIG, NETWORK_DATA, LEVEL, STATUS) VALUES (221673000000000, 221673999999999, 'Russian', None, 'Russian', None, '500', None, '2024-08-28', 'EUFILE', '1.10', None, None, 0, 'B');"
+]
+    return insert_statements

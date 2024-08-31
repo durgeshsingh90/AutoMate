@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ISO 8583 Message Parser</title>
+    <!-- Include Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Include js-yaml library for YAML conversion -->
+    <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
+    <style>
+        .container-fluid {
+            margin-top: 20px;
+        }
+        .output-area {
+            height: 400px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-6">
+                <h1 class="mb-4">ISO 8583 Message Parser</h1>
+                <div class="form-group">
+                    <textarea id="splunkLogs" class="form-control" rows="15" placeholder="Paste Splunk logs here..."></textarea>
+                </div>
+                <button onclick="parseToJSON()" class="btn btn-primary mb-2">Parse to JSON</button>
+                <button onclick="parseToYAML()" class="btn btn-secondary mb-2">Parse to YAML</button>
+            </div>
+
+            <div class="col-md-6">
+                <h2 class="mb-4">Parsed Output:</h2>
+                <pre id="output" class="output-area border p-3 bg-light"></pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let message = {};
+
+        function parseIso8583() {
+            const input = document.getElementById("splunkLogs").value;
+            const lines = input.split("\n");
+            message = {}; // Reset message object
+            
+            // Extract MTI
+            const mtiMatch = lines[0].match(/msgno\[\s*\d+\]<(.+)>/);
+            if (mtiMatch) {
+                message['MTI'] = String(mtiMatch[1]); // Keep MTI as string
+            }
+
+            // Extract Data Elements
+            for (let i = 1; i < lines.length; i++) {
+                // Ignore in[  126 ] field
+                if (lines[i].includes("in[  126 ]")) {
+                    continue;
+                }
+
+                const match = lines[i].match(/in\[\s*(\d+):?\s*\]<(.+)>/);
+                if (match) {
+                    const fieldNumber = match[1].padStart(3, '0'); // Ensures the field number is 3 digits
+                    let value = match[2];
+
+                    // Special handling for BM 60, 61, and 62
+                    if (['060', '061', '062'].includes(fieldNumber)) {
+                        value = parseBM6x(value); // Parse BM 60, 61, 62 with custom logic
+                    }
+
+                    message[`DE${fieldNumber}`] = value; // Store value (object or string) directly
+                }
+            }
+        }
+
+        function parseBM6x(value) {
+            const subfields = [];
+            const values = [];
+            let i = 0;
+
+            while (i < value.length) {
+                const subfieldLength = parseInt(value.slice(i, i + 3), 10);
+                const subfield = value.slice(i + 3, i + 5);
+                subfields.push(subfield);
+                values.push(value.slice(i + 5, i + 5 + subfieldLength - 2));
+                i += 5 + subfieldLength - 2;
+            }
+
+            const parsedFields = {};
+            subfields.forEach((subfield, idx) => {
+                parsedFields[subfield] = values[idx];
+            });
+
+            return parsedFields;
+        }
+
+        function parseToJSON() {
+            parseIso8583();
+            const jsonOutput = JSON.stringify(message, null, 4);
+            document.getElementById("output").textContent = jsonOutput;
+        }
+
+        function parseToYAML() {
+            parseIso8583();
+            const yamlOutput = jsyaml.dump(message, { quotingType: '"', forceQuotes: true }); // Force quotes for all values
+            document.getElementById("output").textContent = yamlOutput;
+        }
+    </script>
+
+    <!-- Include Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

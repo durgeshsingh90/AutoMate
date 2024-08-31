@@ -1,0 +1,8 @@
+git
+Python
+Django
+Django-extentions
+lxml
+PyYAML
+paramiko
+mysql-connector-python
