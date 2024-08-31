@@ -65,6 +65,8 @@ LOGGING = {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
             'filename': str(LOG_DIR / 'django.log'),  # Dynamic path for the log file
+            # 'maxBytes': 10240,  # Set max file size to 10KB (~100 lines depending on log content)
+            # 'backupCount': 5,  # Keep up to 5 backup log files
             'formatter': 'standard',
         },
         'console': {

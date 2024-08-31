@@ -2,10 +2,25 @@ from django.http import JsonResponse
 import re
 import logging
 import json
+import os
 
 # Configure logger for detailed logging
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
+
+# Load field definitions from the JSON file
+def load_field_definitions():
+    try:
+        with open(os.path.join(os.path.dirname(__file__), 'field_definitions.json')) as f:
+            field_definitions = json.load(f)
+            logger.debug("Field definitions loaded successfully.")
+            return field_definitions.get("fields", {})
+    except Exception as e:
+        logger.error(f"Failed to load field definitions: {e}")
+        return {}
+
+# Load field definitions
+FIELD_DEFINITIONS = load_field_definitions()
 
 def parse_logs(request):
     if request.method == 'POST':
@@ -39,6 +54,7 @@ def parse_iso8583(log_data):
     de007_parts = []  # Array to store parts of DE007
     bm43_parts = []  # Array to store parts of BM 43
     de055_parts = []  # Array to collect multiple lines of DE 55
+    mti = ""  # Initialize MTI as an empty string
 
     lines = log_data.split("\n")
 
@@ -47,23 +63,23 @@ def parse_iso8583(log_data):
     for line in lines:
         logger.debug(f"Line content: '{line}'")
 
-    # Extract MTI
-    mti = ""
-    if lines and lines[0].strip():
-        mti_match = re.match(r"msgno\[\s*\d+\]<(.+)>", lines[0].strip())
-        if mti_match:
-            mti = str(mti_match.group(1))
-            logger.debug(f"MTI extracted: {mti}")
+        # Search for MTI anywhere in the input
+        if not mti:  # Only search for MTI if it hasn't been found yet
+            mti_match = re.match(r"msgno\[\s*0\]<(.+)>", line.strip())
+            if mti_match:
+                mti = str(mti_match.group(1))
+                logger.debug(f"MTI extracted: {mti}")
+                continue  # Continue to the next line after extracting MTI
 
     # Extract Data Elements
-    for line in lines[1:]:
+    for line in lines:
         line = line.strip()  # Remove any extra whitespace
         if not line:
             logger.debug("Skipping empty line")
             continue  # Skip empty lines
 
-        if "in[  126 ]" in line:
-            logger.debug("Skipping line with DE126")
+        if "in[  126 ]" in line or "DE0129" in line:
+            logger.debug(f"Skipping line with {line.strip()}")
             continue
 
         match = re.match(r"in\[\s*(\d+):?\s*\]<(.+)>", line)
@@ -71,6 +87,19 @@ def parse_iso8583(log_data):
             field_number = match.group(1).zfill(3)
             value = match.group(2)
             logger.debug(f"Field {field_number} detected with value: {value}")
+
+            # Retrieve field definition
+            field_def = FIELD_DEFINITIONS.get(field_number)
+            if field_def:
+                field_length = field_def.get('length')
+                
+                # Adjust the length if needed
+                if field_length:
+                    if field_number == '003':
+                        value = value.ljust(field_length, '0')
+                    elif field_number == '004':
+                        value = value.zfill(field_length)
+                    logger.debug(f"Adjusted {field_number} value to match length: {value}")
 
             # Special handling for BM 60, 61, and 62
             if field_number in ['060', '061', '062']:
