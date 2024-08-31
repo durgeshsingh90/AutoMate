@@ -9,6 +9,13 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById('splunkLogs').addEventListener('input', function () {
         localStorage.setItem('splunkLogs', this.value);
     });
+
+    // Event listener for text selection
+    document.addEventListener('selectionchange', function () {
+        const selectedText = window.getSelection().toString();
+        const selectedTextLength = selectedText.length;
+        document.getElementById('status-bar').textContent = `Selected Text Length: ${selectedTextLength}`;
+    });
 });
 
 function getCookie(name) {
@@ -37,16 +44,15 @@ async function parseLogsToJSON() {
     }
 
     try {
-        // Debug: Log the data before sending it
         console.log("Sending log data:", logData);
 
-        const response = await fetch('/splunkparser/parse_logs/', {  // Make sure this URL matches your Django URL pattern
+        const response = await fetch('/splunkparser/parse_logs/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRFToken': csrftoken
             },
-            body: JSON.stringify({ log_data: logData }) // Send log data as JSON
+            body: JSON.stringify({ log_data: logData })
         });
 
         const data = await response.json();
@@ -58,10 +64,10 @@ async function parseLogsToJSON() {
             document.getElementById('notification').textContent = '';
             document.getElementById('output').textContent = JSON.stringify(data.result, null, 4);
         }
-        return true; // Return true to indicate parsing was done successfully
+        return true;
     } catch (error) {
         document.getElementById('notification').textContent = `Error: ${error.message}`;
-        return false; // Return false to indicate an error occurred
+        return false;
     }
 }
 
@@ -79,37 +85,32 @@ async function parseLogsToYAML() {
 
         // Ensure MTI is always on top
         const sortedJsonData = { MTI: jsonData.MTI, ...jsonData };
-        delete sortedJsonData.MTI; // Remove duplicated MTI from the original data
+        delete sortedJsonData.MTI;
 
-        // Convert JSON to YAML with quotes for all values, but remove quotes from keys manually
         let yaml = jsyaml.dump(sortedJsonData, {
-            quotingType: '"', // Ensure all values are double-quoted
-            forceQuotes: true, // Force quotes for all values
-            sortKeys: false, // Keep the order of keys as in sortedJsonData
+            quotingType: '"', 
+            forceQuotes: true,
+            sortKeys: false, 
         });
 
-        // Remove quotes from all keys by using regex
         yaml = yaml.replace(/"([^"]+)":/g, '$1:');
 
         document.getElementById('output').textContent = yaml;
-        document.getElementById('notification').textContent = ""; // Clear any previous error message
+        document.getElementById('notification').textContent = "";
     } catch (error) {
         document.getElementById('notification').textContent = `Error: Invalid JSON output. Please parse to JSON first.`;
     }
 }
-
 
 function copyOutput() {
     const output = document.getElementById('output').textContent;
     const copyButton = document.getElementById('copyButton');
 
     navigator.clipboard.writeText(output).then(() => {
-        // Change button text and color
         copyButton.textContent = 'Copied!';
         copyButton.classList.remove('btn-info');
         copyButton.classList.add('btn-success');
 
-        // Revert back after 1 second
         setTimeout(() => {
             copyButton.textContent = 'Copy Output';
             copyButton.classList.remove('btn-success');
