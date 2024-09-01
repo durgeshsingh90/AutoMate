@@ -149,12 +149,19 @@ def print_processed_data(processed_bins, production_data):
             try:
                 lowbin = values_part.split(',')[0].strip()
                 highbin = values_part.split(',')[1].strip()
-                logger.debug(f"lowbin: {lowbin}, highbin: {highbin}")
+                logger.debug(f"Starting debug")
+                logger.debug(f"lowbin: {lowbin}")
+                logger.debug(f"highbin: {highbin}")
                 logger.debug(f"Comparing start_bin: {start_bin} with lowbin: {lowbin} and highbin: {highbin}")
                 logger.debug(f"Entering the loop for row {i}")
-                logger.debug(f"lowbin: {lowbin}, highbin: {highbin}")
-                logger.debug(f"Comparing start_bin: {start_bin} with lowbin: {lowbin} and highbin: {highbin}")
+                logger.debug(f"Type start_bin: {type(int(start_bin))}")
+                logger.debug(f"Type lowbin: {type(int(lowbin))}")
+                logger.debug(f"Type highbin: {type(int(highbin))}")
+
+                logger.debug(f"int(start_bin): {int(start_bin)}, int(lowbin): {int(lowbin)}, int(highbin): {int(highbin)}")
                 if int(start_bin) >= int(lowbin) and int(start_bin) <= int(highbin):
+                # if int(lowbin) <= int(start_bin) <= int(highbin):
+
                     logger.debug(f"Condition met for start_bin: {start_bin}")
                     logger.debug(f"Working")
                     modified_highbin = (start_bin + '0' * (len(highbin) - len(start_bin)))
@@ -244,7 +251,7 @@ def query_view(request):
 def connect_to_oracle_sqlplus(connection):
     """
     Generate SQL INSERT statements for the data retrieved from the Oracle database using SQL*Plus.
-    """
+"""
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.DEBUG)  # Ensure debug messages are shown
     handler = logging.StreamHandler()

@@ -71,6 +71,11 @@
             indentWithTabs: true,
         });
 
+        // Load saved data from localStorage if it exists
+        if (localStorage.getItem('editorContent')) {
+            editor.setValue(localStorage.getItem('editorContent'));
+        }
+
         // Update status bar
         function updateStatusBar() {
             const totalLines = editor.lineCount();
@@ -81,8 +86,13 @@
             document.getElementById('selected-length').textContent = `Selected text length: ${selectedLength}`;
         }
 
-        // Attach event listeners
-        editor.on('changes', updateStatusBar);
+        // Save data to localStorage on changes
+        editor.on('changes', function() {
+            localStorage.setItem('editorContent', editor.getValue());
+            updateStatusBar();
+        });
+
+        // Update status bar on cursor activity
         editor.on('cursorActivity', updateStatusBar);
 
         // Initialize the status bar
