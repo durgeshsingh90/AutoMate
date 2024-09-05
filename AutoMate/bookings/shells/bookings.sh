@@ -23,8 +23,8 @@
 # Date: 02 September 2024
 #
 # Version History:
-#    - Version 1.0 (2023-10-27) - Durgesh Singh - Initial version
-#    - Version 1.1 (2024-09-05) - Modified to accept multiple search terms and added Conditional email
+#    - Version 1.0 (2024-09-02) - Durgesh Singh - Initial version
+#    - Version 1.1 (2024-09-05) - Durgesh Singh - Modified to accept multiple search terms and added Conditional email
 ##############################################################################################
 
 # Check if at least two arguments are provided
