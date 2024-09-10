@@ -254,3 +254,50 @@ print (prod_distinct_list)
 # [('321xxxxxxxxxxxx', '321xxxxxxxxxxxx', '32xzzzzzzzzzzzz', '322xxxxxxxxxxxx'), ('22457xxxxxxxxxx', '22461zzzzzzzzzz', '22456zzzzzzzzzz', '22462xxxxxxxxxx'), ('225xxxxxxxxxxxx', '226xxzzzzzzzzzz', '224zzzzzzzzzzzz', '226x1xxxxxxxxxx'), ('223232xxxxxxxxx', '223232xxxxxxxxx', '223231zzzzzzzzz', '223233xxxxxxxxx'), ('43z432xxxxxxxxx', '43z432xxxxxxxxx', '43z431zzzzzzzzz', '43z433xxxxxxxxx')]
 # prod_distinct_list
 # ['AMEX', 'BCMC', 'CUP', 'Diners', 'Discover', 'EasyCash', 'Europay', 'JCB', 'Maestro', 'RUSSIAN-', 'RUSSIANE', 'RUSSIANV', 'SYRIAMC', 'SYRIAV', 'VAML', 'VISA', 'VISASMS', 'VPAY']
+
+##################################
+def get_user_selections(distinct_list):
+    """Prompt user to select a blocked item (single selection) and search items (multiple selections)."""
+
+    # Display the list of options
+    print("Available items:")
+    for index, item in enumerate(distinct_list, 1):
+        print(f"{index}. {item}")
+
+    # Prompt user to select a blocked item (single selection)
+    while True:
+        try:
+            blocked_index = int(input("\nSelect a blocked item by entering its number (single selection): "))
+            if 1 <= blocked_index <= len(distinct_list):
+                blocked_item = distinct_list[blocked_index - 1]
+                break
+            else:
+                print(f"Please enter a number between 1 and {len(distinct_list)}.")
+        except ValueError:
+            print("Invalid input. Please enter a number.")
+
+    # Prompt user to select search items (multiple selections)
+    print("\nYou can select multiple search items by entering their numbers separated by commas (e.g., 1,3,5):")
+    while True:
+        try:
+            search_indexes = input("Select search items: ").split(',')
+            search_indexes = [int(index.strip()) for index in search_indexes]
+            
+            # Validate the selections
+            if all(1 <= index <= len(distinct_list) for index in search_indexes):
+                search_items = [distinct_list[index - 1] for index in search_indexes]
+                break
+            else:
+                print(f"Please enter numbers between 1 and {len(distinct_list)} separated by commas.")
+        except ValueError:
+            print("Invalid input. Please enter numbers separated by commas.")
+
+    return blocked_item, search_items
+
+# Call the function and store selections
+blocked_item, search_items = get_user_selections(prod_distinct_list)
+
+# Print the selections
+print(f"\nBlocked Item: {blocked_item}")
+print(f"Search Items: {', '.join(search_items)}")
+
