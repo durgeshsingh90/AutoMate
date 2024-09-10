@@ -232,3 +232,25 @@ save_sql_statements_to_file(prod_sql_statements, 'prod_sql_statements.sql')
 processed_bins = process_user_input()
 start_end = calculate_bins_with_neighbors(processed_bins)
 
+
+########################Action#################
+print ('prod_sql_statements')
+print (prod_sql_statements)
+
+print ('uat_sql_statements')
+print (uat_sql_statements)
+
+print ('start_end')
+print (start_end)
+
+print ('prod_distinct_list')
+print (prod_distinct_list)
+
+
+# prod_sql_statements
+# ["INSERT INTO OASIS77.SHCEXTBINDB (LOWBIN, HIGHBIN, O_LEVEL, STATUS, DESCRIPTION, DESTINATION, ENTITY_ID, CARDPRODUCT, FILE_NAME, FILE_VERSION, FILE_DATE) VALUES ('2221xxxxxxxxxxx', '222776zzzzzzzzz', x, 'A', 'Europay                                           ', '5xx', '*', 'Europay             ', 'EUFILE    ', '1.1x ', TO_DATE('1zxx-x1-x1Txx:xx:xx', 'DD/MM/YYYY'));", "INSERT INTO OASIS77.SHCEXTBINDB (LOWBIN, HIGHBIN, O_LEVEL, STATUS, DESCRIPTION, DESTINATION, ENTITY_ID, CARDPRODUCT, FILE_NAME, FILE_VERSION, FILE_DATE) VALUES ('222777xxxxxxxxx', '222777zzzzzzzzz', x, 'A', 'RUSSIAN-                                          ', '5xx', '*', 'RUSSIAN-
+#  ', 'EUFILE    ', '1.1x ', TO_DATE('1zxx-x1-x1Txx:xx:xx', 'DD/MM/YYYY'));", "INSERT INTO OASIS77.SHCEXTBINDB (LOWBIN, HIGHBIN, O_LEVEL, STATUS, DESCRIPTION, DESTINATION, ENTITY_ID, CARDPRODUCT, FILE_NAME, FILE_VERSION, FILE_DATE) VALUES ('222778xxxxxxxxx', '222z68zzzzzzzzz', x, 'A', 'Europay                                           ', '5xx', '*', 'Europay             ', 'EUFILE    ', '1.1x ', TO_DATE('1zxx-x1-x1Txx:xx:xx', 'DD/MM/YYYY'));", "INSERT INTO OASIS77.SHCEXTBINDB (LOWBIN, HIGHBIN, O_LEVEL, STATUS, DESCRIPTION, DESTINATION, ENTITY_ID, CARDPRODUCT, FILE_NAME, FILE_VERSION, FILE_DATE) VALUES ('222z6zxxxxxxxxx', '222z6zzzzzzzzzz', x, 'A', 'RUSSIANE                                          ', '5xx', '*', 'RUSSIANE            ', 'EUFILE    ', '1.1x ', TO_DATE('1zxx-x1-x1TxxJSON_DATA:xx:xx', 'DD/MM/YYYY'));"]
+# start_end
+# [('321xxxxxxxxxxxx', '321xxxxxxxxxxxx', '32xzzzzzzzzzzzz', '322xxxxxxxxxxxx'), ('22457xxxxxxxxxx', '22461zzzzzzzzzz', '22456zzzzzzzzzz', '22462xxxxxxxxxx'), ('225xxxxxxxxxxxx', '226xxzzzzzzzzzz', '224zzzzzzzzzzzz', '226x1xxxxxxxxxx'), ('223232xxxxxxxxx', '223232xxxxxxxxx', '223231zzzzzzzzz', '223233xxxxxxxxx'), ('43z432xxxxxxxxx', '43z432xxxxxxxxx', '43z431zzzzzzzzz', '43z433xxxxxxxxx')]
+# prod_distinct_list
+# ['AMEX', 'BCMC', 'CUP', 'Diners', 'Discover', 'EasyCash', 'Europay', 'JCB', 'Maestro', 'RUSSIAN-', 'RUSSIANE', 'RUSSIANV', 'SYRIAMC', 'SYRIAV', 'VAML', 'VISA', 'VISASMS', 'VPAY']
