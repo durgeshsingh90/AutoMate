@@ -9,6 +9,7 @@ uat_command = "sqlplus oasis77/ist0py@istu2_equ"
 prod_command = "sqlplus oasis77/ist0py@istu2_equ"
 query = "SELECT JSON_OBJECT(*) AS JSON_DATA FROM (SELECT * FROM oasis77.SHCEXTBINDB ORDER BY LOWBIN) WHERE ROWNUM <= 4;"
 distint_query="SELECT DISTINCT description FROM oasis77.SHCEXTBINDB ORDER BY DESCRIPTION;"
+
 # Function to run the SQL*Plus command and capture the output
 def run_sqlplus_command(command, query, output_file, server_name):
     process = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
@@ -18,17 +19,12 @@ def run_sqlplus_command(command, query, output_file, server_name):
 
     # Process the output to store it in a list
     output_lines = stdout.decode().splitlines()
-    json_data_list = [line for line in output_lines if line.strip()]
+    data_list = [line for line in output_lines if line.strip()]
 
     # Save the output to a file
     with open(output_file, "w") as file:
-        for line in json_data_list:
+        for line in data_list:
             file.write(line + "\n")
-
-    # Print the number of rows retrieved
-    # num_rows = len(json_data_list)
-    # print(f"Number of rows retrieved from {server_name}: {num_rows}")
-    # print(f"Output saved to {output_file} on {server_name}")
 
 # Function to remove specific lines from a file
 def clean_file(file_path):
@@ -38,7 +34,7 @@ def clean_file(file_path):
     with open(file_path, 'w') as file:
         keep_data = False
         for line in lines:
-            if '{' in line:
+            if '{' in line or line.strip().startswith('"'):
                 keep_data = True
             if keep_data:
                 if 'SQL>' in line:
@@ -52,17 +48,28 @@ def clean_file(file_path):
 uat_thread = threading.Thread(target=run_sqlplus_command, args=(uat_command, query, "uat_output.json", "UAT"))
 prod_thread = threading.Thread(target=run_sqlplus_command, args=(prod_command, query, "prod_output.json", "Prod"))
 
+# Also create threads for running the distinct query
+uat_distinct_thread = threading.Thread(target=run_sqlplus_command, args=(uat_command, distint_query, "uat_distinct_output.txt", "UAT"))
+prod_distinct_thread = threading.Thread(target=run_sqlplus_command, args=(prod_command, distint_query, "prod_distinct_output.txt", "Prod"))
+
+
 # Start the UAT and production threads
 uat_thread.start()
 prod_thread.start()
+uat_distinct_thread.start()
+prod_distinct_thread.start()
 
 # Wait for both threads to complete
 uat_thread.join()
 prod_thread.join()
+uat_distinct_thread.join()
+prod_distinct_thread.join()
 
 # Clean the output files to remove login connection details and keep only data starting from '{'
 clean_file('uat_output.json')
 clean_file('prod_output.json')
+clean_file('uat_distinct_output.txt')
+clean_file('prod_distinct_output.txt')
 
 # print("Both queries have been executed, outputs saved, and specified lines removed.")
 
@@ -385,4 +392,3 @@ print (start_end)
 # ["INSERT INTO OASIS77.SHCEXTBINDB (LOWBIN, HIGHBIN, O_LEVEL, STATUS, DESCRIPTION, DESTINATION, ENTITY_ID, CARDPRODUCT, FILE_NAME, FILE_VERSION, FILE_DATE) VALUES ('222100000000000', '222776999999999', 0, 'A', 'Europay                                           ', '500', '*', 'Europay             ', 'EUFILE    ', '1.10 ', TO_DATE('1900-01-01T00:00:00', 'DD/MM/YYYY'));", "INSERT INTO OASIS77.SHCEXTBINDB (LOWBIN, HIGHBIN, O_LEVEL, STATUS, DESCRIPTION, DESTINATION, ENTITY_ID, CARDPRODUCT, FILE_NAME, FILE_VERSION, FILE_DATE) VALUES ('222777000000000', '222777999999999', 0, 'A', 'RUSSIAN-                                          ', '500', '*', 'RUSSIAN-            ', 'EUFILE    ', '1.10 ', TO_DATE('1900-01-01T00:00:00', 'DD/MM/YYYY'));", "INSERT INTO OASIS77.SHCEXTBINDB (LOWBIN, HIGHBIN, O_LEVEL, STATUS, DESCRIPTION, DESTINATION, ENTITY_ID, CARDPRODUCT, FILE_NAME, FILE_VERSION, FILE_DATE) VALUES ('222778000000000', '222968999999999', 0, 'A', 'Europay                                           ', '500', '*', 'Europay             ', 'EUFILE    ', '1.10 ', TO_DATE('1900-01-01T00:00:00', 'DD/MM/YYYY'));", "INSERT INTO OASIS77.SHCEXTBINDB (LOWBIN, HIGHBIN, O_LEVEL, STATUS, DESCRIPTION, DESTINATION, ENTITY_ID, CARDPRODUCT, FILE_NAME, FILE_VERSION, FILE_DATE) VALUES ('222969000000000', '222969999999999', 0, 'A', 'RUSSIANE                                          ', '500', '*', 'RUSSIANE            ', 'EUFILE    ', '1.10 ', TO_DATE('1900-01-01T00:00:00', 'DD/MM/YYYY'));"]
 # start_end
 # [('321000000000000', '321999999999999', '320999999999999', '322000000000000'), ('224570000000000', '224619999999999', '224569999999999', '224620000000000'), ('225000000000000', '226009999999999', '224999999999999', '226010000000000'), ('223232000000000', '223232999999999', '223231999999999', '223233000000000'), ('439432000000000', '439432999999999', '439431999999999', '439433000000000')]
-
