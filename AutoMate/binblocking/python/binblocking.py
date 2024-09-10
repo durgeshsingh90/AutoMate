@@ -1,3 +1,4 @@
+###################DB Connection and generate json data##########
 import subprocess
 import threading
 import string
@@ -112,6 +113,77 @@ def clean_distinct_file(file_path):
     # Return the cleaned lines as a list
     return cleaned_lines
 
+def process_user_input():
+    """
+    Process multiline user input to generate cleaned bin ranges.
+    Returns:
+        list: A list of processed bin ranges.
+    """
+    print("Enter the list of bin ranges (press Enter twice to finish):")
+
+    # Take multiline input
+    user_input = []
+    while True:
+        line = input()
+        if line == "":  # End input on empty line
+            break
+        user_input.append(line.strip())
+
+    # Flatten the list into a single list of bin ranges
+    bin_list = []
+    for line in user_input:
+        bin_list.extend(line.split(','))
+
+    # Remove extra spaces
+    bin_list = [item.strip() for item in bin_list if item.strip()]
+
+    # Remove duplicates and subsets
+    bin_list = remove_duplicates_and_subsets(bin_list)
+
+    # Combine consecutive ranges
+    bin_range, _ = combine_consecutives(bin_list)
+
+    # Return the cleaned-up bin ranges
+    return bin_range
+
+# Function to remove duplicate and subset bins
+def remove_duplicates_and_subsets(bin_list):
+    bin_set = set(bin_list)
+    sorted_bins = sorted(bin_set, key=lambda x: (len(x), x))
+    final_bins = []
+    for bin in sorted_bins:
+        if not any(bin.startswith(existing_bin) for existing_bin in final_bins):
+            final_bins.append(bin)
+    return final_bins
+# Function to combine consecutive bins
+def combine_consecutives(bins):
+    combined = []
+    consecutive_count = 0
+    i = 0
+    bins = sorted(bins, key=lambda x: int(x.split('-')[0]))
+
+    while i < len(bins):
+        current_bin = bins[i]
+        start_bin = current_bin
+        end_bin = current_bin
+
+        while i + 1 < len(bins):
+            next_bin = bins[i + 1]
+            try:
+                if len(current_bin) == len(next_bin) and int(next_bin.split('-')[0]) == int(current_bin.split('-')[0]) + 1:
+                    end_bin = next_bin
+                    current_bin = next_bin
+                    i += 1
+                    consecutive_count += 1
+                else:
+                    break
+            except ValueError:
+                break
+
+        combined.append(f"{start_bin}-{end_bin}" if start_bin != end_bin else start_bin)
+        i += 1
+
+    return combined, consecutive_count
 # Create threads for UAT and production connections
 uat_thread = threading.Thread(target=run_sqlplus_command, args=(uat_command, query, "uat_output.json", "UAT"))
 prod_thread = threading.Thread(target=run_sqlplus_command, args=(prod_command, query, "prod_output.json", "Prod"))
@@ -140,16 +212,15 @@ clean_file('prod_output.json')
 uat_distinct_list = clean_distinct_file('uat_distinct_output.txt')
 prod_distinct_list = clean_distinct_file('prod_distinct_output.txt')
 
-# Print or use the cleaned lists as needed
-print("UAT Distinct List:")
-print(uat_distinct_list)
+# # Print or use the cleaned lists as needed
+# print("UAT Distinct List:")
+# print(uat_distinct_list)
 
-print("\nProduction Distinct List:")
-print(prod_distinct_list)
+# print("\nProduction Distinct List:")
+# print(prod_distinct_list)
 
 ########################################## Further Processing #####################
 # Your additional processing code can follow here...
-
 
 ########################################## Process json data#####################
 import re
@@ -311,61 +382,7 @@ save_sql_statements_to_file(prod_sql_statements, 'prod_sql_statements.sql')
 # for statement in prod_sql_statements:
 #     print(statement)
 
-def remove_duplicates_and_subsets(bin_list):
-    """
-    Remove duplicate and subset bins from the list.
-    """
-    # Convert list to a set to remove duplicates
-    bin_set = set(bin_list)
 
-    # Sort bins first by length and then lexicographically
-    sorted_bins = sorted(bin_set, key=lambda x: (len(x), x))
-    final_bins = []
-
-    # Remove bins that are subsets of any other bin
-    for bin in sorted_bins:
-        if not any(bin.startswith(existing_bin) for existing_bin in final_bins):
-            final_bins.append(bin)
-
-    return final_bins
-
-def combine_consecutives(bins):
-    """
-    Combine consecutive bin ranges into single ranges.
-    """
-    combined = []
-    consecutive_count = 0
-    i = 0
-
-    # Ensure bins are sorted numerically
-    bins = sorted(bins, key=lambda x: int(x.split('-')[0]))
-
-    while i < len(bins):
-        current_bin = bins[i]
-        start_bin = current_bin
-        end_bin = current_bin
-
-        # Check for consecutive bins directly within this loop
-        while i + 1 < len(bins):
-            next_bin = bins[i + 1]
-            try:
-                # Check if the next bin is consecutive
-                if len(current_bin) == len(next_bin) and int(next_bin.split('-')[0]) == int(current_bin.split('-')[0]) + 1:
-                    end_bin = next_bin
-                    current_bin = next_bin
-                    i += 1
-                    consecutive_count += 1
-                else:
-                    break
-            except ValueError:
-                # If there's an error in checking consecutive bins, break the loop
-                break
-
-        # Append combined bin range or single bin
-        combined.append(f"{start_bin}-{end_bin}" if start_bin != end_bin else start_bin)
-        i += 1
-
-    return combined, consecutive_count
 
 def calculate_bins_with_neighbors(processed_bins):
     """
@@ -402,71 +419,44 @@ def calculate_bins_with_neighbors(processed_bins):
     return result
 
 
-
-def process_user_input():
-    """
-    Process multiline user input to generate cleaned bin ranges.
-    Returns:
-        list: A list of processed bin ranges.
-    """
-    print("Enter the list of bin ranges (press Enter twice to finish):")
-
-    # Take multiline input
-    user_input = []
-    while True:
-        line = input()
-        if line == "":  # End input on empty line
-            break
-        user_input.append(line.strip())
-
-    # Flatten the list into a single list of bin ranges
-    bin_list = []
-    for line in user_input:
-        bin_list.extend(line.split(','))
-
-    # Remove extra spaces
-    bin_list = [item.strip() for item in bin_list if item.strip()]
-
-    # Remove duplicates and subsets
-    bin_list = remove_duplicates_and_subsets(bin_list)
-
-    # Combine consecutive ranges
-    bin_range, _ = combine_consecutives(bin_list)
-
-    # Return the cleaned-up bin ranges
-    return bin_range
-
-# Run the script and process the results
+# Main script logic
 if __name__ == "__main__":
+    # Create threads for UAT and production connections
+    uat_thread = threading.Thread(target=run_sqlplus_command, args=(uat_command, query, "uat_output.json", "UAT"))
+    prod_thread = threading.Thread(target=run_sqlplus_command, args=(prod_command, query, "prod_output.json", "Prod"))
+
+    # Also create threads for running the distinct query
+    uat_distinct_thread = threading.Thread(target=run_sqlplus_command, args=(uat_command, distint_query, "uat_distinct_output.txt", "UAT"))
+    prod_distinct_thread = threading.Thread(target=run_sqlplus_command, args=(prod_command, distint_query, "prod_distinct_output.txt", "Prod"))
+
+    # Start the UAT and production threads
+    uat_thread.start()
+    prod_thread.start()
+    uat_distinct_thread.start()
+    prod_distinct_thread.start()
+
+    # Wait for all threads to complete
+    uat_thread.join()
+    prod_thread.join()
+    uat_distinct_thread.join()
+    prod_distinct_thread.join()
+
+    # Clean the JSON query output files
+    clean_file('uat_output.json')
+    clean_file('prod_output.json')
+
+    # Clean the distinct output files and store them as lists
+    uat_distinct_list = clean_distinct_file('uat_distinct_output.txt')
+    prod_distinct_list = clean_distinct_file('prod_distinct_output.txt')
+
+    # Print or use the cleaned lists as needed
+    print("UAT Distinct List:")
+    print(uat_distinct_list)
+
+    print("\nProduction Distinct List:")
+    print(prod_distinct_list)
+
+    # Process user input for bin ranges only once
     processed_bins = process_user_input()
-    # print("Processed Bin Ranges:")
-    # print(processed_bins)
-
-    # Calculate the start and end bins
-    start_end = calculate_bins_with_neighbors(processed_bins)
-    # print("Calculated Bins (Start and End):")
-    # print(start_end)
-
-###################################Start checking bin range in sql insert statement############
-# print ('uat_sql_statements')
-# print (uat_sql_statements[1])
-
-# print ('prod_sql_statements')
-# print (prod_sql_statements)
-
-# print ('processed_bins')
-# print (processed_bins)
-
-# print ('start_end')
-# print (start_end)
-# ############################last step 
-print ('prod_sql_statements')
-print (prod_sql_statements)
-
-print ('start_end')
-print (start_end)
-
-# prod_sql_statements
-# ["INSERT INTO OASIS77.SHCEXTBINDB (LOWBIN, HIGHBIN, O_LEVEL, STATUS, DESCRIPTION, DESTINATION, ENTITY_ID, CARDPRODUCT, FILE_NAME, FILE_VERSION, FILE_DATE) VALUES ('222100000000000', '222776999999999', 0, 'A', 'Europay                                           ', '500', '*', 'Europay             ', 'EUFILE    ', '1.10 ', TO_DATE('1900-01-01T00:00:00', 'DD/MM/YYYY'));", "INSERT INTO OASIS77.SHCEXTBINDB (LOWBIN, HIGHBIN, O_LEVEL, STATUS, DESCRIPTION, DESTINATION, ENTITY_ID, CARDPRODUCT, FILE_NAME, FILE_VERSION, FILE_DATE) VALUES ('222777000000000', '222777999999999', 0, 'A', 'RUSSIAN-                                          ', '500', '*', 'RUSSIAN-            ', 'EUFILE    ', '1.10 ', TO_DATE('1900-01-01T00:00:00', 'DD/MM/YYYY'));", "INSERT INTO OASIS77.SHCEXTBINDB (LOWBIN, HIGHBIN, O_LEVEL, STATUS, DESCRIPTION, DESTINATION, ENTITY_ID, CARDPRODUCT, FILE_NAME, FILE_VERSION, FILE_DATE) VALUES ('222778000000000', '222968999999999', 0, 'A', 'Europay                                           ', '500', '*', 'Europay             ', 'EUFILE    ', '1.10 ', TO_DATE('1900-01-01T00:00:00', 'DD/MM/YYYY'));", "INSERT INTO OASIS77.SHCEXTBINDB (LOWBIN, HIGHBIN, O_LEVEL, STATUS, DESCRIPTION, DESTINATION, ENTITY_ID, CARDPRODUCT, FILE_NAME, FILE_VERSION, FILE_DATE) VALUES ('222969000000000', '222969999999999', 0, 'A', 'RUSSIANE                                          ', '500', '*', 'RUSSIANE            ', 'EUFILE    ', '1.10 ', TO_DATE('1900-01-01T00:00:00', 'DD/MM/YYYY'));"]
-# start_end
-# [('321000000000000', '321999999999999', '320999999999999', '322000000000000'), ('224570000000000', '224619999999999', '224569999999999', '224620000000000'), ('225000000000000', '226009999999999', '224999999999999', '226010000000000'), ('223232000000000', '223232999999999', '223231999999999', '223233000000000'), ('439432000000000', '439432999999999', '439431999999999', '439433000000000')]
+    print("Processed Bin Ranges:")
+    print(processed_bins)
