@@ -1,14 +1,14 @@
-###################DB Connection and generate json data##########
 import subprocess
 import threading
 import string
+import re
+import json
 
-# Define the SQL*Plus commands and query
+# Define the SQL*Plus commands and queries
 uat_command = "sqlplus oasis77/ist0py@istu2_equ"
-# prod_command = "sqlplus f94gdos/Pune24!@A5PCDO8001.EQU.IST"
 prod_command = "sqlplus oasis77/ist0py@istu2_equ"
 query = "SELECT JSON_OBJECT(*) AS JSON_DATA FROM (SELECT * FROM oasis77.SHCEXTBINDB ORDER BY LOWBIN) WHERE ROWNUM <= 4;"
-distint_query="SELECT DISTINCT description FROM oasis77.SHCEXTBINDB ORDER BY DESCRIPTION;"
+distint_query = "SELECT DISTINCT description FROM oasis77.SHCEXTBINDB ORDER BY DESCRIPTION;"
 
 # Function to run the SQL*Plus command and capture the output
 def run_sqlplus_command(command, query, output_file, server_name):
@@ -26,24 +26,7 @@ def run_sqlplus_command(command, query, output_file, server_name):
         for line in data_list:
             file.write(line + "\n")
 
-# Function to remove specific lines from a file
-def clean_file(file_path):
-    with open(file_path, 'r') as file:
-        lines = file.readlines()
-
-    with open(file_path, 'w') as file:
-        keep_data = False
-        for line in lines:
-            if '{' in line or line.strip().startswith('"'):
-                keep_data = True
-            if keep_data:
-                if 'SQL>' in line:
-                    break
-                if 'JSON_DATA' not in line and not line.strip().startswith('-'):
-                    # Remove control characters
-                    clean_line = ''.join(char for char in line if char in string.printable)
-                    file.write(clean_line)
-
+# Function to clean the distinct file and return its content as a list
 def clean_distinct_file(file_path):
     """
     Cleans the file by removing:
@@ -51,6 +34,8 @@ def clean_distinct_file(file_path):
     - All lines from the bottom until the last occurrence of 'SQL>'.
     - Any line containing 'rows selected'.
     - Any line containing only dashes or the word 'DESCRIPTION'.
+    Returns:
+    - A list of cleaned lines.
     """
     with open(file_path, 'r') as file:
         lines = file.readlines()
@@ -81,10 +66,8 @@ def clean_distinct_file(file_path):
         line.strip() != 'DESCRIPTION'
     ]
 
-    # Write the cleaned lines back to the file
-    with open(file_path, 'w') as file:
-        for line in cleaned_lines:
-            file.write(line + '\n')
+    # Return the cleaned lines as a list
+    return cleaned_lines
 
 # Create threads for UAT and production connections
 uat_thread = threading.Thread(target=run_sqlplus_command, args=(uat_command, query, "uat_output.json", "UAT"))
@@ -94,26 +77,29 @@ prod_thread = threading.Thread(target=run_sqlplus_command, args=(prod_command, q
 uat_distinct_thread = threading.Thread(target=run_sqlplus_command, args=(uat_command, distint_query, "uat_distinct_output.txt", "UAT"))
 prod_distinct_thread = threading.Thread(target=run_sqlplus_command, args=(prod_command, distint_query, "prod_distinct_output.txt", "Prod"))
 
-
 # Start the UAT and production threads
 uat_thread.start()
 prod_thread.start()
 uat_distinct_thread.start()
 prod_distinct_thread.start()
 
-# Wait for both threads to complete
+# Wait for all threads to complete
 uat_thread.join()
 prod_thread.join()
 uat_distinct_thread.join()
 prod_distinct_thread.join()
 
-# Clean the output files to remove login connection details and keep only data starting from '{'
-clean_file('uat_output.json')
-clean_file('prod_output.json')
-clean_distinct_file('uat_distinct_output.txt')
-clean_distinct_file('prod_distinct_output.txt')
+# Clean the distinct output files and store them as lists
+uat_distinct_list = clean_distinct_file('uat_distinct_output.txt')
+prod_distinct_list = clean_distinct_file('prod_distinct_output.txt')
 
-# print("Both queries have been executed, outputs saved, and specified lines removed.")
+# Print or use the cleaned lists as needed
+print("UAT Distinct List:")
+print(uat_distinct_list)
+
+print("\nProduction Distinct List:")
+print(prod_distinct_list)
+
 
 ########################################## Process json data#####################
 import re
