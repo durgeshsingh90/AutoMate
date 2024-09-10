@@ -232,72 +232,218 @@ save_sql_statements_to_file(prod_sql_statements, 'prod_sql_statements.sql')
 processed_bins = process_user_input()
 start_end = calculate_bins_with_neighbors(processed_bins)
 
+#####################Action##############
+# print ('prod_sql_statements')
+# print (prod_sql_statements)
 
-########################Action#################
-print ('prod_sql_statements')
-print (prod_sql_statements)
+# print ('uat_sql_statements')
+# print (uat_sql_statements)
 
-print ('uat_sql_statements')
-print (uat_sql_statements)
+# print ('start_end')
+# print (start_end)
 
-print ('start_end')
-print (start_end)
+# print ('prod_distinct_list')
+# print (prod_distinct_list)
 
-print ('prod_distinct_list')
-print (prod_distinct_list)
+########
+# prod_sql_statements = [
+#     "INSERT INTO OASIS77.SHCEXTBINDB (LOWBIN, HIGHBIN, O_LEVEL, STATUS, DESCRIPTION, DESTINATION, ENTITY_ID, CARDPRODUCT, FILE_NAME, FILE_VERSION, FILE_DATE) VALUES ('222100000000000', '222776999999999', 0, 'A', 'Europay                                           ', '500', '*', 'Europay             ', 'EUFILE    ', '1.10 ', TO_DATE('1900-01-01T00:00:00', 'DD/MM/YYYY'));",
+#     "INSERT INTO OASIS77.SHCEXTBINDB (LOWBIN, HIGHBIN, O_LEVEL, STATUS, DESCRIPTION, DESTINATION, ENTITY_ID, CARDPRODUCT, FILE_NAME, FILE_VERSION, FILE_DATE) VALUES ('222777000000000', '222777999999999', 0, 'A', 'RUSSIAN-                                          ', '500', '*', 'RUSSIAN-            ', 'EUFILE    ', '1.10 ', TO_DATE('1900-01-01T00:00:00', 'DD/MM/YYYY'));",
+#     "INSERT INTO OASIS77.SHCEXTBINDB (LOWBIN, HIGHBIN, O_LEVEL, STATUS, DESCRIPTION, DESTINATION, ENTITY_ID, CARDPRODUCT, FILE_NAME, FILE_VERSION, FILE_DATE) VALUES ('222778000000000', '222968999999999', 0, 'A', 'Europay                                           ', '500', '*', 'Europay             ', 'EUFILE    ', '1.10 ', TO_DATE('1900-01-01T00:00:00', 'DD/MM/YYYY'));",
+#     "INSERT INTO OASIS77.SHCEXTBINDB (LOWBIN, HIGHBIN, O_LEVEL, STATUS, DESCRIPTION, DESTINATION, ENTITY_ID, CARDPRODUCT, FILE_NAME, FILE_VERSION, FILE_DATE) VALUES ('222969000000000', '222969999999999', 0, 'A', 'RUSSIANE                                          ', '500', '*', 'RUSSIANE            ', 'EUFILE    ', '1.10 ', TO_DATE('1900-01-01T00JSON_DATA:00:00', 'DD/MM/YYYY'));"
+# ]
+# # start_end=(start_bin,end_bin,previous_bin,next_bin)
+# start_end = [
+#     ('321000000000000', '321999999999999', '320999999999999', '322000000000000'),
+#     ('224570000000000', '224619999999999', '224569999999999', '224620000000000'), 
+#     ('225000000000000', '226009999999999', '224999999999999', '226010000000000'), 
+#     ('222232000000000', '222232999999999', '222231999999999', '222233000000000'), 
+#     ('439432000000000', '439432999999999', '439431999999999', '439433000000000')
+# ]
+# prod_distinct_list=['AMEX', 'BCMC', 'CUP', 'Diners', 'Discover', 'EasyCash', 'Europay', 'JCB', 'Maestro', 'RUSSIAN-', 'RUSSIANE', 'RUSSIANV', 'SYRIAMC', 'SYRIAV', 'VAML', 'VISA', 'VISASMS', 'VPAY']
 
+def categorize_items(distinct_list):
+    """Categorize 'RUSSIAN' and 'SYRIA' variations into single categories."""
+    categorized_list = []
+    for item in distinct_list:
+        if item.startswith("RUSSIAN"):
+            if "RUSSIAN" not in categorized_list:
+                categorized_list.append("RUSSIAN")
+        elif item.startswith("SYRIA"):
+            if "SYRIA" not in categorized_list:
+                categorized_list.append("SYRIA")
+        else:
+            categorized_list.append(item)
+    return categorized_list
 
-# prod_sql_statements
-# ["INSERT INTO OASIS77.SHCEXTBINDB (LOWBIN, HIGHBIN, O_LEVEL, STATUS, DESCRIPTION, DESTINATION, ENTITY_ID, CARDPRODUCT, FILE_NAME, FILE_VERSION, FILE_DATE) VALUES ('2221xxxxxxxxxxx', '222776zzzzzzzzz', x, 'A', 'Europay                                           ', '5xx', '*', 'Europay             ', 'EUFILE    ', '1.1x ', TO_DATE('1zxx-x1-x1Txx:xx:xx', 'DD/MM/YYYY'));", "INSERT INTO OASIS77.SHCEXTBINDB (LOWBIN, HIGHBIN, O_LEVEL, STATUS, DESCRIPTION, DESTINATION, ENTITY_ID, CARDPRODUCT, FILE_NAME, FILE_VERSION, FILE_DATE) VALUES ('222777xxxxxxxxx', '222777zzzzzzzzz', x, 'A', 'RUSSIAN-                                          ', '5xx', '*', 'RUSSIAN-
-#  ', 'EUFILE    ', '1.1x ', TO_DATE('1zxx-x1-x1Txx:xx:xx', 'DD/MM/YYYY'));", "INSERT INTO OASIS77.SHCEXTBINDB (LOWBIN, HIGHBIN, O_LEVEL, STATUS, DESCRIPTION, DESTINATION, ENTITY_ID, CARDPRODUCT, FILE_NAME, FILE_VERSION, FILE_DATE) VALUES ('222778xxxxxxxxx', '222z68zzzzzzzzz', x, 'A', 'Europay                                           ', '5xx', '*', 'Europay             ', 'EUFILE    ', '1.1x ', TO_DATE('1zxx-x1-x1Txx:xx:xx', 'DD/MM/YYYY'));", "INSERT INTO OASIS77.SHCEXTBINDB (LOWBIN, HIGHBIN, O_LEVEL, STATUS, DESCRIPTION, DESTINATION, ENTITY_ID, CARDPRODUCT, FILE_NAME, FILE_VERSION, FILE_DATE) VALUES ('222z6zxxxxxxxxx', '222z6zzzzzzzzzz', x, 'A', 'RUSSIANE                                          ', '5xx', '*', 'RUSSIANE            ', 'EUFILE    ', '1.1x ', TO_DATE('1zxx-x1-x1TxxJSON_DATA:xx:xx', 'DD/MM/YYYY'));"]
-# start_end
-# [('321xxxxxxxxxxxx', '321xxxxxxxxxxxx', '32xzzzzzzzzzzzz', '322xxxxxxxxxxxx'), ('22457xxxxxxxxxx', '22461zzzzzzzzzz', '22456zzzzzzzzzz', '22462xxxxxxxxxx'), ('225xxxxxxxxxxxx', '226xxzzzzzzzzzz', '224zzzzzzzzzzzz', '226x1xxxxxxxxxx'), ('223232xxxxxxxxx', '223232xxxxxxxxx', '223231zzzzzzzzz', '223233xxxxxxxxx'), ('43z432xxxxxxxxx', '43z432xxxxxxxxx', '43z431zzzzzzzzz', '43z433xxxxxxxxx')]
-# prod_distinct_list
-# ['AMEX', 'BCMC', 'CUP', 'Diners', 'Discover', 'EasyCash', 'Europay', 'JCB', 'Maestro', 'RUSSIAN-', 'RUSSIANE', 'RUSSIANV', 'SYRIAMC', 'SYRIAV', 'VAML', 'VISA', 'VISASMS', 'VPAY']
-
-##################################
 def get_user_selections(distinct_list):
     """Prompt user to select a blocked item (single selection) and search items (multiple selections)."""
 
-    # Display the list of options
+    # Categorize items
+    categorized_list = categorize_items(distinct_list)
+
+    # Display the categorized list of options
     print("Available items:")
-    for index, item in enumerate(distinct_list, 1):
+    for index, item in enumerate(categorized_list, 1):
         print(f"{index}. {item}")
 
     # Prompt user to select a blocked item (single selection)
     while True:
         try:
             blocked_index = int(input("\nSelect a blocked item by entering its number (single selection): "))
-            if 1 <= blocked_index <= len(distinct_list):
-                blocked_item = distinct_list[blocked_index - 1]
+            if 1 <= blocked_index <= len(categorized_list):
+                blocked_item = categorized_list[blocked_index - 1]
                 break
             else:
-                print(f"Please enter a number between 1 and {len(distinct_list)}.")
+                print(f"Please enter a number between 1 and {len(categorized_list)}.")
         except ValueError:
             print("Invalid input. Please enter a number.")
 
-    # Prompt user to select search items (multiple selections)
+    # Prompt user to select search items (multiple selections) excluding the blocked item
     print("\nYou can select multiple search items by entering their numbers separated by commas (e.g., 1,3,5):")
+    print(f"Note: You cannot select the blocked item ({blocked_item}) as a search item.")
+    
     while True:
         try:
             search_indexes = input("Select search items: ").split(',')
             search_indexes = [int(index.strip()) for index in search_indexes]
-            
+
             # Validate the selections
-            if all(1 <= index <= len(distinct_list) for index in search_indexes):
-                search_items = [distinct_list[index - 1] for index in search_indexes]
-                break
+            if all(1 <= index <= len(categorized_list) for index in search_indexes):
+                search_items = [categorized_list[index - 1] for index in search_indexes]
+                if blocked_item in search_items:
+                    print(f"You cannot select the blocked item ({blocked_item}) as a search item.")
+                else:
+                    break
             else:
-                print(f"Please enter numbers between 1 and {len(distinct_list)} separated by commas.")
+                print(f"Please enter numbers between 1 and {len(categorized_list)} separated by commas.")
         except ValueError:
             print("Invalid input. Please enter numbers separated by commas.")
 
-    return blocked_item, search_items
+    # Expand "SYRIA" and "RUSSIAN" selections to all their variations
+    expanded_search_items = []
+    for item in search_items:
+        if item == "RUSSIAN":
+            expanded_search_items.extend([i for i in distinct_list if i.startswith("RUSSIAN")])
+        elif item == "SYRIA":
+            expanded_search_items.extend([i for i in distinct_list if i.startswith("SYRIA")])
+        else:
+            expanded_search_items.append(item)
+
+    return blocked_item, expanded_search_items
 
 # Call the function and store selections
 blocked_item, search_items = get_user_selections(prod_distinct_list)
 
-# Print the selections
-print(f"\nBlocked Item: {blocked_item}")
-print(f"Search Items: {', '.join(search_items)}")
+###################
+# Create a shallow copy of prod_sql_statements
+prod_sql_statements_copy = prod_sql_statements.copy()
 
+def parse_sql_statements(statements, search_items):
+    """Parse SQL statements and filter by search items."""
+    filtered_statements = []
+    
+    # Normalize search items to lowercase and remove extra spaces
+    search_items = [item.strip().lower() for item in search_items]
+
+    for statement in statements:
+        # Extract the relevant fields from the SQL statement
+        try:
+            values_part = statement.split("VALUES (")[1]  # Get the part after "VALUES ("
+            values = values_part.split(",")  # Split by commas
+
+            # Extract LOWBIN, HIGHBIN, and DESCRIPTION
+            lowbin = values[0].strip(" '")
+            highbin = values[1].strip(" '")
+            description = values[4].strip(" '").lower()  # Convert to lowercase and strip whitespace
+
+            # Remove extra spaces from the description
+            description = ' '.join(description.split())  # Replace multiple spaces with a single space
+
+            # Debug: Print each description being processed
+            # print(f"Processing description: '{description}'")
+
+            # Filter statements based on normalized search items
+            if any(search_item in description for search_item in search_items):  # Case insensitive comparison
+                filtered_statements.append((lowbin, highbin, description, statement))
+        
+        except IndexError:
+            print("Error parsing statement:", statement)
+
+    return filtered_statements
+
+def duplicate_and_modify_sql(statements, start_end, blocked_item):
+    """Duplicate affected SQL statements twice and apply specific modifications."""
+    filtered_statements = parse_sql_statements(statements, search_items)
+
+    if not filtered_statements:
+        print("No SQL statements matched the selected search items.")
+        return [], statements  # Return both modified (empty) and original statements if no matches are found
+
+    modified_statements = []
+
+    # Iterate through start_end and check if start_bin is within any filtered SQL statement ranges
+    for start_bin, end_bin, previous_bin, _ in start_end:
+        for lowbin, highbin, description, original_statement in filtered_statements:
+            if int(lowbin) <= int(start_bin) <= int(highbin):
+                # print(f"Start Bin {start_bin} is within the range ({lowbin}, {highbin}) for description '{description}'.")
+
+                # Modify the original statement by replacing HIGHBIN with previous_bin
+                modified_original_statement = original_statement.replace(f"'{highbin}'", f"'{previous_bin}'")
+
+                # Create the first copy of the original statement with modified LOWBIN, HIGHBIN, DESCRIPTION, and CARDPRODUCT
+                new_statement1 = original_statement.replace(f"'{lowbin}'", f"'{start_bin}'")\
+                                                   .replace(f"'{highbin}'", f"'{end_bin}'")\
+                                                   .replace(description.capitalize(), blocked_item)\
+                                                   .replace(description.upper(), blocked_item)\
+                                                   .replace("Europay             ", blocked_item)  # Correct CARDPRODUCT replacement
+
+                # Create the second copy of the original statement with modified LOWBIN
+                new_statement2 = original_statement.replace(f"'{lowbin}'", "'222233000000000'")
+
+                # Append the modified original and copies to the modified_statements list
+                modified_statements.append(modified_original_statement)
+                modified_statements.append(new_statement1)
+                modified_statements.append(new_statement2)
+
+                # print(f"Modified original SQL statement: {modified_original_statement}")
+                # print(f"Modified first copy SQL statement: {new_statement1}")
+                # print(f"Modified second copy SQL statement: {new_statement2}")
+
+                # Remove the found row from the copied list
+                statements.remove(original_statement)
+
+    return modified_statements, statements
+
+def merge_and_sort_sql(modified_statements, remaining_statements):
+    """Merge unaffected and modified SQL statements and sort by LOWBIN."""
+    # Combine unaffected statements with modified ones
+    combined_statements = remaining_statements + modified_statements
+
+    # Sort the combined statements by LOWBIN
+    combined_statements_sorted = sorted(combined_statements, key=lambda stmt: int(stmt.split("VALUES ('")[1].split("', '")[0]))
+
+    # print("\nMerged and Sorted SQL statements:")
+    # for statement in combined_statements_sorted:
+    #     print(statement)
+
+    return combined_statements_sorted
+
+# Call the function to duplicate and modify, using the copy of prod_sql_statements
+modified_sql_statements, remaining_sql_statements = duplicate_and_modify_sql(prod_sql_statements_copy, start_end, blocked_item)
+
+# Merge and sort unaffected and modified statements
+merged_sorted_sql_statements = merge_and_sort_sql(modified_sql_statements, remaining_sql_statements)
+
+
+print ('processed_bins')
+print (processed_bins)
+
+print ('uat_sql_statements')
+print (uat_sql_statements)
+
+print ('prod_sql_statements')
+print (prod_sql_statements)
+
+print ('merged_sorted_sql_statements')
+print (merged_sorted_sql_statements)
