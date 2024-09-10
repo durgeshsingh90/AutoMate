@@ -26,6 +26,49 @@ def run_sqlplus_command(command, query, output_file, server_name):
         for line in data_list:
             file.write(line + "\n")
 
+# Function to clean JSON query output files
+def clean_file(file_path):
+    """
+    Cleans the file by removing:
+    - All lines from the start until the first occurrence of 'SQL>'.
+    - All lines from the bottom until the last occurrence of 'SQL>'.
+    - Any line containing 'rows selected'.
+    - Any line containing only dashes or the word 'DESCRIPTION'.
+    """
+    with open(file_path, 'r') as file:
+        lines = file.readlines()
+
+    # Find the first occurrence of 'SQL>' and keep all lines after it
+    start_index = 0
+    for i, line in enumerate(lines):
+        if 'SQL>' in line:
+            start_index = i + 1
+            break
+
+    # Reverse search for the last occurrence of 'SQL>' and keep all lines before it
+    end_index = len(lines)
+    for i in range(len(lines) - 1, -1, -1):
+        if 'SQL>' in lines[i]:
+            end_index = i
+            break
+
+    # Extract the relevant content between the first and last occurrence of 'SQL>'
+    cleaned_lines = lines[start_index:end_index]
+
+    # Remove lines with 'rows selected', lines with only dashes, and 'DESCRIPTION'
+    cleaned_lines = [
+        ''.join(char for char in line if char in string.printable).strip()
+        for line in cleaned_lines
+        if 'rows selected' not in line.lower() and
+        not line.strip().startswith('-') and
+        line.strip() != 'DESCRIPTION'
+    ]
+
+    # Write the cleaned lines back to the file
+    with open(file_path, 'w') as file:
+        for line in cleaned_lines:
+            file.write(line + '\n')
+
 # Function to clean the distinct file and return its content as a list
 def clean_distinct_file(file_path):
     """
@@ -89,6 +132,10 @@ prod_thread.join()
 uat_distinct_thread.join()
 prod_distinct_thread.join()
 
+# Clean the JSON query output files
+clean_file('uat_output.json')
+clean_file('prod_output.json')
+
 # Clean the distinct output files and store them as lists
 uat_distinct_list = clean_distinct_file('uat_distinct_output.txt')
 prod_distinct_list = clean_distinct_file('prod_distinct_output.txt')
@@ -99,6 +146,9 @@ print(uat_distinct_list)
 
 print("\nProduction Distinct List:")
 print(prod_distinct_list)
+
+########################################## Further Processing #####################
+# Your additional processing code can follow here...
 
 
 ########################################## Process json data#####################
