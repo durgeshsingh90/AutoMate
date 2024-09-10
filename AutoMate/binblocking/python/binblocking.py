@@ -1,4 +1,3 @@
-###################DB Connection and generate json data##########
 import subprocess
 import threading
 import string
@@ -9,232 +8,93 @@ import json
 uat_command = "sqlplus oasis77/ist0py@istu2_equ"
 prod_command = "sqlplus oasis77/ist0py@istu2_equ"
 query = "SELECT JSON_OBJECT(*) AS JSON_DATA FROM (SELECT * FROM oasis77.SHCEXTBINDB ORDER BY LOWBIN) WHERE ROWNUM <= 4;"
-distint_query = "SELECT DISTINCT description FROM oasis77.SHCEXTBINDB ORDER BY DESCRIPTION;"
+distinct_query = "SELECT DISTINCT description FROM oasis77.SHCEXTBINDB ORDER BY DESCRIPTION;"
 
-# Function to run the SQL*Plus command and capture the output
 def run_sqlplus_command(command, query, output_file, server_name):
+    """Run SQL*Plus command and capture the output."""
     process = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     stdout, stderr = process.communicate(input=query.encode())
     if process.returncode != 0:
         raise Exception(f"SQL*Plus command failed on {server_name}: {stderr.decode()}")
 
-    # Process the output to store it in a list
-    output_lines = stdout.decode().splitlines()
-    data_list = [line for line in output_lines if line.strip()]
-
-    # Save the output to a file
+    # Process and save the output
+    output_lines = [line for line in stdout.decode().splitlines() if line.strip()]
     with open(output_file, "w") as file:
-        for line in data_list:
-            file.write(line + "\n")
+        file.write("\n".join(output_lines) + "\n")
 
-# Function to clean JSON query output files
 def clean_file(file_path):
-    """
-    Cleans the file by removing:
-    - All lines from the start until the first occurrence of 'SQL>'.
-    - All lines from the bottom until the last occurrence of 'SQL>'.
-    - Any line containing 'rows selected'.
-    - Any line containing only dashes or the word 'DESCRIPTION'.
-    """
+    """Clean the output file by removing unnecessary lines."""
     with open(file_path, 'r') as file:
         lines = file.readlines()
 
-    # Find the first occurrence of 'SQL>' and keep all lines after it
-    start_index = 0
-    for i, line in enumerate(lines):
-        if 'SQL>' in line:
-            start_index = i + 1
-            break
+    # Find indexes for relevant content
+    start_index = next((i for i, line in enumerate(lines) if 'SQL>' in line), 0) + 1
+    end_index = next((i for i in range(len(lines) - 1, -1, -1) if 'SQL>' in lines[i]), len(lines))
 
-    # Reverse search for the last occurrence of 'SQL>' and keep all lines before it
-    end_index = len(lines)
-    for i in range(len(lines) - 1, -1, -1):
-        if 'SQL>' in lines[i]:
-            end_index = i
-            break
-
-    # Extract the relevant content between the first and last occurrence of 'SQL>'
-    cleaned_lines = lines[start_index:end_index]
-
-    # Remove lines with 'rows selected', lines with only dashes, and 'DESCRIPTION'
+    # Clean lines between indexes
     cleaned_lines = [
         ''.join(char for char in line if char in string.printable).strip()
-        for line in cleaned_lines
-        if 'rows selected' not in line.lower() and
-        not line.strip().startswith('-') and
-        line.strip() != 'DESCRIPTION'
+        for line in lines[start_index:end_index]
+        if 'rows selected' not in line.lower() and not line.strip().startswith('-') and line.strip() != 'DESCRIPTION'
     ]
 
-    # Write the cleaned lines back to the file
     with open(file_path, 'w') as file:
-        for line in cleaned_lines:
-            file.write(line + '\n')
+        file.write("\n".join(cleaned_lines) + "\n")
 
-# Function to clean the distinct file and return its content as a list
 def clean_distinct_file(file_path):
-    """
-    Cleans the file by removing:
-    - All lines from the start until the first occurrence of 'SQL>'.
-    - All lines from the bottom until the last occurrence of 'SQL>'.
-    - Any line containing 'rows selected'.
-    - Any line containing only dashes or the word 'DESCRIPTION'.
-    Returns:
-    - A list of cleaned lines.
-    """
+    """Clean the distinct output file and return as a list."""
     with open(file_path, 'r') as file:
         lines = file.readlines()
 
-    # Find the first occurrence of 'SQL>' and keep all lines after it
-    start_index = 0
-    for i, line in enumerate(lines):
-        if 'SQL>' in line:
-            start_index = i + 1
-            break
+    # Find indexes for relevant content
+    start_index = next((i for i, line in enumerate(lines) if 'SQL>' in line), 0) + 1
+    end_index = next((i for i in range(len(lines) - 1, -1, -1) if 'SQL>' in lines[i]), len(lines))
 
-    # Reverse search for the last occurrence of 'SQL>' and keep all lines before it
-    end_index = len(lines)
-    for i in range(len(lines) - 1, -1, -1):
-        if 'SQL>' in lines[i]:
-            end_index = i
-            break
-
-    # Extract the relevant content between the first and last occurrence of 'SQL>'
-    cleaned_lines = lines[start_index:end_index]
-
-    # Remove lines with 'rows selected', lines with only dashes, and 'DESCRIPTION'
+    # Clean lines between indexes
     cleaned_lines = [
         ''.join(char for char in line if char in string.printable).strip()
-        for line in cleaned_lines
-        if 'rows selected' not in line.lower() and
-        not line.strip().startswith('-') and
-        line.strip() != 'DESCRIPTION'
+        for line in lines[start_index:end_index]
+        if 'rows selected' not in line.lower() and not line.strip().startswith('-') and line.strip() != 'DESCRIPTION'
     ]
 
-    # Return the cleaned lines as a list
     return cleaned_lines
 
 def process_user_input():
-    """
-    Process multiline user input to generate cleaned bin ranges.
-    Returns:
-        list: A list of processed bin ranges.
-    """
+    """Process multiline user input to generate cleaned bin ranges."""
     print("Enter the list of bin ranges (press Enter twice to finish):")
-
-    # Take multiline input
-    user_input = []
-    while True:
-        line = input()
-        if line == "":  # End input on empty line
-            break
-        user_input.append(line.strip())
-
-    # Flatten the list into a single list of bin ranges
-    bin_list = []
-    for line in user_input:
-        bin_list.extend(line.split(','))
-
-    # Remove extra spaces
-    bin_list = [item.strip() for item in bin_list if item.strip()]
-
-    # Remove duplicates and subsets
+    user_input = iter(input, "")
+    bin_list = [item.strip() for line in user_input for item in line.split(',') if item.strip()]
     bin_list = remove_duplicates_and_subsets(bin_list)
-
-    # Combine consecutive ranges
     bin_range, _ = combine_consecutives(bin_list)
-
-    # Return the cleaned-up bin ranges
     return bin_range
 
-# Function to remove duplicate and subset bins
 def remove_duplicates_and_subsets(bin_list):
+    """Remove duplicate and subset bins."""
     bin_set = set(bin_list)
     sorted_bins = sorted(bin_set, key=lambda x: (len(x), x))
-    final_bins = []
-    for bin in sorted_bins:
-        if not any(bin.startswith(existing_bin) for existing_bin in final_bins):
-            final_bins.append(bin)
-    return final_bins
-# Function to combine consecutive bins
+    return [bin for bin in sorted_bins if not any(bin.startswith(existing_bin) for existing_bin in sorted_bins if existing_bin != bin)]
+
 def combine_consecutives(bins):
-    combined = []
-    consecutive_count = 0
-    i = 0
+    """Combine consecutive bins into ranges."""
     bins = sorted(bins, key=lambda x: int(x.split('-')[0]))
+    combined, i = [], 0
 
     while i < len(bins):
-        current_bin = bins[i]
-        start_bin = current_bin
-        end_bin = current_bin
-
-        while i + 1 < len(bins):
-            next_bin = bins[i + 1]
-            try:
-                if len(current_bin) == len(next_bin) and int(next_bin.split('-')[0]) == int(current_bin.split('-')[0]) + 1:
-                    end_bin = next_bin
-                    current_bin = next_bin
-                    i += 1
-                    consecutive_count += 1
-                else:
-                    break
-            except ValueError:
-                break
-
+        start_bin = end_bin = bins[i]
+        while i + 1 < len(bins) and int(bins[i + 1].split('-')[0]) == int(bins[i].split('-')[0]) + 1:
+            end_bin = bins[i + 1]
+            i += 1
         combined.append(f"{start_bin}-{end_bin}" if start_bin != end_bin else start_bin)
         i += 1
 
-    return combined, consecutive_count
-# Create threads for UAT and production connections
-uat_thread = threading.Thread(target=run_sqlplus_command, args=(uat_command, query, "uat_output.json", "UAT"))
-prod_thread = threading.Thread(target=run_sqlplus_command, args=(prod_command, query, "prod_output.json", "Prod"))
-
-# Also create threads for running the distinct query
-uat_distinct_thread = threading.Thread(target=run_sqlplus_command, args=(uat_command, distint_query, "uat_distinct_output.txt", "UAT"))
-prod_distinct_thread = threading.Thread(target=run_sqlplus_command, args=(prod_command, distint_query, "prod_distinct_output.txt", "Prod"))
-
-# Start the UAT and production threads
-uat_thread.start()
-prod_thread.start()
-uat_distinct_thread.start()
-prod_distinct_thread.start()
-
-# Wait for all threads to complete
-uat_thread.join()
-prod_thread.join()
-uat_distinct_thread.join()
-prod_distinct_thread.join()
-
-# Clean the JSON query output files
-clean_file('uat_output.json')
-clean_file('prod_output.json')
-
-# Clean the distinct output files and store them as lists
-uat_distinct_list = clean_distinct_file('uat_distinct_output.txt')
-prod_distinct_list = clean_distinct_file('prod_distinct_output.txt')
-
-# # Print or use the cleaned lists as needed
-# print("UAT Distinct List:")
-# print(uat_distinct_list)
-
-# print("\nProduction Distinct List:")
-# print(prod_distinct_list)
-
-########################################## Further Processing #####################
-# Your additional processing code can follow here...
-
-########################################## Process json data#####################
-import re
-import json
+    return combined, i
 
 def combine_json_data(file_path):
-    """Reads a file and combines all JSON data within {} into a single line."""
+    """Read file and combine all JSON data into a single line."""
     with open(file_path, 'r') as f:
         lines = f.readlines()
 
-    combined_data = []
-    current_json = []
-    in_json = False
-
+    combined_data, current_json, in_json = [], [], False
     for line in lines:
         if '{' in line:
             in_json = True
@@ -250,11 +110,11 @@ def combine_json_data(file_path):
     return combined_data
 
 def remove_control_characters(s):
-    # Remove control characters using regex
+    """Remove control characters from a string."""
     return re.sub(r'[\x00-\x1F\x7F]', '', s)
 
 def remove_null_values(d):
-    # Recursively remove null values from the dictionary or list
+    """Recursively remove null values from a dictionary or list."""
     if isinstance(d, dict):
         return {k: remove_null_values(v) for k, v in d.items() if v is not None}
     elif isinstance(d, list):
@@ -263,30 +123,21 @@ def remove_null_values(d):
         return d
 
 def clean_json_data(json_list):
+    """Clean JSON data by removing control characters and null values."""
     cleaned_data = []
     for json_str in json_list:
-        # Remove control characters
         json_str = remove_control_characters(json_str)
-
-        # Parse JSON string to dictionary
         try:
             json_obj = json.loads(json_str)
-
-            # Remove null values
             cleaned_json_obj = remove_null_values(json_obj)
-
-            # Apply length checks
             cleaned_json_obj = apply_length_checks(cleaned_json_obj)
-
-            # Convert back to JSON string
-            cleaned_json_str = json.dumps(cleaned_json_obj)
-            cleaned_data.append(cleaned_json_str)
+            cleaned_data.append(json.dumps(cleaned_json_obj))
         except json.JSONDecodeError:
-            # Handle any JSON decoding errors if they occur
             print(f"Error decoding JSON: {json_str}")
     return cleaned_data
 
 def apply_length_checks(json_obj):
+    """Apply length checks to JSON fields based on configuration."""
     length_config = {
         "LOWBIN": {"type": "CHAR", "length": 15},
         "HIGHBIN": {"type": "CHAR", "length": 15},
@@ -309,154 +160,75 @@ def apply_length_checks(json_obj):
         if key in length_config:
             config = length_config[key]
             if config["type"] == "CHAR" and config["length"] is not None:
-                # Ensure CHAR type fields are padded with spaces or truncated
                 json_obj[key] = str(value).ljust(config["length"])[:config["length"]]
             elif config["type"] == "NUMBER" and config["length"] is not None:
-                # Ensure NUMBER type fields are padded with zeros or truncated
                 json_obj[key] = str(value).zfill(config["length"])[:config["length"]]
-            # For DATE type or other fields, no changes needed
     return json_obj
 
 def json_to_sql_insert(json_obj, table_name):
-    """Converts a JSON object to an SQL INSERT statement for a specified table."""
-    keys = []
-    values = []
-
-    for key, value in json_obj.items():
-        keys.append(key)
-        if key == "FILE_DATE" and value:
-            # Convert FILE_DATE to SQL TO_DATE format
-            formatted_date = f"TO_DATE('{value.strip()}', 'DD/MM/YYYY')"
-            values.append(formatted_date)
-        elif key == "O_LEVEL":
-            # Ensure O_LEVEL is treated as a numeric value without quotes
-            values.append(str(value))
-        else:
-            # Format other values
-            if isinstance(value, str):
-                values.append(f"'{value}'")
-            else:
-                values.append(str(value))
-
-    keys_str = ', '.join(keys)
-    values_str = ', '.join(values)
-    sql_statement = f"INSERT INTO {table_name} ({keys_str}) VALUES ({values_str});"
-    return sql_statement
+    """Convert a JSON object to an SQL INSERT statement for a specified table."""
+    keys = list(json_obj.keys())
+    values = [
+        f"TO_DATE('{value.strip()}', 'DD/MM/YYYY')" if key == "FILE_DATE" and value else 
+        str(value) if key == "O_LEVEL" else 
+        f"'{value}'" if isinstance(value, str) else str(value) 
+        for key, value in json_obj.items()
+    ]
+    return f"INSERT INTO {table_name} ({', '.join(keys)}) VALUES ({', '.join(values)});"
 
 def convert_to_sql_insert_statements(cleaned_json_list, table_name):
-    """Converts a list of cleaned JSON objects to a list of SQL INSERT statements."""
-    sql_statements = []
-    for json_str in cleaned_json_list:
-        json_obj = json.loads(json_str)
-        sql_statement = json_to_sql_insert(json_obj, table_name)
-        sql_statements.append(sql_statement)
-    return sql_statements
-
-# Combine the JSON data from both files
-uat_json = combine_json_data('uat_output.json')
-prod_json = combine_json_data('prod_output.json')
-
-# Clean both uat_json and prod_json lists
-uat_json_cleaned = clean_json_data(uat_json)
-prod_json_cleaned = clean_json_data(prod_json)
-
-# Set the table name
-table_name = "OASIS77.SHCEXTBINDB"
-
-# Convert cleaned JSON data to SQL INSERT statements
-uat_sql_statements = convert_to_sql_insert_statements(uat_json_cleaned, table_name)
-prod_sql_statements = convert_to_sql_insert_statements(prod_json_cleaned, table_name)
+    """Convert a list of cleaned JSON objects to SQL INSERT statements."""
+    return [json_to_sql_insert(json.loads(json_str), table_name) for json_str in cleaned_json_list]
 
 def save_sql_statements_to_file(statements, file_path):
-    # Save SQL statements to a file
+    """Save SQL statements to a file."""
     with open(file_path, 'w') as file:
-        for statement in statements:
-            file.write(statement + '\n')
+        file.write("\n".join(statements) + "\n")
+
+def calculate_bins_with_neighbors(processed_bins):
+    """Calculate the start and end bins along with their neighbors."""
+    result = []
+    for bin_range in processed_bins:
+        bin_range = bin_range.strip()
+        if '-' in bin_range:
+            start_bin, end_bin = bin_range.split('-')
+            start_bin, end_bin = start_bin.strip().ljust(15, '0'), end_bin.strip().ljust(15, '9')
+            neighbor_minus_1, neighbor_plus_1 = str(int(start_bin.strip()) - 1).ljust(15, '9'), str(int(end_bin.strip()) + 1).ljust(15, '0')
+        else:
+            start_bin = end_bin = bin_range.strip().ljust(15, '0')
+            neighbor_minus_1, neighbor_plus_1 = str(int(bin_range.strip()) - 1).ljust(15, '9'), str(int(bin_range.strip()) + 1).ljust(15, '0')
+
+        result.append((start_bin, end_bin, neighbor_minus_1, neighbor_plus_1))
+    return result
+
+# Create and start threads for UAT and production connections
+threads = [
+    threading.Thread(target=run_sqlplus_command, args=(uat_command, query, "uat_output.json", "UAT")),
+    threading.Thread(target=run_sqlplus_command, args=(prod_command, query, "prod_output.json", "Prod")),
+    threading.Thread(target=run_sqlplus_command, args=(uat_command, distinct_query, "uat_distinct_output.txt", "UAT")),
+    threading.Thread(target=run_sqlplus_command, args=(prod_command, distinct_query, "prod_distinct_output.txt", "Prod"))
+]
+for thread in threads: thread.start()
+for thread in threads: thread.join()
+
+# Clean output files
+clean_file('uat_output.json')
+clean_file('prod_output.json')
+uat_distinct_list = clean_distinct_file('uat_distinct_output.txt')
+prod_distinct_list = clean_distinct_file('prod_distinct_output.txt')
+
+# Combine, clean JSON data, and convert to SQL statements
+uat_json_cleaned = clean_json_data(combine_json_data('uat_output.json'))
+prod_json_cleaned = clean_json_data(combine_json_data('prod_output.json'))
+table_name = "OASIS77.SHCEXTBINDB"
+uat_sql_statements = convert_to_sql_insert_statements(uat_json_cleaned, table_name)
+prod_sql_statements = convert_to_sql_insert_statements(prod_json_cleaned, table_name)
 
 # Save SQL statements to files
 save_sql_statements_to_file(uat_sql_statements, 'uat_sql_statements.sql')
 save_sql_statements_to_file(prod_sql_statements, 'prod_sql_statements.sql')
 
-# print ('SQL Insert Statement')
-# Output SQL statements
-# for statement in prod_sql_statements:
-#     print(statement)
+# Process user input and calculate bins
+processed_bins = process_user_input()
+start_end = calculate_bins_with_neighbors(processed_bins)
 
-
-
-def calculate_bins_with_neighbors(processed_bins):
-    """
-    Calculate the start and end bins for each processed bin range along with neighboring bins.
-    """
-    result = []
-
-    for bin_range in processed_bins:
-        bin_range = bin_range.strip()  # Clean up any extra spaces
-
-        # Check if the bin_range is a range
-        if '-' in bin_range:
-            start_bin, end_bin = bin_range.split('-')
-            start_bin = start_bin.strip().ljust(15, '0')  # Pad the start_bin with '0' to make it 15 characters
-            end_bin = end_bin.strip().ljust(15, '9')    # Pad the end_bin with '9' to make it 15 characters
-
-            # Calculate neighbors for the start and end bins
-            start_bin_int = int(start_bin.strip())
-            end_bin_int = int(end_bin.strip())
-            neighbor_minus_1 = str(start_bin_int - 1).ljust(15, '9')  # Decrement start_bin and pad with '9'
-            neighbor_plus_1 = str(end_bin_int + 1).ljust(15, '0')   # Increment end_bin and pad with '0'
-        else:
-            start_bin = end_bin = bin_range.strip()
-            start_bin = start_bin.ljust(15, '0')  # Pad the bin with '0' to make it 15 characters
-            end_bin = end_bin.ljust(15, '9')     # Pad the bin with '9' to make it 15 characters
-
-            # Calculate neighbors for a single bin
-            bin_int = int(bin_range.strip())
-            neighbor_minus_1 = str(bin_int - 1).ljust(15, '9')  # Decrement bin and pad with '9'
-            neighbor_plus_1 = str(bin_int + 1).ljust(15, '0')   # Increment bin and pad with '0'
-
-        result.append((start_bin, end_bin, neighbor_minus_1, neighbor_plus_1))
-
-    return result
-
-
-# Main script logic
-if __name__ == "__main__":
-    # Create threads for UAT and production connections
-    uat_thread = threading.Thread(target=run_sqlplus_command, args=(uat_command, query, "uat_output.json", "UAT"))
-    prod_thread = threading.Thread(target=run_sqlplus_command, args=(prod_command, query, "prod_output.json", "Prod"))
-
-    # Also create threads for running the distinct query
-    uat_distinct_thread = threading.Thread(target=run_sqlplus_command, args=(uat_command, distint_query, "uat_distinct_output.txt", "UAT"))
-    prod_distinct_thread = threading.Thread(target=run_sqlplus_command, args=(prod_command, distint_query, "prod_distinct_output.txt", "Prod"))
-
-    # Start the UAT and production threads
-    uat_thread.start()
-    prod_thread.start()
-    uat_distinct_thread.start()
-    prod_distinct_thread.start()
-
-    # Wait for all threads to complete
-    uat_thread.join()
-    prod_thread.join()
-    uat_distinct_thread.join()
-    prod_distinct_thread.join()
-
-    # Clean the JSON query output files
-    clean_file('uat_output.json')
-    clean_file('prod_output.json')
-
-    # Clean the distinct output files and store them as lists
-    uat_distinct_list = clean_distinct_file('uat_distinct_output.txt')
-    prod_distinct_list = clean_distinct_file('prod_distinct_output.txt')
-
-    # Print or use the cleaned lists as needed
-    print("UAT Distinct List:")
-    print(uat_distinct_list)
-
-    print("\nProduction Distinct List:")
-    print(prod_distinct_list)
-
-    # Process user input for bin ranges only once
-    processed_bins = process_user_input()
-    print("Processed Bin Ranges:")
-    print(processed_bins)
