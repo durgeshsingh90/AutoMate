@@ -362,3 +362,30 @@ print('processed_bins', processed_bins)
 print('uat_sql_statements', uat_sql_statements)
 print('prod_sql_statements', prod_sql_statements)
 print('merged_sorted_sql_statements', merged_sorted_sql_statements)
+
+
+# Function to save each output to a separate file with the appropriate extension
+def save_output_to_files(output_dict):
+    """Save each output to a separate file with the appropriate extension."""
+    for label, data in output_dict.items():
+        # Determine the file extension
+        extension = 'txt' if label == 'processed_bins' else 'sql'
+        file_path = f"{label}.{extension}"  # Define file name with the correct extension
+        with open(file_path, 'w') as file:
+            if isinstance(data, list):
+                # If data is a list, join each item with a newline
+                file.write("\n".join(data) + "\n")
+            else:
+                # If data is not a list, write it directly
+                file.write(f"{label}:\n{data}\n")
+
+# Create a dictionary with all the outputs to save
+outputs = {
+    'processed_bins': processed_bins,
+    'uat_sql_statements': uat_sql_statements,
+    'prod_sql_statements': prod_sql_statements,
+    'merged_sorted_sql_statements': merged_sorted_sql_statements
+}
+
+# Call the function to save the outputs to separate files
+save_output_to_files(outputs)
