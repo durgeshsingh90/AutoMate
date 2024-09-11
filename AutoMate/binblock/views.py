@@ -21,23 +21,21 @@ def run_sqlplus_command(command, query, output_file, server_name):
         file.write("\n".join(output_lines) + "\n")
     logger.debug(f"SQL*Plus command completed on {server_name}. Output written to {output_file}")
 
-def clean_distinct_file(file_path):
-    """Clean the distinct output file and return as a list."""
+def clean_file(file_path):
+    """Clean the output JSON file."""
     logger.debug(f"Cleaning output file: {file_path}")
-    with open(file_path, 'r') as file:
-        lines = file.readlines()
+    try:
+        with open(file_path, 'r') as file:
+            lines = file.readlines()
 
-    start_index = next((i for i, line in enumerate(lines) if 'SQL>' in line), 0) + 1
-    end_index = next((i for i in range(len(lines) - 1, -1, -1) if 'SQL>' in lines[i]), len(lines))
+        cleaned_lines = [line.strip() for line in lines if line.strip() and 'rows selected' not in line.lower()]
 
-    cleaned_list = [
-        ''.join(char for char in line if char in string.printable).strip()
-        for line in lines[start_index:end_index]
-        if 'rows selected' not in line.lower() and not line.strip().startswith('-') and line.strip() != 'DESCRIPTION'
-    ]
+        with open(file_path, 'w') as file:
+            file.write("\n".join(cleaned_lines) + "\n")
 
-    logger.debug(f"Cleaned output file: {file_path} with {len(cleaned_list)} entries")
-    return cleaned_list
+        logger.info(f"Successfully cleaned output file: {file_path}")
+    except Exception as e:
+        logger.error(f"Error cleaning file {file_path}: {e}")
 
 def categorize_and_expand_items(distinct_list, search_items=None):
     """Categorize 'RUSSIAN' and 'SYRIA' variations into single categories for blocking 
@@ -66,24 +64,26 @@ def categorize_and_expand_items(distinct_list, search_items=None):
     # Return categorized list for display and expanded items for search
     return categorized_list, expanded_items
 
-def run_sql_queries_in_threads():
-    """Run SQL queries using multithreading."""
-    logger.debug("Starting SQL queries in multiple threads")
+def run_background_queries():
+    """Run prod and uat queries in the background and clean the output files."""
+    logger.debug("Starting background queries for prod and uat")
+
+    def run_query_and_clean(command, query, output_file, server_name):
+        try:
+            run_sqlplus_command(command, query, output_file, server_name)
+            clean_file(output_file)  # Clean the output file after running the query
+        except Exception as e:
+            logger.error(f"Error running SQL query or cleaning file on {server_name}: {e}")
+
     prod_command = "sqlplus oasis77/ist0py@istu2_equ"
-    distinct_query = "SELECT DISTINCT description FROM oasis77.SHCEXTBINDB ORDER BY DESCRIPTION;"
-    output_file = 'prod_distinct_output.txt'
+    uat_command = "sqlplus oasis77/ist0py@istu2_uat"
+    query = "SELECT JSON_OBJECT(*) AS JSON_DATA FROM (SELECT * FROM oasis77.SHCEXTBINDB ORDER BY LOWBIN) WHERE ROWNUM <= 4;"
+    prod_output_file = 'prod_output.json'
+    uat_output_file = 'uat_output.json'
 
-    threads = [
-        threading.Thread(target=run_sqlplus_command, args=(prod_command, distinct_query, output_file, "Prod"))
-    ]
-
-    for thread in threads:
-        thread.start()
-        logger.debug(f"Started thread {thread.name} for SQL*Plus command")
-
-    for thread in threads:
-        thread.join()
-        logger.debug(f"Completed thread {thread.name} for SQL*Plus command")
+    # Start threads for prod and uat queries
+    threading.Thread(target=run_query_and_clean, args=(prod_command, query, prod_output_file, "Prod")).start()
+    threading.Thread(target=run_query_and_clean, args=(uat_command, query, uat_output_file, "UAT")).start()
 
 def bin_blocking_editor(request):
     logger.info("Bin blocking editor view accessed")
@@ -92,12 +92,21 @@ def bin_blocking_editor(request):
     prod_distinct_list = []
 
     try:
-        # Run SQL queries in threads and process the output
-        run_sql_queries_in_threads()
-        prod_distinct_list = clean_distinct_file('prod_distinct_output.txt')
+        # Run the distinct query first
+        distinct_command = "sqlplus oasis77/ist0py@istu2_equ"
+        distinct_query = "SELECT DISTINCT description FROM oasis77.SHCEXTBINDB ORDER BY DESCRIPTION;"
+        distinct_output_file = 'prod_distinct_output.txt'
+        run_sqlplus_command(distinct_command, distinct_query, distinct_output_file, "Distinct")
+
+        # Clean the output file to create prod_distinct_list
+        prod_distinct_list = clean_file(distinct_output_file)
         categorized_list, _ = categorize_and_expand_items(prod_distinct_list)
+
+        # Run prod and uat queries in the background
+        run_background_queries()
+
     except Exception as e:
-        logger.error(f"Error running SQL queries: {e}")
+        logger.error(f"Error running distinct query: {e}")
         categorized_list = []
 
     if request.method == 'POST':
