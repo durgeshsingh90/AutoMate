@@ -66,6 +66,28 @@ def categorize_and_expand_items(distinct_list, search_items=None):
 
     # Return categorized list for display and expanded items for search
     return categorized_list, expanded_items
+def clean_distinct_file(file_path):
+    """Clean the distinct output file and return as a list of cleaned items."""
+    logger.debug(f"Cleaning output file for distinct query: {file_path}")
+    try:
+        with open(file_path, 'r') as file:
+            lines = file.readlines()
+
+        start_index = next((i for i, line in enumerate(lines) if 'SQL>' in line), 0) + 1
+        end_index = next((i for i in range(len(lines) - 1, -1, -1) if 'SQL>' in lines[i]), len(lines))
+
+        cleaned_list = [
+            ''.join(char for char in line if char in string.printable).strip()
+            for line in lines[start_index:end_index]
+            if 'rows selected' not in line.lower() and not line.strip().startswith('-') and line.strip() != 'DESCRIPTION'
+        ]
+
+        logger.info(f"Successfully cleaned distinct output file: {file_path} with {len(cleaned_list)} entries")
+        return cleaned_list  # Return the cleaned lines as a list
+
+    except Exception as e:
+        logger.error(f"Error cleaning distinct output file {file_path}: {e}")
+        return []  # Return an empty list in case of an error
 
 def run_background_queries():
     """Run prod and uat queries in the background and clean the output files."""
@@ -101,8 +123,8 @@ def bin_blocking_editor(request):
         distinct_output_file = 'prod_distinct_output.txt'
         run_sqlplus_command(distinct_command, distinct_query, distinct_output_file, "Distinct")
 
-        # Clean the output file to create prod_distinct_list
-        prod_distinct_list = clean_file(distinct_output_file)  # Now prod_distinct_list will be a list
+        # Clean the distinct output file to create prod_distinct_list
+        prod_distinct_list = clean_distinct_file(distinct_output_file)  # Now prod_distinct_list will be a list
         categorized_list, _ = categorize_and_expand_items(prod_distinct_list)
 
         # Run prod and uat queries in the background
@@ -130,4 +152,3 @@ def bin_blocking_editor(request):
     }
     logger.info("Rendering binblocker.html with context data")
     return render(request, 'binblock/binblocker.html', context)
-    

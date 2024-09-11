@@ -195,6 +195,7 @@ def calculate_bins_with_neighbors(processed_bins):
 threads = [
     threading.Thread(target=run_sqlplus_command, args=(uat_command, query, "uat_output.json", "UAT")),
     threading.Thread(target=run_sqlplus_command, args=(prod_command, query, "prod_output.json", "Prod")),
+    # threading.Thread(target=run_sqlplus_command, args=(uat_command, distinct_query, "uat_distinct_output.txt", "UAT")),
     threading.Thread(target=run_sqlplus_command, args=(prod_command, distinct_query, "prod_distinct_output.txt", "Prod"))
 ]
 for thread in threads: 
