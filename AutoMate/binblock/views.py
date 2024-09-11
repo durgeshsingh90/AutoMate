@@ -22,7 +22,7 @@ def run_sqlplus_command(command, query, output_file, server_name):
     logger.debug(f"SQL*Plus command completed on {server_name}. Output written to {output_file}")
 
 def clean_file(file_path):
-    """Clean the output JSON file."""
+    """Clean the output JSON file and return the cleaned list of lines."""
     logger.debug(f"Cleaning output file: {file_path}")
     try:
         with open(file_path, 'r') as file:
@@ -34,8 +34,11 @@ def clean_file(file_path):
             file.write("\n".join(cleaned_lines) + "\n")
 
         logger.info(f"Successfully cleaned output file: {file_path}")
+        return cleaned_lines  # Return the cleaned lines as a list
+
     except Exception as e:
         logger.error(f"Error cleaning file {file_path}: {e}")
+        return []  # Return an empty list in case of an error
 
 def categorize_and_expand_items(distinct_list, search_items=None):
     """Categorize 'RUSSIAN' and 'SYRIA' variations into single categories for blocking 
@@ -99,7 +102,7 @@ def bin_blocking_editor(request):
         run_sqlplus_command(distinct_command, distinct_query, distinct_output_file, "Distinct")
 
         # Clean the output file to create prod_distinct_list
-        prod_distinct_list = clean_file(distinct_output_file)
+        prod_distinct_list = clean_file(distinct_output_file)  # Now prod_distinct_list will be a list
         categorized_list, _ = categorize_and_expand_items(prod_distinct_list)
 
         # Run prod and uat queries in the background
@@ -127,3 +130,4 @@ def bin_blocking_editor(request):
     }
     logger.info("Rendering binblocker.html with context data")
     return render(request, 'binblock/binblocker.html', context)
+    
