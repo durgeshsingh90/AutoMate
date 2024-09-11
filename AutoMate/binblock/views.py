@@ -1,11 +1,16 @@
+import os
 import string
 import logging
 import threading
 import subprocess
 from django.shortcuts import render
+from django.conf import settings
 
 # Get the logger for the binblock app
 logger = logging.getLogger('binblock')
+
+# Define the output directory
+OUTPUT_DIR = os.path.join(settings.BASE_DIR, 'binblock', 'output')
 
 def run_sqlplus_command(command, query, output_file, server_name):
     """Run SQL*Plus command and capture the output."""
@@ -40,32 +45,6 @@ def clean_file(file_path):
         logger.error(f"Error cleaning file {file_path}: {e}")
         return []  # Return an empty list in case of an error
 
-def categorize_and_expand_items(distinct_list, search_items=None):
-    """Categorize 'RUSSIAN' and 'SYRIA' variations into single categories for blocking 
-       and expand them for search items if needed."""
-    categorized_list = []
-    expanded_items = []
-
-    for item in distinct_list:
-        if item.startswith("RUSSIAN"):
-            if "RUSSIAN" not in categorized_list:
-                categorized_list.append("RUSSIAN")
-        elif item.startswith("SYRIA"):
-            if "SYRIA" not in categorized_list:
-                categorized_list.append("SYRIA")
-        else:
-            categorized_list.append(item)
-
-    # If search_items is provided, expand "RUSSIAN" and "SYRIA" into their variations
-    if search_items:
-        for item in search_items:
-            if item in ["RUSSIAN", "SYRIA"]:
-                expanded_items.extend([i for i in distinct_list if i.startswith(item)])
-            else:
-                expanded_items.append(item)
-
-    # Return categorized list for display and expanded items for search
-    return categorized_list, expanded_items
 def clean_distinct_file(file_path):
     """Clean the distinct output file and return as a list of cleaned items."""
     logger.debug(f"Cleaning output file for distinct query: {file_path}")
@@ -95,16 +74,21 @@ def run_background_queries():
 
     def run_query_and_clean(command, query, output_file, server_name):
         try:
+            # Run the SQL query and generate the output file
             run_sqlplus_command(command, query, output_file, server_name)
-            clean_file(output_file)  # Clean the output file after running the query
+            
+            # Clean the output file after running the query
+            cleaned_data = clean_file(output_file)
+            logger.info(f"Cleaned data from {server_name}: {cleaned_data}")
+
         except Exception as e:
             logger.error(f"Error running SQL query or cleaning file on {server_name}: {e}")
 
     prod_command = "sqlplus oasis77/ist0py@istu2_equ"
     uat_command = "sqlplus oasis77/ist0py@istu2_uat"
     query = "SELECT JSON_OBJECT(*) AS JSON_DATA FROM (SELECT * FROM oasis77.SHCEXTBINDB ORDER BY LOWBIN) WHERE ROWNUM <= 4;"
-    prod_output_file = 'prod_output.json'
-    uat_output_file = 'uat_output.json'
+    prod_output_file = os.path.join(OUTPUT_DIR, 'prod_output.json')
+    uat_output_file = os.path.join(OUTPUT_DIR, 'uat_output.json')
 
     # Start threads for prod and uat queries
     threading.Thread(target=run_query_and_clean, args=(prod_command, query, prod_output_file, "Prod")).start()
@@ -120,7 +104,7 @@ def bin_blocking_editor(request):
         # Run the distinct query first
         distinct_command = "sqlplus oasis77/ist0py@istu2_equ"
         distinct_query = "SELECT DISTINCT description FROM oasis77.SHCEXTBINDB ORDER BY DESCRIPTION;"
-        distinct_output_file = 'prod_distinct_output.txt'
+        distinct_output_file = os.path.join(OUTPUT_DIR, 'prod_distinct_output.txt')
         run_sqlplus_command(distinct_command, distinct_query, distinct_output_file, "Distinct")
 
         # Clean the distinct output file to create prod_distinct_list
@@ -152,3 +136,32 @@ def bin_blocking_editor(request):
     }
     logger.info("Rendering binblocker.html with context data")
     return render(request, 'binblock/binblocker.html', context)
+
+def categorize_and_expand_items(distinct_list, search_items=None):
+    """
+    Categorize 'RUSSIAN' and 'SYRIA' variations into single categories for blocking 
+    and expand them for search items if needed.
+    """
+    categorized_list = []
+    expanded_items = []
+
+    for item in distinct_list:
+        if item.startswith("RUSSIAN"):
+            if "RUSSIAN" not in categorized_list:
+                categorized_list.append("RUSSIAN")
+        elif item.startswith("SYRIA"):
+            if "SYRIA" not in categorized_list:
+                categorized_list.append("SYRIA")
+        else:
+            categorized_list.append(item)
+
+    # If search_items is provided, expand "RUSSIAN" and "SYRIA" into their variations
+    if search_items:
+        for item in search_items:
+            if item in ["RUSSIAN", "SYRIA"]:
+                expanded_items.extend([i for i in distinct_list if i.startswith(item)])
+            else:
+                expanded_items.append(item)
+
+    # Return categorized list for display and expanded items for search
+    return categorized_list, expanded_items
