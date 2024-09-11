@@ -27,24 +27,24 @@ def run_sqlplus_command(command, query, output_file, server_name):
     logger.debug(f"SQL*Plus command completed on {server_name}. Output written to {output_file}")
 
 def clean_file(file_path):
-    """Clean the output JSON file and return the cleaned list of lines."""
-    logger.debug(f"Cleaning output file: {file_path}")
-    try:
-        with open(file_path, 'r') as file:
-            lines = file.readlines()
+    """Clean the output file by removing unnecessary lines."""
+    with open(file_path, 'r') as file:
+        lines = file.readlines()
 
-        cleaned_lines = [line.strip() for line in lines if line.strip() and 'rows selected' not in line.lower()]
+    # Find indexes for relevant content
+    start_index = next((i for i, line in enumerate(lines) if 'SQL>' in line), 0) + 1
+    end_index = next((i for i in range(len(lines) - 1, -1, -1) if 'SQL>' in lines[i]), len(lines))
 
-        with open(file_path, 'w') as file:
-            file.write("\n".join(cleaned_lines) + "\n")
+    # Clean lines between indexes
+    cleaned_lines = [
+        ''.join(char for char in line if char in string.printable).strip()
+        for line in lines[start_index:end_index]
+        if 'rows selected' not in line.lower() and not line.strip().startswith('-') and line.strip() != 'JSON_DATA'
+    ]
 
-        logger.info(f"Successfully cleaned output file: {file_path}")
-        return cleaned_lines  # Return the cleaned lines as a list
-
-    except Exception as e:
-        logger.error(f"Error cleaning file {file_path}: {e}")
-        return []  # Return an empty list in case of an error
-
+    with open(file_path, 'w') as file:
+        file.write("\n".join(cleaned_lines) + "\n")
+       
 def clean_distinct_file(file_path):
     """Clean the distinct output file and return as a list of cleaned items."""
     logger.debug(f"Cleaning output file for distinct query: {file_path}")
@@ -69,10 +69,10 @@ def clean_distinct_file(file_path):
         return []  # Return an empty list in case of an error
 
 def run_background_queries():
-    """Run prod and uat queries in the background and clean the output files."""
+    """Run prod and uat queries in the background, clean the output files, and perform further processing."""
     logger.debug("Starting background queries for prod and uat")
 
-    def run_query_and_clean(command, query, output_file, server_name):
+    def run_query_and_process(command, query, output_file, server_name):
         try:
             # Run the SQL query and generate the output file
             run_sqlplus_command(command, query, output_file, server_name)
@@ -81,8 +81,24 @@ def run_background_queries():
             cleaned_data = clean_file(output_file)
             logger.info(f"Cleaned data from {server_name}: {cleaned_data}")
 
+            # After cleaning, continue with further processing of the data
+            # Load cleaned data from JSON
+            combined_data = combine_json_data([output_file])
+            cleaned_combined_data = clean_json_data(combined_data)
+
+            # Apply length checks (define length constraints for your fields)
+            length_constraints = {'field1': 50, 'field2': 100}  # Example constraints
+            checked_data = apply_length_checks(cleaned_combined_data, length_constraints)
+
+            # Convert cleaned JSON data to SQL insert statements
+            sql_statements = json_to_sql_insert(checked_data, 'your_table_name')
+            sql_file_path = os.path.join(OUTPUT_DIR, f"{server_name.lower()}_insert_statements.sql")
+
+            # Save the SQL statements to a file
+            save_sql_statements_to_file(sql_statements, sql_file_path)
+
         except Exception as e:
-            logger.error(f"Error running SQL query or cleaning file on {server_name}: {e}")
+            logger.error(f"Error running SQL query or processing data on {server_name}: {e}")
 
     prod_command = "sqlplus oasis77/ist0py@istu2_equ"
     uat_command = "sqlplus oasis77/ist0py@istu2_uat"
@@ -90,9 +106,9 @@ def run_background_queries():
     prod_output_file = os.path.join(OUTPUT_DIR, 'prod_output.json')
     uat_output_file = os.path.join(OUTPUT_DIR, 'uat_output.json')
 
-    # Start threads for prod and uat queries
-    threading.Thread(target=run_query_and_clean, args=(prod_command, query, prod_output_file, "Prod")).start()
-    threading.Thread(target=run_query_and_clean, args=(uat_command, query, uat_output_file, "UAT")).start()
+    # Start threads for prod and uat queries and subsequent processing
+    threading.Thread(target=run_query_and_process, args=(prod_command, query, prod_output_file, "Prod")).start()
+    threading.Thread(target=run_query_and_process, args=(uat_command, query, uat_output_file, "UAT")).start()
 
 def bin_blocking_editor(request):
     logger.info("Bin blocking editor view accessed")
@@ -125,9 +141,6 @@ def bin_blocking_editor(request):
         # Expand the selected search items
         _, expanded_search_items = categorize_and_expand_items(prod_distinct_list, search_items)
         logger.info(f"User selected blocked item: {blocked_item} and expanded search items: {expanded_search_items}")
-
-        # Further processing with blocked_item and expanded_search_items
-        # (e.g., filter results, modify SQL statements, etc.)
 
     context = {
         'result': result,
@@ -165,3 +178,68 @@ def categorize_and_expand_items(distinct_list, search_items=None):
 
     # Return categorized list for display and expanded items for search
     return categorized_list, expanded_items
+
+import json
+
+def combine_json_data(file_paths):
+    """Combine JSON data from multiple files."""
+    combined_data = []
+    for file_path in file_paths:
+        try:
+            with open(file_path, 'r') as file:
+                data = json.load(file)
+                combined_data.extend(data)
+        except Exception as e:
+            logger.error(f"Error loading JSON data from {file_path}: {e}")
+    return combined_data
+
+def remove_control_characters(data):
+    """Remove control characters from JSON data."""
+    cleaned_data = []
+    for entry in data:
+        cleaned_entry = {key: ''.join(ch for ch in str(value) if ch.isprintable())
+                         for key, value in entry.items()}
+        cleaned_data.append(cleaned_entry)
+    return cleaned_data
+
+def remove_null_values(data):
+    """Remove null values from JSON data."""
+    return [{k: v for k, v in entry.items() if v is not None} for entry in data]
+
+def clean_json_data(data):
+    """Clean the JSON data by applying multiple cleaning functions."""
+    data = remove_control_characters(data)
+    data = remove_null_values(data)
+    return data
+
+def apply_length_checks(data, length_constraints):
+    """Apply length checks to JSON data based on constraints."""
+    checked_data = []
+    for entry in data:
+        valid_entry = True
+        for key, max_length in length_constraints.items():
+            if key in entry and len(str(entry[key])) > max_length:
+                logger.warning(f"Truncating {key} to {max_length} characters.")
+                entry[key] = str(entry[key])[:max_length]
+        if valid_entry:
+            checked_data.append(entry)
+    return checked_data
+
+def json_to_sql_insert(json_data, table_name):
+    """Convert JSON data to SQL INSERT statements."""
+    columns = json_data[0].keys()
+    sql_statements = []
+    for entry in json_data:
+        values = [f"'{str(value).replace("'", "''")}'" for value in entry.values()]
+        sql = f"INSERT INTO {table_name} ({', '.join(columns)}) VALUES ({', '.join(values)});"
+        sql_statements.append(sql)
+    return sql_statements
+
+def save_sql_statements_to_file(statements, file_path):
+    """Save SQL INSERT statements to a file."""
+    try:
+        with open(file_path, 'w') as file:
+            file.write("\n".join(statements))
+        logger.info(f"SQL statements saved to {file_path}")
+    except Exception as e:
+        logger.error(f"Error saving SQL statements to file {file_path}: {e}")
