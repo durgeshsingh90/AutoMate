@@ -11,50 +11,54 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.css">
     <!-- CodeMirror Theme (optional) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/theme/monokai.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'binblock/styles.css' %}">
 </head>
 <body>
     <div class="container py-4">
         <div class="row">
             <div class="col-lg-8 mb-4">
-                <h1>Bin Blocking Editor</h1>
-                <form method="POST" action="{% url 'binblock:binblocking_editor' %}">
-                    {% csrf_token %}
-                    <div class="mb-3">
-                        <textarea id="code-editor" name="bins" placeholder="Enter card BINs here, one per line..."></textarea>
-                    </div>
-                    <div id="status-bar" class="status-bar bg-light p-2 rounded border">
-                        <span id="total-lines">Total lines: 0</span>
-                        <span id="selected-length" class="float-end">Selected text length: 0</span>
-                    </div>
-                    <button class="btn btn-primary mt-3" type="submit">Process</button>
-                </form>
-            </div>
-            <div class="col-lg-4 mb-4">
-                <h2>Select Items</h2>
-                <form method="POST" action="{% url 'binblock:binblocking_editor' %}">
-                    {% csrf_token %}
-                    <h4>Blocked Item (Single Selection):</h4>
-                    {% for item in prod_distinct_list %}
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" name="blocked_item" value="{{ item }}" id="blocked_{{ forloop.counter }}">
-                            <label class="form-check-label" for="blocked_{{ forloop.counter }}">
-                                {{ item }}
-                            </label>
+                <div class="editor-container">
+                    <h1 class="form-title">Bin Blocking Editor</h1>
+                    <form method="POST" action="{% url 'binblock:binblocking_editor' %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <textarea id="code-editor" name="bins" class="form-control" rows="10" placeholder="Enter card BINs here, one per line..."></textarea>
                         </div>
-                    {% endfor %}
-
-                    <h4>Search Items (Multiple Selections):</h4>
-                    {% for item in prod_distinct_list %}
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="search_items" value="{{ item }}" id="search_{{ forloop.counter }}">
-                            <label class="form-check-label" for="search_{{ forloop.counter }}">
-                                {{ item }}
-                            </label>
+                        <div id="status-bar" class="status-bar bg-light p-2 rounded border">
+                            <span id="total-lines">Total lines: 0</span>
+                            <span id="selected-length" class="float-end">Selected text length: 0</span>
                         </div>
-                    {% endfor %}
+                        <!-- Blocked Item and Search Items in Columns -->
+                        <div class="d-flex justify-content-between mt-3">
+                            <div class="form-section me-2">
+                                <h4>Blocked Item</h4>
+                                {% for item in prod_distinct_list %}
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="blocked_item" value="{{ item }}" id="blocked_{{ forloop.counter }}">
+                                        <label class="form-check-label" for="blocked_{{ forloop.counter }}">
+                                            {{ item }}
+                                        </label>
+                                    </div>
+                                {% endfor %}
+                            </div>
 
-                    <button class="btn btn-secondary mt-3" type="submit">Submit Selections</button>
-                </form>
+                            <div class="form-section ms-2">
+                                <h4>Search Items</h4>
+                                {% for item in prod_distinct_list %}
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="search_items" value="{{ item }}" id="search_{{ forloop.counter }}">
+                                        <label class="form-check-label" for="search_{{ forloop.counter }}">
+                                            {{ item }}
+                                        </label>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <!-- Single Process Button -->
+                        <button class="btn btn-primary mt-3" type="submit">Process</button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
