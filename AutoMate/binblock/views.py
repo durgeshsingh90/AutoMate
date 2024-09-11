@@ -1,3 +1,4 @@
+import string
 import logging
 import threading
 import subprocess
@@ -61,13 +62,23 @@ def bin_blocking_editor(request):
     logger.info("Bin blocking editor view accessed")
     result = None
     log_with_delays = None
+    prod_distinct_list = []
 
     try:
+        # Run SQL queries in threads and process the output
         run_sql_queries_in_threads()
+        prod_distinct_list = clean_distinct_file('prod_distinct_output.txt')
     except Exception as e:
         logger.error(f"Error running SQL queries: {e}")
 
-    prod_distinct_list = clean_distinct_file('prod_distinct_output.txt')
+    # Handle user selections
+    if request.method == 'POST':
+        blocked_item = request.POST.get('blocked_item')
+        search_items = request.POST.getlist('search_items')
+        logger.info(f"User selected blocked item: {blocked_item} and search items: {search_items}")
+
+        # Further processing with blocked_item and search_items
+        # (e.g., filter results, modify SQL statements, etc.)
 
     context = {
         'result': result,
