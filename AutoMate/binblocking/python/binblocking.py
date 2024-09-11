@@ -34,7 +34,7 @@ def clean_file(file_path):
     cleaned_lines = [
         ''.join(char for char in line if char in string.printable).strip()
         for line in lines[start_index:end_index]
-        if 'rows selected' not in line.lower() and not line.strip().startswith('-') and line.strip() != 'JSON_DATA'
+        if 'rows selected' not in line.lower() and not line.strip().startswith('-') and line.strip() != 'JSON_Data'
     ]
 
     with open(file_path, 'w') as file:
