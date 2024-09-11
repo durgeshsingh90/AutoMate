@@ -31,7 +31,7 @@
             </div>
             <div class="col-lg-4 mb-4">
                 <h2>Select Items</h2>
-                <form method="POST" action="#">
+                <form method="POST" action="{% url 'binblock:binblocking_editor' %}">
                     {% csrf_token %}
                     <h4>Blocked Item (Single Selection):</h4>
                     {% for item in prod_distinct_list %}
@@ -68,43 +68,7 @@
     <!-- CodeMirror KeyMap (optional) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/keymap/sublime.min.js"></script>
 
-    <script>
-        // Initialize CodeMirror
-        var editor = CodeMirror.fromTextArea(document.getElementById('code-editor'), {
-            lineNumbers: true,
-            mode: 'javascript', // Set to the mode you need
-            theme: 'monokai', // Choose a theme, optional
-            keyMap: 'sublime', // KeyMap, optional
-            tabSize: 2,
-            indentWithTabs: true,
-        });
-
-        // Load saved data from localStorage if it exists
-        if (localStorage.getItem('editorContent')) {
-            editor.setValue(localStorage.getItem('editorContent'));
-        }
-
-        // Update status bar
-        function updateStatusBar() {
-            const totalLines = editor.lineCount();
-            const selectedText = editor.getSelection();
-            const selectedLength = selectedText.length;
-
-            document.getElementById('total-lines').textContent = `Total lines: ${totalLines}`;
-            document.getElementById('selected-length').textContent = `Selected text length: ${selectedLength}`;
-        }
-
-        // Save data to localStorage on changes
-        editor.on('changes', function() {
-            localStorage.setItem('editorContent', editor.getValue());
-            updateStatusBar();
-        });
-
-        // Update status bar on cursor activity
-        editor.on('cursorActivity', updateStatusBar);
-
-        // Initialize the status bar
-        updateStatusBar();
-    </script>
+    <!-- Include your custom JavaScript file -->
+    <script src="{% static 'binblock/binblock.js' %}"></script>
 </body>
 </html>

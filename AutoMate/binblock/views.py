@@ -39,6 +39,33 @@ def clean_distinct_file(file_path):
     logger.debug(f"Cleaned output file: {file_path} with {len(cleaned_list)} entries")
     return cleaned_list
 
+def categorize_and_expand_items(distinct_list, search_items=None):
+    """Categorize 'RUSSIAN' and 'SYRIA' variations into single categories for blocking 
+       and expand them for search items if needed."""
+    categorized_list = []
+    expanded_items = []
+
+    for item in distinct_list:
+        if item.startswith("RUSSIAN"):
+            if "RUSSIAN" not in categorized_list:
+                categorized_list.append("RUSSIAN")
+        elif item.startswith("SYRIA"):
+            if "SYRIA" not in categorized_list:
+                categorized_list.append("SYRIA")
+        else:
+            categorized_list.append(item)
+
+    # If search_items is provided, expand "RUSSIAN" and "SYRIA" into their variations
+    if search_items:
+        for item in search_items:
+            if item in ["RUSSIAN", "SYRIA"]:
+                expanded_items.extend([i for i in distinct_list if i.startswith(item)])
+            else:
+                expanded_items.append(item)
+
+    # Return categorized list for display and expanded items for search
+    return categorized_list, expanded_items
+
 def run_sql_queries_in_threads():
     """Run SQL queries using multithreading."""
     logger.debug("Starting SQL queries in multiple threads")
@@ -68,22 +95,26 @@ def bin_blocking_editor(request):
         # Run SQL queries in threads and process the output
         run_sql_queries_in_threads()
         prod_distinct_list = clean_distinct_file('prod_distinct_output.txt')
+        categorized_list, _ = categorize_and_expand_items(prod_distinct_list)
     except Exception as e:
         logger.error(f"Error running SQL queries: {e}")
+        categorized_list = []
 
-    # Handle user selections
     if request.method == 'POST':
         blocked_item = request.POST.get('blocked_item')
         search_items = request.POST.getlist('search_items')
-        logger.info(f"User selected blocked item: {blocked_item} and search items: {search_items}")
 
-        # Further processing with blocked_item and search_items
+        # Expand the selected search items
+        _, expanded_search_items = categorize_and_expand_items(prod_distinct_list, search_items)
+        logger.info(f"User selected blocked item: {blocked_item} and expanded search items: {expanded_search_items}")
+
+        # Further processing with blocked_item and expanded_search_items
         # (e.g., filter results, modify SQL statements, etc.)
 
     context = {
         'result': result,
         'log_with_delays': log_with_delays,
-        'prod_distinct_list': prod_distinct_list
+        'prod_distinct_list': categorized_list
     }
     logger.info("Rendering binblocker.html with context data")
     return render(request, 'binblock/binblocker.html', context)
