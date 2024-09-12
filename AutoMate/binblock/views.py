@@ -114,13 +114,15 @@ def apply_length_checks(data, length_constraints):
     return checked_data
 
 def json_to_sql_insert(json_obj, table_name):
-    """Convert JSON data to SQL INSERT statements."""
-    logger.debug("Starting json_to_sql_insert")
-    keys = json_obj.keys()
-    values = [f"'{str(value).replace("'", "''")}'" for value in json_obj.values()]
-    sql_statement = f"INSERT INTO {table_name} ({', '.join(keys)}) VALUES ({', '.join(values)});"
-    logger.debug("Completed json_to_sql_insert")
-    return sql_statement
+    """Convert a JSON object to an SQL INSERT statement for a specified table."""
+    keys = list(json_obj.keys())
+    values = [
+        f"TO_DATE('{value.strip()}', 'DD/MM/YYYY')" if key == "FILE_DATE" and value else 
+        str(value) if key == "O_LEVEL" else 
+        f"'{value}'" if isinstance(value, str) else str(value) 
+        for key, value in json_obj.items()
+    ]
+    return f"INSERT INTO {table_name} ({', '.join(keys)}) VALUES ({', '.join(values)});"
 
 def convert_to_sql_insert_statements(cleaned_json_list, table_name):
     """Convert a list of cleaned JSON objects to SQL INSERT statements."""
