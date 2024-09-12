@@ -59,18 +59,27 @@ def clean_file(file_path):
         return []  # Return an empty list in case of an error
 
 def clean_distinct_file(file_path):
-    """Clean the distinct output file and return as a list."""
-    with open(file_path, 'r') as file:
-        lines = file.readlines()
+    """Clean the distinct output file and return as a list of cleaned items."""
+    logger.debug(f"Cleaning output file for distinct query: {file_path}")
+    try:
+        with open(file_path, 'r') as file:
+            lines = file.readlines()
 
-    start_index = next((i for i, line in enumerate(lines) if 'SQL>' in line), 0) + 1
-    end_index = next((i for i in range(len(lines) - 1, -1, -1) if 'SQL>' in lines[i]), len(lines))
+        start_index = next((i for i, line in enumerate(lines) if 'SQL>' in line), 0) + 1
+        end_index = next((i for i in range(len(lines) - 1, -1, -1) if 'SQL>' in lines[i]), len(lines))
 
-    return [
-        ''.join(char for char in line if char in string.printable).strip()
-        for line in lines[start_index:end_index]
-        if 'rows selected' not in line.lower() and not line.strip().startswith('-') and line.strip() != 'DESCRIPTION'
-    ]
+        cleaned_list = [
+            ''.join(char for char in line if char in string.printable).strip()
+            for line in lines[start_index:end_index]
+            if 'rows selected' not in line.lower() and not line.strip().startswith('-') and line.strip() != 'DESCRIPTION'
+        ]
+
+        logger.info(f"Successfully cleaned distinct output file: {file_path} with {len(cleaned_list)} entries")
+        return cleaned_list  # Return the cleaned lines as a list
+
+    except Exception as e:
+        logger.error(f"Error cleaning distinct output file {file_path}: {e}")
+        return []  # Return an empty list in case of an error
 
 def categorize_and_expand_items(distinct_list, search_items=None):
     """
