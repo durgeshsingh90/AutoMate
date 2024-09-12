@@ -43,14 +43,11 @@ def clean_file(file_path):
     """Clean the output JSON file and return the cleaned list of lines."""
     logger.debug(f"Cleaning output file: {file_path}")
     try:
-        # Open the file for reading
         with open(file_path, 'r') as file:
             lines = file.readlines()
 
-        # Remove empty lines and those containing 'rows selected'
         cleaned_lines = [line.strip() for line in lines if line.strip() and 'rows selected' not in line.lower()]
 
-        # Write cleaned lines back to the file
         with open(file_path, 'w') as file:
             file.write("\n".join(cleaned_lines) + "\n")
 
@@ -69,21 +66,17 @@ def clean_distinct_file(file_path):
             lines = file.readlines()
 
         # Find the start and end indices for relevant content
-        # Start after the first 'SQL>' line and end before the last 'SQL>' line
         start_index = next((i for i, line in enumerate(lines) if 'SQL>' in line), 0) + 1
         end_index = next((i for i in range(len(lines) - 1, -1, -1) if 'SQL>' in lines[i]), len(lines))
 
         # Clean lines between the determined indices
         cleaned_list = []
         for line in lines[start_index:end_index]:
-            # Remove non-printable characters
             line = ''.join(char for char in line if char in string.printable).strip()
 
-            # Skip lines that are empty or contain 'rows selected'
             if not line or 'rows selected' in line.lower():
                 continue
 
-            # Skip lines that start with hyphens or contain only 'DESCRIPTION'
             if line.startswith('-') or line == 'DESCRIPTION':
                 continue
 
@@ -95,10 +88,6 @@ def clean_distinct_file(file_path):
     except Exception as e:
         logger.error(f"Error cleaning distinct output file {file_path}: {e}")
         return []
-
-    except Exception as e:
-        logger.error(f"Error cleaning distinct output file {file_path}: {e}")
-        return []  # Return an empty list in case of an error
 
 def categorize_and_expand_items(distinct_list, search_items=None):
     """
@@ -118,7 +107,6 @@ def categorize_and_expand_items(distinct_list, search_items=None):
         else:
             categorized_list.append(item)
 
-    # If search_items is provided, expand "RUSSIAN" and "SYRIA" into their variations
     if search_items:
         for item in search_items:
             if item in ["RUSSIAN", "SYRIA"]:
@@ -126,7 +114,6 @@ def categorize_and_expand_items(distinct_list, search_items=None):
             else:
                 expanded_items.append(item)
 
-    # Return categorized list for display and expanded items for search
     return categorized_list, expanded_items
 
 def combine_json_data(file_paths):
@@ -183,6 +170,7 @@ def apply_length_checks(data, length_constraints):
 
 def json_to_sql_insert(json_obj, table_name):
     """Convert a JSON object to an SQL INSERT statement for a specified table."""
+    logger.debug("Starting json_to_sql_insert")
     keys = list(json_obj.keys())
     values = [
         f"TO_DATE('{value.strip()}', 'DD/MM/YYYY')" if key == "FILE_DATE" and value else 
@@ -190,7 +178,9 @@ def json_to_sql_insert(json_obj, table_name):
         f"'{value}'" if isinstance(value, str) else str(value) 
         for key, value in json_obj.items()
     ]
-    return f"INSERT INTO {table_name} ({', '.join(keys)}) VALUES ({', '.join(values)});"
+    sql_statement = f"INSERT INTO {table_name} ({', '.join(keys)}) VALUES ({', '.join(values)});"
+    logger.debug("Completed json_to_sql_insert")
+    return sql_statement
 
 def convert_to_sql_insert_statements(cleaned_json_list, table_name):
     """Convert a list of cleaned JSON objects to SQL INSERT statements."""
@@ -256,9 +246,11 @@ def bin_blocking_editor(request):
         distinct_output_file = os.path.join(OUTPUT_DIR, 'prod_distinct_output.txt')
         run_sqlplus_command(distinct_command, distinct_query, distinct_output_file, "Distinct")
 
-        prod_distinct_list = clean_file(distinct_output_file)
+        # Use clean_distinct_file to clean the distinct query output
+        prod_distinct_list = clean_distinct_file(distinct_output_file)
         categorized_list, _ = categorize_and_expand_items(prod_distinct_list)
 
+        # Run prod and uat queries in the background
         run_background_queries()
 
     except Exception as e:
