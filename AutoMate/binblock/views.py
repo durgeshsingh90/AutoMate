@@ -65,23 +65,36 @@ def clean_distinct_file(file_path):
     """Clean the distinct output file and return as a list of cleaned items."""
     logger.debug(f"Cleaning output file for distinct query: {file_path}")
     try:
-        # Open the file for reading
         with open(file_path, 'r') as file:
             lines = file.readlines()
 
         # Find the start and end indices for relevant content
+        # Start after the first 'SQL>' line and end before the last 'SQL>' line
         start_index = next((i for i, line in enumerate(lines) if 'SQL>' in line), 0) + 1
         end_index = next((i for i in range(len(lines) - 1, -1, -1) if 'SQL>' in lines[i]), len(lines))
 
         # Clean lines between the determined indices
-        cleaned_list = [
-            ''.join(char for char in line if char in string.printable).strip()
-            for line in lines[start_index:end_index]
-            if 'rows selected' not in line.lower() and not line.strip().startswith('-') and line.strip() != 'DESCRIPTION'
-        ]
+        cleaned_list = []
+        for line in lines[start_index:end_index]:
+            # Remove non-printable characters
+            line = ''.join(char for char in line if char in string.printable).strip()
+
+            # Skip lines that are empty or contain 'rows selected'
+            if not line or 'rows selected' in line.lower():
+                continue
+
+            # Skip lines that start with hyphens or contain only 'DESCRIPTION'
+            if line.startswith('-') or line == 'DESCRIPTION':
+                continue
+
+            cleaned_list.append(line)
 
         logger.info(f"Successfully cleaned distinct output file: {file_path} with {len(cleaned_list)} entries")
-        return cleaned_list  # Return the cleaned lines as a list
+        return cleaned_list
+
+    except Exception as e:
+        logger.error(f"Error cleaning distinct output file {file_path}: {e}")
+        return []
 
     except Exception as e:
         logger.error(f"Error cleaning distinct output file {file_path}: {e}")
