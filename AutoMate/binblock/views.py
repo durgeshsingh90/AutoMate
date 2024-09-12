@@ -61,6 +61,49 @@ def clean_file(file_path):
         logger.error(f"Error cleaning file {file_path}: {e}")
     return cleaned_lines
 
+def clean_distinct_file(file_path):
+    """Clean the distinct output file and return as a list."""
+    with open(file_path, 'r') as file:
+        lines = file.readlines()
+
+    start_index = next((i for i, line in enumerate(lines) if 'SQL>' in line), 0) + 1
+    end_index = next((i for i in range(len(lines) - 1, -1, -1) if 'SQL>' in lines[i]), len(lines))
+
+    return [
+        ''.join(char for char in line if char in string.printable).strip()
+        for line in lines[start_index:end_index]
+        if 'rows selected' not in line.lower() and not line.strip().startswith('-') and line.strip() != 'DESCRIPTION'
+    ]
+
+def categorize_and_expand_items(distinct_list, search_items=None):
+    """
+    Categorize 'RUSSIAN' and 'SYRIA' variations into single categories for blocking 
+    and expand them for search items if needed.
+    """
+    categorized_list = []
+    expanded_items = []
+
+    for item in distinct_list:
+        if item.startswith("RUSSIAN"):
+            if "RUSSIAN" not in categorized_list:
+                categorized_list.append("RUSSIAN")
+        elif item.startswith("SYRIA"):
+            if "SYRIA" not in categorized_list:
+                categorized_list.append("SYRIA")
+        else:
+            categorized_list.append(item)
+
+    # If search_items is provided, expand "RUSSIAN" and "SYRIA" into their variations
+    if search_items:
+        for item in search_items:
+            if item in ["RUSSIAN", "SYRIA"]:
+                expanded_items.extend([i for i in distinct_list if i.startswith(item)])
+            else:
+                expanded_items.append(item)
+
+    # Return categorized list for display and expanded items for search
+    return categorized_list, expanded_items
+
 def combine_json_data(file_paths):
     """Combine JSON data from multiple files."""
     logger.debug(f"Starting combine_json_data for files: {file_paths}")
