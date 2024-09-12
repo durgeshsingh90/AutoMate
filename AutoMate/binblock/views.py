@@ -41,25 +41,22 @@ def run_sqlplus_command(command, query, output_file, server_name):
 
 def clean_file(file_path):
     """Clean the output file by removing unnecessary lines."""
-    logger.debug(f"Starting clean_file for {file_path}")
-    cleaned_lines = []
-    try:
-        with open(file_path, 'r') as file:
-            lines = file.readlines()
+    with open(file_path, 'r') as file:
+        lines = file.readlines()
 
-        # Filter lines: remove those with control characters or unnecessary content
-        for line in lines:
-            if line.strip() and 'rows selected' not in line.lower():
-                cleaned_lines.append(line.strip())
+    # Find indexes for relevant content
+    start_index = next((i for i, line in enumerate(lines) if 'SQL>' in line), 0) + 1
+    end_index = next((i for i in range(len(lines) - 1, -1, -1) if 'SQL>' in lines[i]), len(lines))
 
-        # Write cleaned lines back to the file
-        with open(file_path, 'w') as file:
-            file.write("\n".join(cleaned_lines) + "\n")
+    # Clean lines between indexes
+    cleaned_lines = [
+        ''.join(char for char in line if char in string.printable).strip()
+        for line in lines[start_index:end_index]
+        if 'rows selected' not in line.lower() and not line.strip().startswith('-') and line.strip() != 'JSON_Data'
+    ]
 
-        logger.info(f"Successfully cleaned output file: {file_path}")
-    except Exception as e:
-        logger.error(f"Error cleaning file {file_path}: {e}")
-    return cleaned_lines
+    with open(file_path, 'w') as file:
+        file.write("\n".join(cleaned_lines) + "\n")
 
 def clean_distinct_file(file_path):
     """Clean the distinct output file and return as a list."""
