@@ -40,23 +40,23 @@ def run_sqlplus_command(command, query, output_file, server_name):
     logger.debug(f"SQL*Plus command completed on {server_name}. Output written to {output_file}")
 
 def clean_file(file_path):
-    """Clean the output file by removing unnecessary lines."""
-    with open(file_path, 'r') as file:
-        lines = file.readlines()
+    """Clean the output JSON file and return the cleaned list of lines."""
+    logger.debug(f"Cleaning output file: {file_path}")
+    try:
+        with open(file_path, 'r') as file:
+            lines = file.readlines()
 
-    # Find indexes for relevant content
-    start_index = next((i for i, line in enumerate(lines) if 'SQL>' in line), 0) + 1
-    end_index = next((i for i in range(len(lines) - 1, -1, -1) if 'SQL>' in lines[i]), len(lines))
+        cleaned_lines = [line.strip() for line in lines if line.strip() and 'rows selected' not in line.lower()]
 
-    # Clean lines between indexes
-    cleaned_lines = [
-        ''.join(char for char in line if char in string.printable).strip()
-        for line in lines[start_index:end_index]
-        if 'rows selected' not in line.lower() and not line.strip().startswith('-') and line.strip() != 'JSON_Data'
-    ]
+        with open(file_path, 'w') as file:
+            file.write("\n".join(cleaned_lines) + "\n")
 
-    with open(file_path, 'w') as file:
-        file.write("\n".join(cleaned_lines) + "\n")
+        logger.info(f"Successfully cleaned output file: {file_path}")
+        return cleaned_lines  # Return the cleaned lines as a list
+
+    except Exception as e:
+        logger.error(f"Error cleaning file {file_path}: {e}")
+        return []  # Return an empty list in case of an error
 
 def clean_distinct_file(file_path):
     """Clean the distinct output file and return as a list."""
