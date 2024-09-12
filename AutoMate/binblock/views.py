@@ -43,11 +43,14 @@ def clean_file(file_path):
     """Clean the output JSON file and return the cleaned list of lines."""
     logger.debug(f"Cleaning output file: {file_path}")
     try:
+        # Open the file for reading
         with open(file_path, 'r') as file:
             lines = file.readlines()
 
+        # Remove empty lines and those containing 'rows selected'
         cleaned_lines = [line.strip() for line in lines if line.strip() and 'rows selected' not in line.lower()]
 
+        # Write cleaned lines back to the file
         with open(file_path, 'w') as file:
             file.write("\n".join(cleaned_lines) + "\n")
 
@@ -62,12 +65,15 @@ def clean_distinct_file(file_path):
     """Clean the distinct output file and return as a list of cleaned items."""
     logger.debug(f"Cleaning output file for distinct query: {file_path}")
     try:
+        # Open the file for reading
         with open(file_path, 'r') as file:
             lines = file.readlines()
 
+        # Find the start and end indices for relevant content
         start_index = next((i for i, line in enumerate(lines) if 'SQL>' in line), 0) + 1
         end_index = next((i for i in range(len(lines) - 1, -1, -1) if 'SQL>' in lines[i]), len(lines))
 
+        # Clean lines between the determined indices
         cleaned_list = [
             ''.join(char for char in line if char in string.printable).strip()
             for line in lines[start_index:end_index]
