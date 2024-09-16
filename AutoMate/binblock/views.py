@@ -7,6 +7,7 @@ import json
 import time
 from django.shortcuts import render
 from django.conf import settings
+import re  # Make sure to import the regex module
 
 # Get the logger for the binblock app
 logger = logging.getLogger('binblock')
@@ -117,34 +118,28 @@ def categorize_and_expand_items(distinct_list, search_items=None):
 
     return categorized_list, expanded_items
 
-def combine_json_data(file_path):
-    """Read file and combine all JSON data into a single line, cleaning control characters."""
-    logger.debug(f"Starting combine_json_data for file: {file_path}")
+def combine_json_data(file_paths):
+    """Combine JSON data from multiple files, cleaning control characters."""
+    logger.debug(f"Starting combine_json_data for files: {file_paths}")
     combined_data = []
-    try:
-        with open(file_path, 'r') as f:
-            lines = f.readlines()
 
-        # Combine JSON data line by line, cleaning control characters
-        current_json = []
-        in_json = False
-        for line in lines:
-            line = remove_control_characters(line.strip())  # Clean control characters
-            if '{' in line:
-                in_json = True
-                current_json.append(line)
-            elif '}' in line and in_json:
-                in_json = False
-                current_json.append(line)
-                combined_data.append(''.join(current_json))
-                current_json = []
-            elif in_json:
-                current_json.append(line)
+    for file_path in file_paths:
+        try:
+            with open(file_path, 'r') as file:
+                lines = file.readlines()
 
-    except Exception as e:
-        logger.error(f"Error combining JSON data from {file_path}: {e}")
+            # Clean each line to remove control characters
+            cleaned_lines = [remove_control_characters(line.strip()) for line in lines if line.strip()]
 
-    logger.debug(f"Completed combine_json_data for file: {file_path}")
+            # Combine the cleaned lines into valid JSON strings
+            json_str = ''.join(cleaned_lines)
+            json_data = json.loads(json_str)  # Parse JSON after cleaning
+            combined_data.extend(json_data)
+
+        except Exception as e:
+            logger.error(f"Error combining JSON data from {file_path}: {e}")
+
+    logger.debug(f"Completed combine_json_data for files: {file_paths}")
     return combined_data
 
 def remove_control_characters(s):
@@ -167,11 +162,12 @@ def clean_json_data(json_list):
     logger.debug("Starting clean_json_data")
     cleaned_data = []
     for json_str in json_list:
+        # Clean control characters before decoding
         json_str = remove_control_characters(json_str)
         try:
-            json_obj = json.loads(json_str)  # Try decoding JSON
+            json_obj = json.loads(json_str)  # Attempt to parse the cleaned JSON string
             cleaned_json_obj = apply_length_checks(remove_null_values(json_obj))
-            cleaned_data.append(json.dumps(cleaned_json_obj))
+            cleaned_data.append(cleaned_json_obj)
         except json.JSONDecodeError as e:
             logger.error(f"Error decoding JSON: {e} - Content: {json_str}")
 
