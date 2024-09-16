@@ -5,9 +5,10 @@ import threading
 import subprocess
 import json
 import time
+import re
+import unicodedata
 from django.shortcuts import render
 from django.conf import settings
-import re  # Make sure to import the regex module
 
 # Get the logger for the binblock app
 logger = logging.getLogger('binblock')
@@ -59,7 +60,6 @@ def clean_file(file_path):
     with open(file_path, 'w') as file:
         file.write("\n".join(cleaned_lines) + "\n")
 
-
 def clean_distinct_file(file_path):
     """Clean the distinct output file and return as a list of cleaned items."""
     logger.debug(f"Cleaning output file for distinct query: {file_path}")
@@ -92,10 +92,7 @@ def clean_distinct_file(file_path):
         return []
 
 def categorize_and_expand_items(distinct_list, search_items=None):
-    """
-    Categorize 'RUSSIAN' and 'SYRIA' variations into single categories for blocking 
-    and expand them for search items if needed.
-    """
+    """Categorize 'RUSSIAN' and 'SYRIA' variations into single categories for blocking and expand them for search items if needed."""
     categorized_list = []
     expanded_items = []
 
@@ -118,106 +115,122 @@ def categorize_and_expand_items(distinct_list, search_items=None):
 
     return categorized_list, expanded_items
 
-def combine_json_data(file_paths):
-    """Combine JSON data from multiple files, cleaning control characters."""
-    logger.debug(f"Starting combine_json_data for files: {file_paths}")
-    combined_data = []
-
-    for file_path in file_paths:
-        try:
-            with open(file_path, 'r') as file:
-                lines = file.readlines()
-
-            # Clean each line to remove control characters
-            cleaned_lines = [remove_control_characters(line.strip()) for line in lines if line.strip()]
-
-            # Combine the cleaned lines into valid JSON strings
-            json_str = ''.join(cleaned_lines)
-            json_data = json.loads(json_str)  # Parse JSON after cleaning
-            combined_data.extend(json_data)
-
-        except Exception as e:
-            logger.error(f"Error combining JSON data from {file_path}: {e}")
-
-    logger.debug(f"Completed combine_json_data for files: {file_paths}")
-    return combined_data
-
-def remove_control_characters(s):
-    """Remove control characters from a string."""
-    logger.debug("Starting remove_control_characters")
-    # Use regex to remove all control characters except printable ones
-    result = re.sub(r'[\x00-\x1F\x7F]', '', s)
-    logger.debug("Completed remove_control_characters")
-    return result
+def remove_control_characters(text):
+    """Remove all control characters and normalize the text."""
+    normalized_text = unicodedata.normalize('NFKD', text)
+    cleaned_text = ''.join(c for c in normalized_text if c.isprintable())
+    cleaned_text = re.sub(r'[\x00-\x1F\x7F]', '', cleaned_text)
+    return cleaned_text
 
 def remove_null_values(d):
-    """Remove null values from a dictionary."""
+    """Recursively remove null values from dictionaries and lists."""
     logger.debug("Starting remove_null_values")
-    cleaned_data = {k: v for k, v in d.items() if v is not None}
+    if isinstance(d, dict):
+        cleaned_data = {k: remove_null_values(v) for k, v in d.items() if v is not None}
+    elif isinstance(d, list):
+        cleaned_data = [remove_null_values(v) for v in d if v is not None]
+    else:
+        cleaned_data = d
     logger.debug("Completed remove_null_values")
     return cleaned_data
 
-def clean_json_data(json_list):
-    """Clean JSON data by removing control characters and null values."""
-    logger.debug("Starting clean_json_data")
-    cleaned_data = []
-    for json_str in json_list:
-        # Clean control characters before decoding
-        json_str = remove_control_characters(json_str)
-        try:
-            json_obj = json.loads(json_str)  # Attempt to parse the cleaned JSON string
-            cleaned_json_obj = apply_length_checks(remove_null_values(json_obj))
-            cleaned_data.append(cleaned_json_obj)
-        except json.JSONDecodeError as e:
-            logger.error(f"Error decoding JSON: {e} - Content: {json_str}")
+def apply_length_checks(json_obj):
+    """Apply length checks to JSON fields based on configuration."""
+    length_config = {
+        "LOWBIN": {"type": "CHAR", "length": 15},
+        "HIGHBIN": {"type": "CHAR", "length": 15},
+        "O_LEVEL": {"type": "NUMBER", "length": 1},
+        "STATUS": {"type": "CHAR", "length": 1},
+        "DESCRIPTION": {"type": "CHAR", "length": 50},
+        "DESTINATION": {"type": "CHAR", "length": 3},
+        "ENTITY_ID": {"type": "CHAR", "length": 1},
+        "CARDPRODUCT": {"type": "CHAR", "length": 20},
+        "NETWORK_DATA": {"type": "CHAR", "length": 10},
+        "FILE_NAME": {"type": "CHAR", "length": 10},
+        "FILE_VERSION": {"type": "CHAR", "length": 5},
+        "FILE_DATE": {"type": "DATE", "length": None},
+        "COUNTRY_CODE": {"type": "CHAR", "length": 3},
+        "NETWORK_CONFIG": {"type": "CHAR", "length": 10},
+        "BIN_LENGTH": {"type": "NUMBER", "length": 2}
+    }
 
-    logger.debug("Completed clean_json_data")
-    return cleaned_data
+    for key, value in json_obj.items():
+        if key in length_config:
+            config = length_config[key]
+            if config["type"] == "CHAR" and config["length"] is not None:
+                json_obj[key] = str(value).ljust(config["length"])[:config["length"]]
+            elif config["type"] == "NUMBER" and config["length"] is not None:
+                json_obj[key] = str(value).zfill(config["length"])[:config["length"]]
+    return json_obj
 
-def apply_length_checks(data, length_constraints):
-    """Apply length checks to JSON data based on constraints."""
-    logger.debug("Starting apply_length_checks")
-    checked_data = []
-    for entry in data:
-        for key, max_length in length_constraints.items():
-            if key in entry and len(str(entry[key])) > max_length:
-                logger.warning(f"Truncating {key} to {max_length} characters.")
-                entry[key] = str(entry[key])[:max_length]
-        checked_data.append(entry)
-    logger.debug("Completed apply_length_checks")
-    return checked_data
-
-def json_to_sql_insert(json_obj, table_name):
-    """Convert a JSON object to an SQL INSERT statement for a specified table."""
-    logger.debug("Starting json_to_sql_insert")
-    keys = list(json_obj.keys())
-    values = [
-        f"TO_DATE('{value.strip()}', 'DD/MM/YYYY')" if key == "FILE_DATE" and value else 
-        str(value) if key == "O_LEVEL" else 
-        f"'{value}'" if isinstance(value, str) else str(value) 
-        for key, value in json_obj.items()
-    ]
-    sql_statement = f"INSERT INTO {table_name} ({', '.join(keys)}) VALUES ({', '.join(values)});"
-    logger.debug("Completed json_to_sql_insert")
-    return sql_statement
-
-def convert_to_sql_insert_statements(cleaned_json_list, table_name):
-    """Convert a list of cleaned JSON objects to SQL INSERT statements."""
-    logger.debug("Starting convert_to_sql_insert_statements")
-    statements = [json_to_sql_insert(entry, table_name) for entry in cleaned_json_list]
-    logger.debug("Completed convert_to_sql_insert_statements")
+def generate_sql_insert_statements(json_list, table_name):
+    """Generate SQL INSERT statements from a list of JSON objects."""
+    logger.debug("Starting generate_sql_insert_statements")
+    statements = []
+    
+    for json_obj in json_list:
+        keys = json_obj.keys()
+        values = []
+        for key in keys:
+            value = json_obj[key]
+            if isinstance(value, str):
+                value = value.replace("'", "''")  # Escape single quotes
+                value = f"'{value}'"
+            elif value is None:
+                value = 'NULL'
+            values.append(value)
+        
+        # sql_statement = f"INSERT INTO {table_name} ({', '.join(keys)}) VALUES ({', '.join(values)});"
+        sql_statement = f"INSERT INTO OASIS77.SHCEXTBINDB ({', '.join(keys)}) VALUES ({', '.join(values)});"
+        statements.append(sql_statement)
+    
+    logger.debug("Completed generate_sql_insert_statements")
     return statements
 
 def save_sql_statements_to_file(statements, file_path):
     """Save SQL INSERT statements to a file."""
     logger.debug(f"Starting save_sql_statements_to_file for {file_path}")
     try:
-        with open(file_path, 'w') as file:
+        with open(file_path, 'w', encoding='utf-8') as file:
             file.write("\n".join(statements))
         logger.info(f"SQL statements saved to {file_path}")
     except Exception as e:
         logger.error(f"Error saving SQL statements to file {file_path}: {e}")
     logger.debug(f"Completed save_sql_statements_to_file for {file_path}")
+
+def preprocess_json_file(file_path, table_name, output_sql_file):
+    """Preprocess the JSON file to remove unwanted control characters, format it properly, remove null values, apply length checks, and save as SQL insert statements."""
+    logger.debug(f"Starting preprocess_json_file for file: {file_path}")
+
+    try:
+        with open(file_path, 'r', encoding='utf-8') as file:
+            lines = file.readlines()
+
+        cleaned_lines = [remove_control_characters(line.strip()) for line in lines if line.strip()]
+        json_data = ''.join(cleaned_lines)
+        json_data = re.sub(r'\}\s*\{', '},{', json_data)
+        json_data = f"[{json_data}]"
+
+        try:
+            json_object = json.loads(json_data)
+        except json.JSONDecodeError as e:
+            logger.error(f"Error loading JSON data: {e}")
+            raise
+
+        cleaned_json_object = [remove_null_values(obj) for obj in json_object]
+        checked_json_object = [apply_length_checks(obj) for obj in cleaned_json_object]
+
+        formatted_json = json.dumps(checked_json_object, indent=4)
+        with open(file_path, 'w', encoding='utf-8') as file:
+            file.write(formatted_json)
+
+        sql_statements = generate_sql_insert_statements(checked_json_object, table_name)
+        save_sql_statements_to_file(sql_statements, output_sql_file)
+
+        logger.debug(f"Completed preprocess_json_file for file: {file_path}")
+
+    except Exception as e:
+        logger.error(f"Error preprocessing JSON file {file_path}: {e}")
 
 def run_background_queries():
     """Run prod and uat queries in the background, clean the output files, and perform further processing."""
@@ -231,15 +244,7 @@ def run_background_queries():
             cleaned_data = clean_file(output_file)
             logger.info(f"Cleaned data from {server_name}: {cleaned_data}")
 
-            combined_data = combine_json_data([output_file])
-            cleaned_combined_data = clean_json_data(combined_data)
-
-            length_constraints = {'field1': 50, 'field2': 100}  # Example constraints
-            checked_data = apply_length_checks(cleaned_combined_data, length_constraints)
-
-            sql_statements = convert_to_sql_insert_statements(checked_data, 'your_table_name')
-            sql_file_path = os.path.join(OUTPUT_DIR, f"{server_name.lower()}_insert_statements.sql")
-            save_sql_statements_to_file(sql_statements, sql_file_path)
+            preprocess_json_file(output_file, 'your_table_name', os.path.join(OUTPUT_DIR, f"{server_name.lower()}_insert_statements.sql"))
 
         except Exception as e:
             logger.error(f"Error running SQL query or processing data on {server_name}: {e}")
@@ -265,11 +270,9 @@ def bin_blocking_editor(request):
         distinct_output_file = os.path.join(OUTPUT_DIR, 'prod_distinct_output.txt')
         run_sqlplus_command(distinct_command, distinct_query, distinct_output_file, "Distinct")
 
-        # Use clean_distinct_file to clean the distinct query output
         prod_distinct_list = clean_distinct_file(distinct_output_file)
         categorized_list, _ = categorize_and_expand_items(prod_distinct_list)
 
-        # Run prod and uat queries in the background
         run_background_queries()
 
     except Exception as e:
