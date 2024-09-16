@@ -40,23 +40,24 @@ def run_sqlplus_command(command, query, output_file, server_name):
     logger.debug(f"SQL*Plus command completed on {server_name}. Output written to {output_file}")
 
 def clean_file(file_path):
-    """Clean the output JSON file and return the cleaned list of lines."""
-    logger.debug(f"Cleaning output file: {file_path}")
-    try:
-        with open(file_path, 'r') as file:
-            lines = file.readlines()
+    """Clean the output file by removing unnecessary lines."""
+    with open(file_path, 'r') as file:
+        lines = file.readlines()
 
-        cleaned_lines = [line.strip() for line in lines if line.strip() and 'rows selected' not in line.lower()]
+    # Find indexes for relevant content
+    start_index = next((i for i, line in enumerate(lines) if 'SQL>' in line), 0) + 1
+    end_index = next((i for i in range(len(lines) - 1, -1, -1) if 'SQL>' in lines[i]), len(lines))
 
-        with open(file_path, 'w') as file:
-            file.write("\n".join(cleaned_lines) + "\n")
+    # Clean lines between indexes
+    cleaned_lines = [
+        ''.join(char for char in line if char in string.printable).strip()
+        for line in lines[start_index:end_index]
+        if 'rows selected' not in line.lower() and not line.strip().startswith('-') and line.strip() != 'JSON_DATA'
+    ]
 
-        logger.info(f"Successfully cleaned output file: {file_path}")
-        return cleaned_lines  # Return the cleaned lines as a list
+    with open(file_path, 'w') as file:
+        file.write("\n".join(cleaned_lines) + "\n")
 
-    except Exception as e:
-        logger.error(f"Error cleaning file {file_path}: {e}")
-        return []  # Return an empty list in case of an error
 
 def clean_distinct_file(file_path):
     """Clean the distinct output file and return as a list of cleaned items."""
@@ -116,24 +117,41 @@ def categorize_and_expand_items(distinct_list, search_items=None):
 
     return categorized_list, expanded_items
 
-def combine_json_data(file_paths):
-    """Combine JSON data from multiple files."""
-    logger.debug(f"Starting combine_json_data for files: {file_paths}")
+def combine_json_data(file_path):
+    """Read file and combine all JSON data into a single line, cleaning control characters."""
+    logger.debug(f"Starting combine_json_data for file: {file_path}")
     combined_data = []
-    for file_path in file_paths:
-        try:
-            with open(file_path, 'r') as file:
-                data = json.load(file)
-                combined_data.extend(data)
-        except Exception as e:
-            logger.error(f"Error loading JSON data from {file_path}: {e}")
-    logger.debug(f"Completed combine_json_data for files: {file_paths}")
+    try:
+        with open(file_path, 'r') as f:
+            lines = f.readlines()
+
+        # Combine JSON data line by line, cleaning control characters
+        current_json = []
+        in_json = False
+        for line in lines:
+            line = remove_control_characters(line.strip())  # Clean control characters
+            if '{' in line:
+                in_json = True
+                current_json.append(line)
+            elif '}' in line and in_json:
+                in_json = False
+                current_json.append(line)
+                combined_data.append(''.join(current_json))
+                current_json = []
+            elif in_json:
+                current_json.append(line)
+
+    except Exception as e:
+        logger.error(f"Error combining JSON data from {file_path}: {e}")
+
+    logger.debug(f"Completed combine_json_data for file: {file_path}")
     return combined_data
 
 def remove_control_characters(s):
-    """Remove control characters from strings."""
+    """Remove control characters from a string."""
     logger.debug("Starting remove_control_characters")
-    result = ''.join(ch for ch in s if ch.isprintable())
+    # Use regex to remove all control characters except printable ones
+    result = re.sub(r'[\x00-\x1F\x7F]', '', s)
     logger.debug("Completed remove_control_characters")
     return result
 
@@ -148,10 +166,15 @@ def clean_json_data(json_list):
     """Clean JSON data by removing control characters and null values."""
     logger.debug("Starting clean_json_data")
     cleaned_data = []
-    for entry in json_list:
-        entry = {k: remove_control_characters(v) if isinstance(v, str) else v for k, v in entry.items()}
-        entry = remove_null_values(entry)
-        cleaned_data.append(entry)
+    for json_str in json_list:
+        json_str = remove_control_characters(json_str)
+        try:
+            json_obj = json.loads(json_str)  # Try decoding JSON
+            cleaned_json_obj = apply_length_checks(remove_null_values(json_obj))
+            cleaned_data.append(json.dumps(cleaned_json_obj))
+        except json.JSONDecodeError as e:
+            logger.error(f"Error decoding JSON: {e} - Content: {json_str}")
+
     logger.debug("Completed clean_json_data")
     return cleaned_data
 
@@ -225,8 +248,8 @@ def run_background_queries():
         except Exception as e:
             logger.error(f"Error running SQL query or processing data on {server_name}: {e}")
 
-    prod_command = "sqlplus oasis77/ist0py@istu2_equ"
-    uat_command = "sqlplus oasis77/ist0py@istu2_uat"
+    prod_command = "sqlplus oasis77/ist0py@istu2"
+    uat_command = "sqlplus oasis77/ist0py@istu2"
     query = "SELECT JSON_OBJECT(*) AS JSON_DATA FROM (SELECT * FROM oasis77.SHCEXTBINDB ORDER BY LOWBIN) WHERE ROWNUM <= 4;"
     prod_output_file = os.path.join(OUTPUT_DIR, 'prod_output.json')
     uat_output_file = os.path.join(OUTPUT_DIR, 'uat_output.json')
@@ -241,7 +264,7 @@ def bin_blocking_editor(request):
     prod_distinct_list = []
 
     try:
-        distinct_command = "sqlplus oasis77/ist0py@istu2_equ"
+        distinct_command = "sqlplus oasis77/ist0py@istu2"
         distinct_query = "SELECT DISTINCT description FROM oasis77.SHCEXTBINDB ORDER BY DESCRIPTION;"
         distinct_output_file = os.path.join(OUTPUT_DIR, 'prod_distinct_output.txt')
         run_sqlplus_command(distinct_command, distinct_query, distinct_output_file, "Distinct")
