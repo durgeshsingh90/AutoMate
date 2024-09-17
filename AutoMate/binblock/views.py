@@ -461,6 +461,7 @@ def bin_blocking_editor(request):
         distinct_query = "SELECT DISTINCT description FROM oasis77.SHCEXTBINDB ORDER BY DESCRIPTION;"
         distinct_output_file = os.path.join(OUTPUT_DIR, 'prod_distinct_output.txt')
         run_sqlplus_command(distinct_command, distinct_query, distinct_output_file, "Distinct")
+        processed_bins_output = os.path.join(OUTPUT_DIR, 'processed_bins.txt')
 
         prod_distinct_list = clean_distinct_file(distinct_output_file)
 
@@ -483,7 +484,7 @@ def bin_blocking_editor(request):
         # Process BIN numbers
         processed_bins = process_bins(bin_input)
 
-        with open(distinct_output_file, 'w', encoding='utf-8') as file:
+        with open(processed_bins_output, 'w', encoding='utf-8') as file:
             for item in processed_bins:
                 file.write(f"{item}\n")
 
