@@ -482,6 +482,11 @@ def bin_blocking_editor(request):
 
         # Process BIN numbers
         processed_bins = process_bins(bin_input)
+
+        with open(distinct_output_file, 'w', encoding='utf-8') as file:
+            for item in processed_bins:
+                file.write(f"{item}\n")
+
         logger.info(f"Processed BINs: {processed_bins}")
 
         # Calculate neighbors for processed bins
