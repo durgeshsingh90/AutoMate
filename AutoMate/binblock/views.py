@@ -91,30 +91,6 @@ def clean_distinct_file(file_path):
         logger.error(f"Error cleaning distinct output file {file_path}: {e}")
         return []
 
-def categorize_and_expand_items(distinct_list, search_items=None):
-    """Categorize 'RUSSIAN' and 'SYRIA' variations into single categories for blocking and expand them for search items if needed."""
-    categorized_list = []
-    expanded_items = []
-
-    for item in distinct_list:
-        if item.startswith("RUSSIAN"):
-            if "RUSSIAN" not in categorized_list:
-                categorized_list.append("RUSSIAN")
-        elif item.startswith("SYRIA"):
-            if "SYRIA" not in categorized_list:
-                categorized_list.append("SYRIA")
-        else:
-            categorized_list.append(item)
-
-    if search_items:
-        for item in search_items:
-            if item in ["RUSSIAN", "SYRIA"]:
-                expanded_items.extend([i for i in distinct_list if i.startswith(item)])
-            else:
-                expanded_items.append(item)
-
-    return categorized_list, expanded_items
-
 def remove_control_characters(text):
     """Remove all control characters and normalize the text."""
     normalized_text = unicodedata.normalize('NFKD', text)
@@ -124,14 +100,12 @@ def remove_control_characters(text):
 
 def remove_null_values(d):
     """Recursively remove null values from dictionaries and lists."""
-    logger.debug("Starting remove_null_values")
     if isinstance(d, dict):
         cleaned_data = {k: remove_null_values(v) for k, v in d.items() if v is not None}
     elif isinstance(d, list):
         cleaned_data = [remove_null_values(v) for v in d if v is not None]
     else:
         cleaned_data = d
-    logger.debug("Completed remove_null_values")
     return cleaned_data
 
 def apply_length_checks(json_obj):
@@ -180,8 +154,7 @@ def generate_sql_insert_statements(json_list, table_name):
                 value = 'NULL'
             values.append(value)
         
-        # sql_statement = f"INSERT INTO {table_name} ({', '.join(keys)}) VALUES ({', '.join(values)});"
-        sql_statement = f"INSERT INTO OASIS77.SHCEXTBINDB ({', '.join(keys)}) VALUES ({', '.join(values)});"
+        sql_statement = f"INSERT INTO {table_name} ({', '.join(keys)}) VALUES ({', '.join(values)});"
         statements.append(sql_statement)
     
     logger.debug("Completed generate_sql_insert_statements")
@@ -258,11 +231,230 @@ def run_background_queries():
     threading.Thread(target=run_query_and_process, args=(prod_command, query, prod_output_file, "Prod")).start()
     threading.Thread(target=run_query_and_process, args=(uat_command, query, uat_output_file, "UAT")).start()
 
+def remove_duplicates_and_subsets(bin_list):
+    """Remove duplicate and subset bins."""
+    bin_set = sorted(set(bin_list), key=lambda x: (len(x), x))
+    return [
+        bin for bin in bin_set
+        if not any(bin.startswith(existing_bin) for existing_bin in bin_set if existing_bin != bin)
+    ]
+
+def combine_consecutives(bins):
+    """Combine consecutive bins into ranges."""
+    bins = sorted(bins, key=lambda x: int(x.split('-')[0]))
+    combined = []
+    i = 0
+    while i < len(bins):
+        start_bin = end_bin = bins[i]
+        while i + 1 < len(bins) and int(bins[i + 1].split('-')[0]) == int(bins[i].split('-')[0]) + 1:
+            end_bin = bins[i + 1]
+            i += 1
+        combined.append(f"{start_bin}-{end_bin}" if start_bin != end_bin else start_bin)
+        i += 1
+    return combined, i
+
+def process_bins(bins):
+    """Process BIN numbers to remove duplicates, handle subsets, and combine consecutive ranges."""
+    logger.debug("Starting to process BIN numbers")
+
+    # Remove duplicates and subsets
+    cleaned_bins = remove_duplicates_and_subsets(bins)
+    logger.debug(f"Cleaned BINs after removing duplicates and subsets: {cleaned_bins}")
+
+    # Combine consecutive bins into ranges
+    combined_bins, _ = combine_consecutives(cleaned_bins)
+    logger.info(f"Processed BINs: {combined_bins}")
+
+    return combined_bins
+
+def calculate_bins_with_neighbors(processed_bins):
+    """
+    Calculate the start and end bins for each processed bin range along with neighboring bins.
+    """
+    result = []
+
+    for bin_range in processed_bins:
+        bin_range = bin_range.strip()  # Clean up any extra spaces
+
+        # Check if the bin_range is a range
+        if '-' in bin_range:
+            start_bin, end_bin = bin_range.split('-')
+            start_bin = start_bin.strip().ljust(15, '0')  # Pad the start_bin with '0' to make it 15 characters
+            end_bin = end_bin.strip().ljust(15, '9')    # Pad the end_bin with '9' to make it 15 characters
+
+            # Calculate neighbors for the start and end bins
+            start_bin_int = int(start_bin.strip())
+            end_bin_int = int(end_bin.strip())
+            neighbor_minus_1 = str(start_bin_int - 1).ljust(15, '9')  # Decrement start_bin and pad with '9'
+            neighbor_plus_1 = str(end_bin_int + 1).ljust(15, '0')   # Increment end_bin and pad with '0'
+        else:
+            start_bin = end_bin = bin_range.strip()
+            start_bin = start_bin.ljust(15, '0')  # Pad the bin with '0' to make it 15 characters
+            end_bin = end_bin.ljust(15, '9')     # Pad the bin with '9' to make it 15 characters
+
+            # Calculate neighbors for a single bin
+            bin_int = int(bin_range.strip())
+            neighbor_minus_1 = str(bin_int - 1).ljust(15, '9')  # Decrement bin and pad with '9'
+            neighbor_plus_1 = str(bin_int + 1).ljust(15, '0')   # Increment bin and pad with '0'
+
+        result.append((start_bin, end_bin, neighbor_minus_1, neighbor_plus_1))
+
+    return result
+
+def parse_sql_statements(statements):
+    """Parse SQL statements without filtering by search items."""
+    filtered_statements = []
+
+    for statement in statements:
+        try:
+            values_part = statement.split("VALUES (")[1]
+            values = values_part.split(",")
+
+            lowbin = values[0].strip(" '")
+            highbin = values[1].strip(" '")
+            description = ' '.join(values[4].strip(" '").lower().split())  # Normalize description
+
+            # Include all statements without filtering by search_items
+            filtered_statements.append((lowbin, highbin, description, statement))
+
+        except IndexError:
+            logger.error(f"Error parsing statement: {statement}")
+
+    return filtered_statements
+
+def duplicate_and_modify_sql(sql_statements, bins_with_neighbors, blocked_item):
+    """
+    Duplicate and modify SQL statements based on processed bins and the blocked item, applying length checks and removing empty lines.
+    
+    Args:
+    sql_statements (list): List of SQL statements to process.
+    bins_with_neighbors (list): Processed bins with start and end ranges, along with their neighboring bins.
+    blocked_item (str): The item to be blocked.
+
+    Returns:
+    tuple: A tuple containing the modified SQL statements and the remaining original SQL statements.
+    """
+    # Logging the inputs for debugging purposes
+    logger.debug(f"SQL Statements to be processed: {sql_statements}")
+    logger.debug(f"Bins with Neighbors: {bins_with_neighbors}")
+    logger.debug(f"Blocked Item: {blocked_item}")
+
+    modified_statements = []
+    remaining_statements = []
+
+    # Define the field names based on the order in the SQL statements
+    field_names = ["LOWBIN", "HIGHBIN", "O_LEVEL", "STATUS", "DESCRIPTION", "DESTINATION", "ENTITY_ID", 
+                   "CARDPRODUCT", "FILE_NAME", "FILE_VERSION", "FILE_DATE"]
+
+    # Iterate over each SQL statement
+    for statement in sql_statements:
+        # Extract the fields from the SQL statement
+        try:
+            # Preserve the original format of the statement
+            insert_part, values_part = statement.split("VALUES (", 1)
+            values_part = values_part.rstrip("); \n").strip()
+
+            # Split the values part and strip each value of leading/trailing whitespace and quotes
+            values = [value.strip(" '") for value in values_part.split(",")]
+
+            # Ensure there are enough values to process
+            if len(values) != len(field_names):  # Match the number of fields
+                logger.error(f"Unexpected number of fields in statement: {statement}. Found {len(values)} fields.")
+                remaining_statements.append(statement)
+                continue
+
+            # Convert LOWBIN and HIGHBIN to integers for comparison
+            lowbin_int = int(values[0])
+            highbin_int = int(values[1])
+        except (IndexError, ValueError) as e:
+            logger.error(f"Error parsing fields from statement: {statement}. Error: {e}")
+            remaining_statements.append(statement)
+            continue
+
+        # Check if any of the bins need to be modified based on the blocked item
+        statement_modified = False
+
+        for (start_bin, end_bin, neighbor_minus_1, neighbor_plus_1) in bins_with_neighbors:
+            # Convert start_bin and end_bin to integers for comparison
+            try:
+                start_bin_int = int(start_bin.strip())
+                end_bin_int = int(end_bin.strip())
+            except ValueError:
+                logger.error(f"Invalid start_bin or end_bin format: {start_bin}, {end_bin}")
+                continue
+
+            # Check if start_bin falls within the range of LOWBIN and HIGHBIN
+            if lowbin_int <= start_bin_int <= highbin_int:
+                # Log the modification details
+                logger.debug(f"Modifying SQL statement: {statement} for BIN range {start_bin} - {end_bin}")
+
+                # Create three new SQL statements based on the split
+                # Part 1: Before the blocked range (if applicable)
+                if lowbin_int < start_bin_int:
+                    part1_values = values.copy()
+                    part1_values[0] = str(lowbin_int)  # Original LOWBIN
+                    part1_values[1] = neighbor_minus_1  # HIGHBIN before blocked range
+                    part1_values_dict = {key: value for key, value in zip(field_names, part1_values)}
+                    part1_values_dict = apply_length_checks(part1_values_dict)
+                    part1_statement = "{}VALUES ({});".format(
+                        insert_part, ', '.join(f"'{part1_values_dict[key]}'" for key in field_names if part1_values_dict[key].strip())
+                    )
+                    modified_statements.append(part1_statement)
+
+                # Part 2: The blocked range
+                blocked_values = values.copy()
+                blocked_values[0] = start_bin  # LOWBIN for blocked range
+                blocked_values[1] = end_bin  # HIGHBIN for blocked range
+                blocked_values[4] = blocked_item  # DESCRIPTION changed to blocked_item
+                blocked_values[7] = blocked_item  # CARDPRODUCT changed to blocked_item
+                blocked_values_dict = {key: value for key, value in zip(field_names, blocked_values)}
+                blocked_values_dict = apply_length_checks(blocked_values_dict)
+                blocked_statement = "{}VALUES ({});".format(
+                    insert_part, ', '.join(f"'{blocked_values_dict[key]}'" for key in field_names if blocked_values_dict[key].strip())
+                )
+                modified_statements.append(blocked_statement)
+
+                # Part 3: After the blocked range (if applicable)
+                if highbin_int > end_bin_int:
+                    part3_values = values.copy()
+                    part3_values[0] = neighbor_plus_1  # LOWBIN after blocked range
+                    part3_values[1] = str(highbin_int)  # Original HIGHBIN
+                    part3_values_dict = {key: value for key, value in zip(field_names, part3_values)}
+                    part3_values_dict = apply_length_checks(part3_values_dict)
+                    part3_statement = "{}VALUES ({});".format(
+                        insert_part, ', '.join(f"'{part3_values_dict[key]}'" for key in field_names if part3_values_dict[key].strip())
+                    )
+                    modified_statements.append(part3_statement)
+
+                statement_modified = True
+                break
+
+        if not statement_modified:
+            remaining_statements.append(statement)
+
+    # Remove any empty or blank lines
+    modified_statements = [stmt for stmt in modified_statements if stmt.strip()]
+
+    # Log the results of the modification process
+    logger.debug(f"Modified SQL Statements: {modified_statements}")
+    logger.debug(f"Remaining SQL Statements: {remaining_statements}")
+
+    return modified_statements, remaining_statements
+def merge_and_sort_sql(modified_statements, remaining_statements):
+    """Merge unaffected and modified SQL statements and sort by LOWBIN."""
+    combined_statements_sorted = sorted(
+        remaining_statements + modified_statements,
+        key=lambda stmt: int(stmt.split("VALUES ('")[1].split("', '")[0])
+    )
+
+    return combined_statements_sorted
+
 def bin_blocking_editor(request):
     logger.info("Bin blocking editor view accessed")
     result = None
     log_with_delays = None
     prod_distinct_list = []
+    categorized_list = []
 
     try:
         distinct_command = "sqlplus oasis77/ist0py@istu2"
@@ -271,7 +463,8 @@ def bin_blocking_editor(request):
         run_sqlplus_command(distinct_command, distinct_query, distinct_output_file, "Distinct")
 
         prod_distinct_list = clean_distinct_file(distinct_output_file)
-        categorized_list, _ = categorize_and_expand_items(prod_distinct_list)
+
+        logger.info(f"prod_distinct_list: {prod_distinct_list}")  # Debug log to check the list
 
         run_background_queries()
 
@@ -280,16 +473,67 @@ def bin_blocking_editor(request):
         categorized_list = []
 
     if request.method == 'POST':
+        # Get user inputs
+        bin_input = request.POST.get('bins', '').splitlines()
         blocked_item = request.POST.get('blocked_item')
-        search_items = request.POST.getlist('search_items')
 
-        _, expanded_search_items = categorize_and_expand_items(prod_distinct_list, search_items)
-        logger.info(f"User selected blocked item: {blocked_item} and expanded search items: {expanded_search_items}")
+        # Log the blocked_item to see if it's captured correctly
+        logger.info(f"Blocked Item selected: {blocked_item}")
+
+        # Process BIN numbers
+        processed_bins = process_bins(bin_input)
+        logger.info(f"Processed BINs: {processed_bins}")
+
+        # Calculate neighbors for processed bins
+        bins_with_neighbors = calculate_bins_with_neighbors(processed_bins)
+        logger.info(f"Bins with neighbors: {bins_with_neighbors}")
+
+        # Load the generated Prod SQL statements (assume they are stored in a list or file)
+        prod_sql_statements = generate_sql_insert_statements_for_prod()
+
+        # Process Prod SQL statements
+        prod_modified_sql, prod_remaining_sql = duplicate_and_modify_sql(
+            prod_sql_statements, bins_with_neighbors, blocked_item
+        )
+        prod_merged_sorted_sql = merge_and_sort_sql(prod_modified_sql, prod_remaining_sql)
+
+        # Save the new merged insert statements
+        save_sql_statements_to_file(prod_merged_sorted_sql, os.path.join(OUTPUT_DIR, 'final_prod_insert_statements.sql'))
+
+        # Log final merged SQL statements for Prod
+        logger.info(f"Final merged Prod SQL statements: {prod_merged_sorted_sql}")
+
+        context = {
+            'result': processed_bins,
+            'bins_with_neighbors': bins_with_neighbors,
+            'prod_sql_statements': prod_merged_sorted_sql,
+            'log_with_delays': log_with_delays,
+            'prod_distinct_list': prod_distinct_list  # Correctly pass the prod_distinct_list
+        }
+        logger.info("Rendering binblocker.html with context data after processing")
+        return render(request, 'binblock/binblocker.html', context)
 
     context = {
         'result': result,
         'log_with_delays': log_with_delays,
-        'prod_distinct_list': categorized_list
+        'prod_distinct_list': prod_distinct_list  # Correctly pass the prod_distinct_list
     }
-    logger.info("Rendering binblocker.html with context data")
+    logger.info("Rendering binblocker.html with initial context data")
     return render(request, 'binblock/binblocker.html', context)
+
+def generate_sql_insert_statements_for_prod():
+    """Generate or retrieve the previously created SQL insert statements for Prod."""
+    sql_file_path = os.path.join(OUTPUT_DIR, 'prod_insert_statements.sql')
+    with open(sql_file_path, 'r') as file:
+        return file.readlines()
+
+def save_sql_statements_to_file(statements, file_path):
+    """Save SQL INSERT statements to a file."""
+    logger.debug(f"Saving SQL statements to {file_path}")
+    try:
+        with open(file_path, 'w', encoding='utf-8') as file:
+            file.write("\n".join(statements))
+        logger.info(f"SQL statements saved to {file_path}")
+    except Exception as e:
+        logger.error(f"Error saving SQL statements to file {file_path}: {e}")
+    logger.debug(f"Completed saving SQL statements to {file_path}")

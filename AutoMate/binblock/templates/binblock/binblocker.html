@@ -29,33 +29,25 @@
                             <span id="total-lines">Total lines: 0</span>
                             <span id="selected-length" class="float-end">Selected text length: 0</span>
                         </div>
-                        <!-- Blocked Item and Search Items in Columns -->
-                        <div class="d-flex justify-content-between mt-3">
-                            <div class="form-section me-2">
-                                <h4>Blocked Item</h4>
-                                {% for item in prod_distinct_list %}
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="blocked_item" value="{{ item }}" id="blocked_{{ forloop.counter }}">
-                                        <label class="form-check-label" for="blocked_{{ forloop.counter }}">
-                                            {{ item }}
-                                        </label>
-                                    </div>
-                                {% endfor %}
-                            </div>
-
-                            <div class="form-section ms-2">
-                                <h4>Search Items</h4>
-                                {% for item in prod_distinct_list %}
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" name="search_items" value="{{ item }}" id="search_{{ forloop.counter }}">
-                                        <label class="form-check-label" for="search_{{ forloop.counter }}">
-                                            {{ item }}
-                                        </label>
-                                    </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                        <!-- Single Process Button -->
+                <!-- Blocked Item and Search Items in Columns -->
+<div class="d-flex justify-content-between mt-3">
+    <div class="form-section me-2">
+        <h4>Blocked Item</h4>
+        {% if prod_distinct_list %}
+            {% for item in prod_distinct_list %}
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="blocked_item" value="{{ item }}" id="blocked_{{ forloop.counter }}">
+                    <label class="form-check-label" for="blocked_{{ forloop.counter }}">
+                        {{ item }}
+                    </label>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>No items available for selection.</p>
+        {% endif %}
+    </div>
+</div>
+          <!-- Single Process Button -->
                         <button class="btn btn-primary mt-3" type="submit">Process</button>
                     </form>
                 </div>
