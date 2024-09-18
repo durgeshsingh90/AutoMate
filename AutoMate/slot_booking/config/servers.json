@@ -1,0 +1,15 @@
+[
+    {
+      "server_name": "Production Server",
+      "hostname": "prod.example.com"
+    },
+    {
+      "server_name": "Staging Server",
+      "hostname": "staging.example.com"
+    },
+    {
+      "server_name": "Development Server",
+      "hostname": "dev.example.com"
+    }
+  ]
+  
