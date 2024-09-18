@@ -180,13 +180,16 @@ pre {
         const matches = [];
         const regex = /in\[ *(\d+): *\]<(.+?)>/g;
         let match;
+        const mtimatch = inputLines.join('\n').match(/msgno\[ *0\]<(\d+)>/);
+        const mtivalue = mtimatch ? parseInt(mtimatch[1], 10) : 100;// Default to 100 if no match found
+
         while ((match = regex.exec(inputLines.join('\n'))) !== null) {
             matches.push([match[1], match[2]]);
         }
         
         const indices_to_concatenate = [7, 43];
         const json_data = {
-            "mti": 100,
+            "mti": mtivalue,
             "data_elements": {}
         };
         const warnings = [];
