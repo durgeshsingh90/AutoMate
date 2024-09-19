@@ -33,5 +33,6 @@ urlpatterns = [
     path('sql2json_object/', TemplateView.as_view(template_name='sql2json_object.html'), name='sql2json_object'),
     path('splunkparser/', include('splunkparser.urls')),  # Include the URLs from the splunkparser app
     path('binblock/', include('binblock.urls')),
+    path('slot_booking/', include('slot_booking.urls')),
 
 ]

@@ -1,0 +1,48 @@
+/* calendar.css */
+/* Remove unnecessary scroll bar by controlling the overflow */
+#calendar {
+    max-width: 100%;
+    margin: 20px auto; /* Center the calendar horizontally */
+    overflow: hidden; /* Prevent scroll bar */
+}
+
+.fc {
+    /* Ensure that the calendar is responsive and adapts to the container's size */
+    max-width: 100%;
+    overflow: hidden; /* Prevent vertical and horizontal scroll */
+}
+
+.fc-toolbar {
+    margin-bottom: 20px; /* Adds some space between toolbar and calendar */
+}
+
+
+.row.justify-content-center {
+    max-width: 900px;
+    margin: 0 auto 20px auto; /* center and add space between the controls and the calendar */
+}
+
+button#jumpToDate {
+    height: 38px; /* to align with the height of the input and select fields */
+}
+
+/* Remove underlines from event titles or links in the calendar */
+.fc a {
+    text-decoration: none !important; /* Removes underline from links */
+}
+
+/* Optionally, remove underlines from titles or text */
+.fc-event-title {
+    text-decoration: none !important; /* Ensures no underline for event titles */
+}
+
+/* General rule for calendar text */
+#calendar .fc {
+    text-decoration: none; /* Apply globally inside the calendar to prevent underlines */
+}
+
+/* Optional: Additional styling for inline checkboxes */
+.form-check-inline {
+    margin-right: 10px;
+}
+

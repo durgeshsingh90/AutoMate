@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'binblocking',
     'splunkparser',
     'binblock',
+    'slot_booking'
 ]
 
 # Logging configuration
@@ -176,6 +177,8 @@ STATICFILES_DIRS = [
     BASE_DIR / "binblocking/static",
     BASE_DIR / "splunkparser/static",
     BASE_DIR / "binblock/static",
+    BASE_DIR / "slot_booking/static",
+
 
 
     # Add other app static directories as needed
