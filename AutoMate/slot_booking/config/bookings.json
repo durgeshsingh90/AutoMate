@@ -2,36 +2,21 @@
     {
         "project_name": "test",
         "psp_name": "test",
-        "owner": "user001",
-        "server": "prod.example.com",
+        "owner": "ec2-user",
+        "server": "18.201.253.75",
         "scheme_types": [
-            "Type 1"
+            "MasterCardRoute - 10.20.7.208"
         ],
-        "start_date": "19/09/2024",
+        "start_date": "21/09/2024",
         "end_date": "21/09/2024",
         "time_slots": [
             "AM"
         ],
-        "repeat_days": [
-            "Tuesday"
+        "repeat_days": [],
+        "cron_jobs": [
+            "0 8 21-21 9 *",
+            "0 13 21-21 9 *"
         ],
         "booking_id": 1
-    },
-    {
-        "project_name": "test1",
-        "psp_name": "test1",
-        "owner": "user001",
-        "server": "prod.example.com",
-        "scheme_types": [
-            "Type 1",
-            "Type 2"
-        ],
-        "start_date": "19/09/2024",
-        "end_date": "20/09/2024",
-        "time_slots": [
-            "PM"
-        ],
-        "repeat_days": [],
-        "booking_id": 2
     }
 ]

@@ -68,7 +68,7 @@
         <!-- Booking Form Section -->
         <div class="col-md-4">
             <h4>Make a Booking</h4>
-            <form method="POST" action="{% url 'slot_booking:save_booking' %}">
+            <form id="bookingForm" method="POST" action="{% url 'slot_booking:save_booking' %}">
                 {% csrf_token %}
                 
                 <!-- Project Name & ID -->
@@ -104,15 +104,17 @@
             {% endfor %}
         </select>
 
-        <div class="mb-3">
-            <label for="schemeType" class="form-label">Scheme Type</label>
-            <select class="form-select" id="schemeType" name="schemeType" multiple size="5" required>
-                {% for scheme_type in scheme_types %}
-                    <option value="{{ scheme_type }}">{{ scheme_type }}</option>
-                {% endfor %}
-            </select>
-            
-        </div>
+<!-- Scheme Type Dropdown -->
+<div class="mb-3">
+    <label for="schemeType" class="form-label">Scheme Type</label>
+    <select class="form-select" id="schemeType" name="schemeType" multiple required>
+        <option value="">Select Scheme Type</option>
+        {% for scheme_type in scheme_types %}
+            <option value="{{ scheme_type }}">{{ scheme_type }}</option>
+        {% endfor %}
+    </select>
+</div>
+
                 <!-- Date Range Picker -->
                 <div class="mb-3">
                     <label for="dateRange" class="form-label">Date Range*</label>
@@ -150,7 +152,36 @@
                 <!-- Submit Button -->
                 <button type="submit" class="btn btn-success w-100">Submit Booking</button>
             </form>
-            
+            <!-- Modal for displaying Cron Jobs -->
+<!-- Modal for displaying Cron Jobs -->
+<!-- Modal for displaying Cron Jobs -->
+<div class="modal fade" id="cronJobsModal" tabindex="-1" aria-labelledby="cronJobsModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="cronJobsModalLabel">Generated Cron Jobs</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Here are the cron jobs generated for this booking:</p>
+                <div class="d-flex align-items-center">
+                    <textarea class="form-control" id="cronJobsContent" readonly rows="4"></textarea>
+                    <button id="copyCronJobs" class="btn btn-link ms-2" title="Copy to clipboard">
+                        <i class="bi bi-clipboard"></i> <!-- Bootstrap clipboard icon -->
+                    </button>
+                </div>
+                <!-- Confirmation to add cron job to server -->
+                <div class="mt-4">
+                    <p>Do you want to add this cron job to the server or skip it?</p>
+                    <button id="addCronToServer" class="btn btn-primary">Add to Server</button>
+                    <button id="skipCron" class="btn btn-secondary ms-2">Skip</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
         </div>
     </div>
 

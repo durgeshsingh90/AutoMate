@@ -1,7 +1,7 @@
 [
     {
-      "server_name": "Production Server",
-      "hostname": "prod.example.com"
+      "server_name": "omnipay",
+      "hostname": "18.201.253.75"
     },
     {
       "server_name": "Staging Server",

@@ -39,38 +39,116 @@ document.addEventListener('DOMContentLoaded', function() {
         calendar.gotoDate(selectedDate);
     });
 
-    // Form submit handler to prevent double bookings
-    const bookingForm = document.querySelector('form');
+    // Handle form submission via AJAX and prevent default browser form submission
+    document.getElementById('bookingForm').addEventListener('submit', function(event) {
+        event.preventDefault();  // Prevent the default form submission
 
-    bookingForm.addEventListener('submit', function(event) {
-        event.preventDefault();  // Prevent default form submission
+        console.log("Form submission intercepted!");  // Debug to check if form submission is handled
 
-        const formData = new FormData(bookingForm);  // Collect form data
-
-        // Send the form data via AJAX
-        fetch(bookingForm.action, {
+        // Submit the form via AJAX
+        fetch(this.action, {
             method: 'POST',
-            body: formData,
+            body: new FormData(this),
             headers: {
-                'X-CSRFToken': getCookie('csrftoken'),  // Include CSRF token
-            },
-        })
-        .then(response => {
-            if (!response.ok) {
-                return response.text().then(text => { throw new Error(text); });
+                'X-CSRFToken': getCookie('csrftoken')
             }
-            return response.text();
         })
-        .then(result => {
-            alert(result);  // Show success message
-            location.reload();  // Reload the page after successful booking
+        .then(response => response.json())
+        .then(data => {
+            console.log("Response received:", data);  // Debug to check server response
+
+            if (data.cron_jobs) {
+                // Populate the textarea with cron jobs wrapped in backticks
+                const cronJobsText = data.cron_jobs.map(job => `\`\`\`${job}\`\`\``).join('\n');
+                document.getElementById('cronJobsContent').value = cronJobsText;
+
+                console.log("Showing modal...");  // Debug to check modal triggering
+                // Show the modal
+                new bootstrap.Modal(document.getElementById('cronJobsModal')).show();
+
+                // Handle "Add to Server" button click
+                document.getElementById('addCronToServer').addEventListener('click', function() {
+                    console.log("Adding cron job to server...");
+                    // Here, you'd call the backend to run a script or trigger a server-side action
+                    // to add the cron job on the server. For example:
+                    fetch('/slot_booking/add-cron-job/', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': getCookie('csrftoken'),
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ cron_jobs: data.cron_jobs })
+                    })
+                    .then(response => response.json())
+                    .then(serverData => {
+                        if (serverData.success) {
+                            alert('Cron jobs successfully added to the server!');
+                            location.reload();  // Reload the page or calendar if needed
+                        } else {
+                            alert('Error adding cron jobs to the server.');
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
+                });
+
+// Handle "Skip" button click
+document.getElementById('skipCron').addEventListener('click', function(event) {
+    event.preventDefault(); // Prevent any default action from occurring (like form submission)
+    event.stopPropagation(); // Stop the event from bubbling up
+
+    console.log("Skipping cron job addition...");
+    
+    // Hide the modal
+    new bootstrap.Modal(document.getElementById('cronJobsModal')).hide();
+
+    // Refresh the page to reload the slot booking calendar
+    location.reload();  // Just refresh the page, no submission should happen
+});
+// Listen for when the modal is hidden, and ensure no form submission occurs
+document.getElementById('cronJobsModal').addEventListener('hidden.bs.modal', function (event) {
+    console.log('Modal closed, stopping any ongoing submission.');
+    // You could stop any potential form submission logic here, but the key is to prevent default on "Skip".
+});
+
+
+                
+            } else if (data.message) {
+                console.log("Message:", data.message);
+            }
         })
         .catch(error => {
-            // Show error message in a popup if there's a conflict (double booking)
-            alert(error.message);
+            console.error('Error:', error);
+        });
+    });
+
+    // Copy cron jobs to clipboard
+    document.getElementById('copyCronJobs').addEventListener('click', function() {
+        var cronText = document.getElementById('cronJobsContent').value;
+        navigator.clipboard.writeText(cronText).then(function() {
+            alert('Cron jobs copied to clipboard!');
+        }, function(err) {
+            alert('Failed to copy cron jobs: ', err);
         });
     });
 });
+
+// Helper function to get CSRF token from cookies
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+
 
 function deleteBooking(bookingId) {
     // Send an AJAX request to Django to delete the booking by ID
@@ -91,21 +169,6 @@ function deleteBooking(bookingId) {
     });
 }
 
-// Helper function to get CSRF token from cookies
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
-}
 
 $(function() {
     // Initialize the date range picker

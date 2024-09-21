@@ -46,3 +46,13 @@ button#jumpToDate {
     margin-right: 10px;
 }
 
+#copyCronJobs {
+    font-size: 1.2em;
+    cursor: pointer;
+    color: #007bff;  /* Blue color */
+}
+
+#copyCronJobs:hover {
+    color: #0056b3;  /* Darker blue on hover */
+}
+
