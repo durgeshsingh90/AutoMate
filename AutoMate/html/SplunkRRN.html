@@ -103,6 +103,14 @@
                     <input type="checkbox" id="addHost3" class="form-check-input" onchange="modifyNumbers()">
                     <label for="addHost3" class="form-check-label">Add "host = a5pvap040"</label>
                 </div>
+                <div class="form-check">
+                    <input type="checkbox" id="addHost4" class="form-check-input" onchange="modifyNumbers()">
+                    <label for="addHost4" class="form-check-label">Add "host = a4pvap1003"</label>
+                </div>
+                <div class="form-check">
+                    <input type="checkbox" id="addHost5" class="form-check-input" onchange="modifyNumbers()">
+                    <label for="addHost5" class="form-check-label">Add "host = a4pvap1004"</label>
+                </div>
                 <!-- Status for Total Number of Lines -->
                 <div id="lineStatus" class="line-status">Total Lines: 1</div>
                 <!-- Button to Remove Empty Lines -->
@@ -141,6 +149,9 @@
             const addHost1 = document.getElementById('addHost1').checked;
             const addHost2 = document.getElementById('addHost2').checked;
             const addHost3 = document.getElementById('addHost3').checked;
+            const addHost4 = document.getElementById('addHost4').checked;
+            const addHost5 = document.getElementById('addHost5').checked;
+
             const lines = input.split('\n').filter(line => line.trim() !== ''); // Filter out empty lines
             let modifiedLines = [];
             let useAnd = false; // To keep track if "AND" should be used between lines
@@ -188,6 +199,8 @@
                 if (addHost1) hosts += ' host = a4pvap068';
                 if (addHost2) hosts += ' host = a5pvap039';
                 if (addHost3) hosts += ' host = a5pvap040';
+                if (addHost4) hosts += ' host = a4pvap1003';
+                if (addHost5) hosts += ' host = a4pvap1004';
                 output = `index = "application_omnipay" ${hosts} ${output} | reverse`;
             }
 
