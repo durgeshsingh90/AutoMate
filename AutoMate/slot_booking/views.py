@@ -1,5 +1,6 @@
 import json
 import paramiko
+import logging
 from pathlib import Path
 from datetime import datetime
 from django.shortcuts import render
@@ -7,70 +8,82 @@ from django.http import JsonResponse, HttpResponseBadRequest
 from django.views.decorators.http import require_http_methods
 from django.apps import apps
 
+# Set up a logger for this module
+logger = logging.getLogger('myapp')
+
 # Define paths for configuration and booking files
 app_base_dir = Path(apps.get_app_config('slot_booking').path)
 CONFIG_DIR = app_base_dir / 'config'
 BOOKINGS_FILE = CONFIG_DIR / 'bookings.json'
 
-# View to render the calendar and load owners, servers, and scheme types from files
+
 def calendar_view(request):
-    # Load owners from the JSON file
+    logger.debug("Rendering calendar view")
+
     owners_file_path = CONFIG_DIR / 'owners.json'
     owners = []
+    
     if owners_file_path.exists():
+        logger.debug(f"Loading owners from {owners_file_path}")
         with owners_file_path.open('r') as file:
             try:
                 owners = json.load(file)
+                logger.info("Owners data loaded successfully")
             except json.JSONDecodeError:
+                logger.error(f"Failed to parse JSON from {owners_file_path}")
                 owners = []
 
-    # Load servers from the JSON file
     servers_file_path = CONFIG_DIR / 'servers.json'
     servers = []
+    
     if servers_file_path.exists():
+        logger.debug(f"Loading servers from {servers_file_path}")
         with servers_file_path.open('r') as file:
             try:
                 servers = json.load(file)
+                logger.info("Servers data loaded successfully")
             except json.JSONDecodeError:
+                logger.error(f"Failed to parse JSON from {servers_file_path}")
                 servers = []
 
-    # Load the scheme types from the istparam.cfg file
     istparam_file_path = CONFIG_DIR / 'istparam.cfg'
     scheme_types = []
-
+    
     if istparam_file_path.exists():
+        logger.debug(f"Loading scheme types from {istparam_file_path}")
         with istparam_file_path.open('r') as file:
             for line in file:
                 line = line.strip()
 
-                # Ignore comments (lines that start with '#') and empty lines
                 if line.startswith('#') or not line:
                     continue
 
-                # Split by space to extract the port.name and check for 'cmmt:'
                 parts = line.split()
                 if len(parts) >= 4 and parts[0] == "port.name":
-                    port_name = parts[1]  # The second part is the port name
+                    port_name = parts[1]
                     
-                    # Look for the 'cmmt:' section and extract the IP from it
                     for part in parts:
                         if part.startswith('cmmt:'):
-                            # Extract the IP part from cmmt: (cmmt:MASTERCARD_INSTANCE.10.20.7.208.2000)
                             cmmt_parts = part.split('.')
                             if len(cmmt_parts) >= 5:
-                                ip_address = '.'.join(cmmt_parts[1:5])  # Extract only the IP (10.20.7.208)
+                                ip_address = '.'.join(cmmt_parts[1:5])
                                 scheme_types.append(f"{port_name} - {ip_address}")
+                                logger.debug(f"Extracted IP address: {ip_address} for port: {port_name}")
                                 break
 
-    # Pass the owners, servers, and filtered scheme types data to the template
-    return render(request, 'slot_booking/calendar.html', {
+    logger.info("Calendar view data loaded successfully")
+    return_data = render(request, 'slot_booking/calendar.html', {
         'owners': owners, 
         'servers': servers, 
         'scheme_types': scheme_types
     })
+    logger.debug("Returning calendar view response")
+    return return_data
 
-# View to save bookings with an incrementing booking_id
+
 def save_booking(request):
+    logger.debug("Saving booking")
+
     if request.method == 'POST':
         try:
             # Get the date range from the form and split it into start and end dates
@@ -80,12 +93,12 @@ def save_booking(request):
             end_date = datetime.strptime(end_date, '%d/%m/%Y').date()
 
             # Collect other form data
-            new_scheme_types = request.POST.getlist('schemeType')  # Scheme types
+            new_scheme_types = request.POST.getlist('schemeType')  # Scheme types (port names with IPs)
             new_time_slots = request.POST.getlist('timeSlot')  # Time slots (AM, PM, Overnight)
             new_repeat_days = request.POST.getlist('repeatBooking')  # Repeat days (e.g., Tuesday)
 
-            # Generate the cron expressions
-            cron_entries = generate_cron_expression(start_date, end_date, new_repeat_days, new_time_slots)
+            # Generate the cron expressions with the script and parameters
+            cron_entries = generate_cron_expression(start_date, end_date, new_repeat_days, new_time_slots, new_scheme_types)
 
             # Collect other form data to store in the booking
             booking_data = {
@@ -128,72 +141,104 @@ def save_booking(request):
             with BOOKINGS_FILE.open('w') as file:
                 json.dump(bookings, file, indent=4)
 
+            logger.info(f"Booking {booking_id} saved successfully")
+
             # Return the generated cron jobs as part of the response
             return JsonResponse({
                 "message": "Booking saved successfully!",
-                "cron_jobs": cron_entries
+                "cron_jobs": cron_entries  # This will be shown in the pop-up screen
             })
         except Exception as e:
+            logger.exception("Error saving booking")
             return HttpResponseBadRequest(f"Error saving booking: {str(e)}")
 
+    logger.warning("Invalid request method for saving booking")
     return HttpResponseBadRequest("Invalid request method.")
- 
-# View to return bookings for FullCalendar
+
+
 def get_bookings(request):
+    logger.debug("Getting bookings for FullCalendar")
     bookings = []
+    
     if BOOKINGS_FILE.exists():
         try:
             with BOOKINGS_FILE.open('r') as file:
                 bookings = json.load(file)
+                logger.info("Bookings data loaded successfully")
         except (json.JSONDecodeError, ValueError):
-            bookings = []  # If the file is empty or contains invalid JSON
+            logger.error(f"Error loading bookings from {BOOKINGS_FILE}")
+            bookings = []
 
-    # Convert bookings into events for FullCalendar
     events = []
     for booking in bookings:
         try:
-            # Convert 'DD/MM/YYYY' to 'YYYY-MM-DD' for FullCalendar
             start_date = datetime.strptime(booking['start_date'], '%d/%m/%Y').strftime('%Y-%m-%d')
             end_date = datetime.strptime(booking['end_date'], '%d/%m/%Y').strftime('%Y-%m-%d')
 
-            # Create an event object for FullCalendar
             event = {
                 'id': booking['booking_id'],
                 'title': booking['project_name'],
                 'start': start_date,
                 'end': end_date,
-                'allDay': True  # FullCalendar default for full-day events
+                'allDay': True
             }
             events.append(event)
+            logger.debug(f"Added booking event for {booking['project_name']}")
         except ValueError as e:
-            print(f"Error parsing date for booking: {booking['project_name']}. Error: {str(e)}")
+            logger.error(f"Error parsing date for booking {booking['project_name']}: {str(e)}")
 
-    # Return the events in JSON format to FullCalendar
-    return JsonResponse(events, safe=False)
+    logger.info("Bookings successfully converted to events for FullCalendar")
+    return_data = JsonResponse(events, safe=False)
+    logger.debug("Returning bookings data for FullCalendar")
+    return return_data
 
-# View to delete a booking
+
 @require_http_methods(["DELETE"])
 def delete_booking(request, booking_id):
+    logger.debug(f"Deleting booking with ID {booking_id}")
+    
     if BOOKINGS_FILE.exists():
         try:
             with BOOKINGS_FILE.open('r') as file:
                 bookings = json.load(file)
 
-            # Filter out the booking with the given booking_id
             updated_bookings = [booking for booking in bookings if booking['booking_id'] != int(booking_id)]
 
-            # Write the updated bookings back to the JSON file
             with BOOKINGS_FILE.open('w') as file:
                 json.dump(updated_bookings, file, indent=4)
 
-            return JsonResponse({"message": "Booking deleted successfully!"})
+            logger.info(f"Booking {booking_id} deleted successfully")
+            return_data = JsonResponse({"message": "Booking deleted successfully!"})
+            logger.debug("Returning success response for delete booking")
+            return return_data
         except Exception as e:
+            logger.exception(f"Error deleting booking {booking_id}")
             return HttpResponseBadRequest(f"Error deleting booking: {str(e)}")
     
+    logger.warning(f"Booking file not found while trying to delete booking {booking_id}")
     return HttpResponseBadRequest("Booking file not found.")
 
-def generate_cron_expression(start_date, end_date, repeat_days, time_slots):
+
+def generate_cron_expression(start_date, end_date, repeat_days, time_slots, scheme_types):
+    logger.debug("Generating cron expressions with script parameters")
     cron_entries = []
+
+    # Define a path to your script
+    script_path = "/app/f94gdos/booking.sh"
+
+    # Extract port names and IP addresses from the selected scheme types
+    port_names = []
+    ip_addresses = []
+
+    for scheme in scheme_types:
+        if ' - ' in scheme:
+            port_name, ip_address = scheme.split(' - ')
+            port_names.append(port_name)
+            ip_addresses.append(ip_address)
+
+    # Join port names and IP addresses into a single string for the cron job parameters
+    port_names_str = ' '.join(port_names)
+    ip_addresses_str = ' '.join(ip_addresses)
 
     # Map repeat_days (e.g., "Tuesday") to crontab day of week numbers
     day_map = {
@@ -227,18 +272,53 @@ def generate_cron_expression(start_date, end_date, repeat_days, time_slots):
         cron_days_of_week = ','.join(str(day_map[day]) for day in repeat_days)
 
     # Handle the case where start and end dates span across different months
+    cron_entry_format = f"0 {{start_hour}} {{start_day}}-{{end_day}} {{start_month}} {{cron_days}} {script_path} {port_names_str} {ip_addresses_str}"
+    
     if start_date.month == end_date.month:
-        # If the start and end dates are within the same month
-        cron_start = f"0 {earliest_start} {start_date.day}-{end_date.day} {start_date.month} {cron_days_of_week}"
-        cron_end = f"0 {latest_end} {start_date.day}-{end_date.day} {start_date.month} {cron_days_of_week}"
+        cron_start = cron_entry_format.format(
+            start_hour=earliest_start,
+            start_day=start_date.day,
+            end_day=end_date.day,
+            start_month=start_date.month,
+            cron_days=cron_days_of_week
+        )
+        cron_end = cron_entry_format.format(
+            start_hour=latest_end,
+            start_day=start_date.day,
+            end_day=end_date.day,
+            start_month=start_date.month,
+            cron_days=cron_days_of_week
+        )
     else:
-        # For the start month (run from the start date to the end of the month)
-        cron_start = f"0 {earliest_start} {start_date.day}-31 {start_date.month} {cron_days_of_week}"
-        cron_end = f"0 {latest_end} {start_date.day}-31 {start_date.month} {cron_days_of_week}"
+        cron_start = cron_entry_format.format(
+            start_hour=earliest_start,
+            start_day=start_date.day,
+            end_day=31,
+            start_month=start_date.month,
+            cron_days=cron_days_of_week
+        )
+        cron_end = cron_entry_format.format(
+            start_hour=latest_end,
+            start_day=start_date.day,
+            end_day=31,
+            start_month=start_date.month,
+            cron_days=cron_days_of_week
+        )
 
-        # For the end month (run from the 1st day to the end date)
-        cron_start_next_month = f"0 {earliest_start} 1-{end_date.day} {end_date.month} {cron_days_of_week}"
-        cron_end_next_month = f"0 {latest_end} 1-{end_date.day} {end_date.month} {cron_days_of_week}"
+        cron_start_next_month = cron_entry_format.format(
+            start_hour=earliest_start,
+            start_day=1,
+            end_day=end_date.day,
+            start_month=end_date.month,
+            cron_days=cron_days_of_week
+        )
+        cron_end_next_month = cron_entry_format.format(
+            start_hour=latest_end,
+            start_day=1,
+            end_day=end_date.day,
+            start_month=end_date.month,
+            cron_days=cron_days_of_week
+        )
 
         cron_entries.append(cron_start_next_month)
         cron_entries.append(cron_end_next_month)
@@ -247,67 +327,62 @@ def generate_cron_expression(start_date, end_date, repeat_days, time_slots):
     cron_entries.append(cron_start)
     cron_entries.append(cron_end)
 
+    logger.info("Cron expressions with script and parameters generated successfully")
     return cron_entries
-
-
-
-import paramiko
-from django.http import JsonResponse
-from django.views.decorators.http import require_http_methods
-import json
 
 @require_http_methods(["POST"])
 def add_cron_job(request):
+    logger.debug("Adding cron job via SSH")
+    
     try:
         data = json.loads(request.body)
         cron_jobs = data.get('cron_jobs', [])
-        owner = data.get('owner', '')  # SSH username (owner)
-        server = data.get('server', '')  # Server hostname
+        owner = data.get('owner', '')
+        server = data.get('server', '')
 
         if not owner or not server:
+            logger.warning("Missing owner or server in request data")
             return JsonResponse({'success': False, 'error': 'Owner or server information missing.'}, status=400)
 
-        # Setup SSH connection using paramiko
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
         try:
-            # Use the default private key (~/.ssh/id_rsa) for SSH connection
             ssh.connect(server, username=owner)
+            logger.info(f"SSH connection established to {server} with user {owner}")
 
-            print(f"SSH connection established to {server} with user {owner}")
-
-            # Prepare the cron job commands
             cron_job_commands = "\n".join([f'(crontab -l 2>/dev/null; echo "{cron_job}") | crontab -' for cron_job in cron_jobs])
 
-            # Prepare the full command to switch to 'f94gdos' user and add the cron jobs
             command = f"""
             sudo su - f94gdos -c 'bash -s' <<EOF
             {cron_job_commands}
             EOF
             """
+            logger.debug(f"Executing SSH command: {command}")
 
-            print(f"Executing command: {command}")
-
-            # Execute the combined command to switch users and add cron jobs
             stdin, stdout, stderr = ssh.exec_command(command)
 
-            # Capture the output and errors
             output = stdout.read().decode()
             error = stderr.read().decode()
 
             if error:
+                logger.error(f"Error during SSH execution: {error}")
                 return JsonResponse({'success': False, 'error': error}, status=500)
 
             ssh.close()
-            print("SSH session closed.")
+            logger.info("SSH session closed")
 
-            return JsonResponse({'success': True, 'output': output})
+            return_data = JsonResponse({'success': True, 'output': output})
+            logger.debug("Returning success response for add cron job")
+            return return_data
 
         except paramiko.AuthenticationException:
+            logger.error("SSH authentication failed")
             return JsonResponse({'success': False, 'error': 'Authentication failed.'}, status=403)
         except Exception as e:
+            logger.exception("Error during SSH connection")
             return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
     except Exception as e:
+        logger.exception("Error processing cron job addition")
         return JsonResponse({'success': False, 'error': str(e)}, status=500)

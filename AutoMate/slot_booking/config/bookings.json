@@ -1,1 +1,158 @@
-[]
+[
+    {
+        "project_name": "test",
+        "psp_name": "test",
+        "owner": "ec2-user",
+        "server": "18.201.253.75",
+        "scheme_types": [
+            "MasterCardRoute - 10.20.7.209"
+        ],
+        "start_date": "27/09/2024",
+        "end_date": "28/09/2024",
+        "time_slots": [
+            "AM"
+        ],
+        "repeat_days": [],
+        "cron_jobs": [
+            "0 8 27-28 9 *",
+            "0 13 27-28 9 *"
+        ],
+        "booking_id": 1
+    },
+    {
+        "project_name": "test",
+        "psp_name": "test",
+        "owner": "ec2-user",
+        "server": "18.201.253.75",
+        "scheme_types": [
+            "MasterCardRoute - 10.20.7.208"
+        ],
+        "start_date": "28/09/2024",
+        "end_date": "29/09/2024",
+        "time_slots": [
+            "AM"
+        ],
+        "repeat_days": [],
+        "cron_jobs": [
+            "0 8 28-29 9 *",
+            "0 13 28-29 9 *"
+        ],
+        "booking_id": 2
+    },
+    {
+        "project_name": "test1\\",
+        "psp_name": "test",
+        "owner": "ec2-user",
+        "server": "18.201.253.75",
+        "scheme_types": [
+            "MasterCardRoute - 10.20.7.208"
+        ],
+        "start_date": "07/10/2024",
+        "end_date": "07/10/2024",
+        "time_slots": [
+            "Overnight"
+        ],
+        "repeat_days": [],
+        "cron_jobs": [
+            "0 18 7-7 10 * /app/f94gdos/booking.sh MasterCardRoute 10.20.7.208",
+            "0 8 7-7 10 * /app/f94gdos/booking.sh MasterCardRoute 10.20.7.208"
+        ],
+        "booking_id": 3
+    },
+    {
+        "project_name": "test",
+        "psp_name": "test",
+        "owner": "ec2-user",
+        "server": "18.201.253.75",
+        "scheme_types": [
+            "MasterCardRoute - 10.20.7.208"
+        ],
+        "start_date": "17/09/2024",
+        "end_date": "17/09/2024",
+        "time_slots": [
+            "AM"
+        ],
+        "repeat_days": [],
+        "cron_jobs": [
+            "0 8 17-17 9 * /app/f94gdos/booking.sh MasterCardRoute 10.20.7.208",
+            "0 13 17-17 9 * /app/f94gdos/booking.sh MasterCardRoute 10.20.7.208"
+        ],
+        "booking_id": 4
+    },
+    {
+        "project_name": "test",
+        "psp_name": "test",
+        "owner": "ec2-user",
+        "server": "18.201.253.75",
+        "scheme_types": [
+            "",
+            "MasterCardRoute - 10.20.7.208",
+            "MasterCardRoute - 10.20.7.209",
+            "MasterCardRoute - 10.20.7.18",
+            "MasterCardRouteIPG - 10.20.7.208",
+            "MasterCardRouteDX - 10.20.7.18",
+            "MasterCardRoute - 10.20.7.209",
+            "VisaRoute - 10.20.7.208",
+            "VisaRoute - 10.20.7.209",
+            "VisaRoute - 10.20.7.18",
+            "VisaRouteIPG - 10.20.7.208",
+            "VisaRouteDX - 10.20.7.18",
+            "VisaRoute - 10.20.7.209",
+            "DinersRoute - 10.20.7.208",
+            "DinersRoute - 10.20.7.209",
+            "DinersRoute - 10.20.7.18",
+            "DinersRouteIPG - 10.20.7.208",
+            "DinersRouteDX - 10.20.7.18",
+            "DinersRoute - 10.20.7.209"
+        ],
+        "start_date": "12/09/2024",
+        "end_date": "14/09/2024",
+        "time_slots": [
+            "AM"
+        ],
+        "repeat_days": [],
+        "cron_jobs": [
+            "0 8 12-14 9 * /app/f94gdos/booking.sh MasterCardRoute MasterCardRoute MasterCardRoute MasterCardRouteIPG MasterCardRouteDX MasterCardRoute VisaRoute VisaRoute VisaRoute VisaRouteIPG VisaRouteDX VisaRoute DinersRoute DinersRoute DinersRoute DinersRouteIPG DinersRouteDX DinersRoute 10.20.7.208 10.20.7.209 10.20.7.18 10.20.7.208 10.20.7.18 10.20.7.209 10.20.7.208 10.20.7.209 10.20.7.18 10.20.7.208 10.20.7.18 10.20.7.209 10.20.7.208 10.20.7.209 10.20.7.18 10.20.7.208 10.20.7.18 10.20.7.209",
+            "0 13 12-14 9 * /app/f94gdos/booking.sh MasterCardRoute MasterCardRoute MasterCardRoute MasterCardRouteIPG MasterCardRouteDX MasterCardRoute VisaRoute VisaRoute VisaRoute VisaRouteIPG VisaRouteDX VisaRoute DinersRoute DinersRoute DinersRoute DinersRouteIPG DinersRouteDX DinersRoute 10.20.7.208 10.20.7.209 10.20.7.18 10.20.7.208 10.20.7.18 10.20.7.209 10.20.7.208 10.20.7.209 10.20.7.18 10.20.7.208 10.20.7.18 10.20.7.209 10.20.7.208 10.20.7.209 10.20.7.18 10.20.7.208 10.20.7.18 10.20.7.209"
+        ],
+        "booking_id": 5
+    },
+    {
+        "project_name": "test",
+        "psp_name": "test",
+        "owner": "ec2-user",
+        "server": "18.201.253.75",
+        "scheme_types": [
+            "",
+            "MasterCardRoute - 10.20.7.208",
+            "MasterCardRoute - 10.20.7.209",
+            "MasterCardRoute - 10.20.7.18",
+            "MasterCardRouteIPG - 10.20.7.208",
+            "MasterCardRouteDX - 10.20.7.18",
+            "MasterCardRoute - 10.20.7.209",
+            "VisaRoute - 10.20.7.208",
+            "VisaRoute - 10.20.7.209",
+            "VisaRoute - 10.20.7.18",
+            "VisaRouteIPG - 10.20.7.208",
+            "VisaRouteDX - 10.20.7.18",
+            "VisaRoute - 10.20.7.209",
+            "DinersRoute - 10.20.7.208",
+            "DinersRoute - 10.20.7.209",
+            "DinersRoute - 10.20.7.18",
+            "DinersRouteIPG - 10.20.7.208",
+            "DinersRouteDX - 10.20.7.18",
+            "DinersRoute - 10.20.7.209"
+        ],
+        "start_date": "12/09/2024",
+        "end_date": "14/09/2024",
+        "time_slots": [
+            "AM"
+        ],
+        "repeat_days": [],
+        "cron_jobs": [
+            "0 8 12-14 9 * /app/f94gdos/booking.sh MasterCardRoute MasterCardRoute MasterCardRoute MasterCardRouteIPG MasterCardRouteDX MasterCardRoute VisaRoute VisaRoute VisaRoute VisaRouteIPG VisaRouteDX VisaRoute DinersRoute DinersRoute DinersRoute DinersRouteIPG DinersRouteDX DinersRoute 10.20.7.208 10.20.7.209 10.20.7.18 10.20.7.208 10.20.7.18 10.20.7.209 10.20.7.208 10.20.7.209 10.20.7.18 10.20.7.208 10.20.7.18 10.20.7.209 10.20.7.208 10.20.7.209 10.20.7.18 10.20.7.208 10.20.7.18 10.20.7.209",
+            "0 13 12-14 9 * /app/f94gdos/booking.sh MasterCardRoute MasterCardRoute MasterCardRoute MasterCardRouteIPG MasterCardRouteDX MasterCardRoute VisaRoute VisaRoute VisaRoute VisaRouteIPG VisaRouteDX VisaRoute DinersRoute DinersRoute DinersRoute DinersRouteIPG DinersRouteDX DinersRoute 10.20.7.208 10.20.7.209 10.20.7.18 10.20.7.208 10.20.7.18 10.20.7.209 10.20.7.208 10.20.7.209 10.20.7.18 10.20.7.208 10.20.7.18 10.20.7.209 10.20.7.208 10.20.7.209 10.20.7.18 10.20.7.208 10.20.7.18 10.20.7.209"
+        ],
+        "booking_id": 6
+    }
+]
