@@ -81,41 +81,36 @@ def calendar_view(request):
     return return_data
 
 
+import json
+from datetime import datetime
+
 def save_booking(request):
     logger.debug("Saving booking")
 
     if request.method == 'POST':
         try:
-            # Get the date range from the form and split it into start and end dates
-            date_range = request.POST.get('dateRange')
-            start_date, end_date = date_range.split(' - ')
-            start_date = datetime.strptime(start_date, '%d/%m/%Y').date()
-            end_date = datetime.strptime(end_date, '%d/%m/%Y').date()
+            # Check if "dateRange" is missing, treat as open slot
+            date_range = request.POST.get('dateRange', None)
+            is_open_slot = date_range is None or date_range == '*'
 
-            # Collect other form data
-            new_scheme_types = request.POST.getlist('schemeType')  # Scheme types (port names with IPs)
-            new_time_slots = request.POST.getlist('timeSlot')  # Time slots (AM, PM, Overnight)
-            new_repeat_days = request.POST.getlist('repeatBooking')  # Repeat days (e.g., Tuesday)
+            # Handle open slot case
+            if is_open_slot:
+                start_date = "*"
+                end_date = "*"
+                new_repeat_days = request.POST.getlist('repeatBooking', ['Tuesday', 'Thursday'])  # Use default repeat days for open slot
+                new_time_slots = ['AM']  # Default time slot for open slots
+            else:
+                # If date range is provided, split into start and end dates
+                start_date, end_date = date_range.split(' - ')
+                start_date = datetime.strptime(start_date, '%d/%m/%Y').date()
+                end_date = datetime.strptime(end_date, '%d/%m/%Y').date()
 
-            # Generate the cron expressions with the script and parameters
-            cron_entries = generate_cron_expression(start_date, end_date, new_repeat_days, new_time_slots, new_scheme_types)
+                # Get time slots and repeat days for a normal booking
+                new_time_slots = request.POST.getlist('timeSlot')  # Time slots (AM, PM, Overnight)
+                new_repeat_days = request.POST.getlist('repeatBooking')  # Repeat days (e.g., Tuesday)
 
-            # Collect other form data to store in the booking
-            booking_data = {
-                'project_name': request.POST.get('projectName'),
-                'psp_name': request.POST.get('pspName'),
-                'owner': request.POST.get('owner'),
-                'server': request.POST.get('server'),
-                'scheme_types': new_scheme_types,
-                'start_date': start_date.strftime('%d/%m/%Y'),
-                'end_date': end_date.strftime('%d/%m/%Y'),
-                'time_slots': new_time_slots,
-                'repeat_days': new_repeat_days,
-                'cron_jobs': cron_entries  # Save the cron expressions
-            }
-
-            # Ensure the config directory exists
-            CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+            # Get scheme types from the form
+            scheme_types = request.POST.getlist('schemeType')  # Scheme types
 
             # Load the existing bookings data from the JSON file (if exists)
             if BOOKINGS_FILE.exists():
@@ -132,7 +127,24 @@ def save_booking(request):
                 booking_id = max(b['booking_id'] for b in bookings) + 1
             else:
                 booking_id = 1
-            booking_data['booking_id'] = booking_id
+
+            # Generate cron expressions
+            cron_entries = generate_cron_expression(start_date, end_date, new_repeat_days, new_time_slots, scheme_types, booking_id, is_open_slot)
+
+            # Collect other form data to store in the booking
+            booking_data = {
+                'project_name': request.POST.get('projectName'),
+                'psp_name': request.POST.get('pspName'),
+                'owner': request.POST.get('owner'),
+                'server': request.POST.get('server'),
+                'scheme_types': scheme_types,  # Scheme types
+                'start_date': start_date.strftime('%d/%m/%Y') if start_date != '*' else '',  # Convert date to string or empty if it's an open slot
+                'end_date': end_date.strftime('%d/%m/%Y') if end_date != '*' else '',  # Convert date to string or empty if it's an open slot
+                'time_slots': new_time_slots,
+                'repeat_days': new_repeat_days,
+                'cron_jobs': cron_entries,  # Save the cron expressions
+                'booking_id': booking_id  # Save the booking ID
+            }
 
             # Add the new booking to the list
             bookings.append(booking_data)
@@ -155,90 +167,92 @@ def save_booking(request):
     logger.warning("Invalid request method for saving booking")
     return HttpResponseBadRequest("Invalid request method.")
 
-
 def get_bookings(request):
-    logger.debug("Getting bookings for FullCalendar")
     bookings = []
     
     if BOOKINGS_FILE.exists():
         try:
             with BOOKINGS_FILE.open('r') as file:
                 bookings = json.load(file)
-                logger.info("Bookings data loaded successfully")
         except (json.JSONDecodeError, ValueError):
-            logger.error(f"Error loading bookings from {BOOKINGS_FILE}")
-            bookings = []
+            bookings = []  # If the file is empty or contains invalid JSON
 
     events = []
+    
+    # Map repeat_days (e.g., "Tuesday") to crontab day of week numbers
+    day_map = {
+        "Sunday": 6, "Monday": 0, "Tuesday": 1, "Wednesday": 2,
+        "Thursday": 3, "Friday": 4, "Saturday": 5
+    }
+
     for booking in bookings:
         try:
-            start_date = datetime.strptime(booking['start_date'], '%d/%m/%Y').strftime('%Y-%m-%d')
-            end_date = datetime.strptime(booking['end_date'], '%d/%m/%Y').strftime('%Y-%m-%d')
+            # If no start and end date, handle as open slot with repeat days
+            if not booking['start_date'] and not booking['end_date']:
+                # Open slot: create events throughout the year for repeat days
+                repeat_days = booking.get('repeat_days', [])
+                for month in range(1, 13):  # Loop through months
+                    for day in range(1, 32):  # Loop through days in the month
+                        try:
+                            date = datetime(year=datetime.now().year, month=month, day=day)
+                        except ValueError:
+                            continue  # Skip invalid dates
 
-            event = {
-                'id': booking['booking_id'],
-                'title': booking['project_name'],
-                'start': start_date,
-                'end': end_date,
-                'allDay': True
-            }
-            events.append(event)
-            logger.debug(f"Added booking event for {booking['project_name']}")
+                        if date.weekday() in [day_map[day] for day in repeat_days]:
+                            events.append({
+                                'id': booking['booking_id'],
+                                'title': booking['project_name'],
+                                'start': date.strftime('%Y-%m-%d'),
+                                'allDay': True
+                            })
+            else:
+                # Handle normal bookings with a specific date range
+                start_date = datetime.strptime(booking['start_date'], '%d/%m/%Y')
+                end_date = datetime.strptime(booking['end_date'], '%d/%m/%Y')
+                events.append({
+                    'id': booking['booking_id'],
+                    'title': booking['project_name'],
+                    'start': start_date.strftime('%Y-%m-%d'),
+                    'end': end_date.strftime('%Y-%m-%d'),
+                    'allDay': True
+                })
         except ValueError as e:
             logger.error(f"Error parsing date for booking {booking['project_name']}: {str(e)}")
 
-    logger.info("Bookings successfully converted to events for FullCalendar")
-    return_data = JsonResponse(events, safe=False)
-    logger.debug("Returning bookings data for FullCalendar")
-    return return_data
+    return JsonResponse(events, safe=False)
 
 
 @require_http_methods(["DELETE"])
 def delete_booking(request, booking_id):
-    logger.debug(f"Deleting booking with ID {booking_id}")
-    
     if BOOKINGS_FILE.exists():
         try:
             with BOOKINGS_FILE.open('r') as file:
                 bookings = json.load(file)
 
+            # Filter out the booking with the given booking_id
             updated_bookings = [booking for booking in bookings if booking['booking_id'] != int(booking_id)]
 
+            # Write the updated bookings back to the JSON file
             with BOOKINGS_FILE.open('w') as file:
                 json.dump(updated_bookings, file, indent=4)
 
-            logger.info(f"Booking {booking_id} deleted successfully")
-            return_data = JsonResponse({"message": "Booking deleted successfully!"})
-            logger.debug("Returning success response for delete booking")
-            return return_data
+            return JsonResponse({"message": "Booking deleted successfully!"})
         except Exception as e:
-            logger.exception(f"Error deleting booking {booking_id}")
             return HttpResponseBadRequest(f"Error deleting booking: {str(e)}")
     
-    logger.warning(f"Booking file not found while trying to delete booking {booking_id}")
     return HttpResponseBadRequest("Booking file not found.")
 
 
-def generate_cron_expression(start_date, end_date, repeat_days, time_slots, scheme_types):
+from calendar import monthrange
+
+from calendar import monthrange
+
+def generate_cron_expression(start_date, end_date, repeat_days, time_slots, scheme_types, booking_id, is_open_slot=False):
     logger.debug("Generating cron expressions with script parameters")
     cron_entries = []
 
-    # Define a path to your script
+    # Define the path to your script
     script_path = "/app/f94gdos/booking.sh"
-
-    # Extract port names and IP addresses from the selected scheme types
-    port_names = []
-    ip_addresses = []
-
-    for scheme in scheme_types:
-        if ' - ' in scheme:
-            port_name, ip_address = scheme.split(' - ')
-            port_names.append(port_name)
-            ip_addresses.append(ip_address)
-
-    # Join port names and IP addresses into a single string for the cron job parameters
-    port_names_str = ' '.join(port_names)
-    ip_addresses_str = ' '.join(ip_addresses)
 
     # Map repeat_days (e.g., "Tuesday") to crontab day of week numbers
     day_map = {
@@ -253,81 +267,67 @@ def generate_cron_expression(start_date, end_date, repeat_days, time_slots, sche
         "Overnight": (18, 8)  # Start at 6 PM, end at 8 AM the next day
     }
 
-    # Determine the earliest start time and the latest end time based on selected time slots
-    start_times = []
-    end_times = []
+    # Concatenate all selected scheme types (port_name and ip_address pairs) into a single string
+    scheme_params = ' '.join([f"{port_name}:{ip_address}" for scheme_type in scheme_types for port_name, ip_address in [scheme_type.split(' - ')]])
 
-    for time_slot in time_slots:
-        start_time, end_time = time_slot_times[time_slot]
-        start_times.append(start_time)
-        end_times.append(end_time)
+    # Handle open slot case, where start_date and end_date are '*'
+    if is_open_slot:
+        day_part = "*"
+        month_part = "*"
+        cron_days_of_week = "*"
+        if repeat_days:
+            cron_days_of_week = ','.join(str(day_map[day]) for day in repeat_days)
 
-    # Get the earliest start time and the latest end time
-    earliest_start = min(start_times)
-    latest_end = max(end_times)
+        # Create a cron job with * for day and month
+        for time_slot in time_slots:
+            start_time = time_slot_times[time_slot][0]
+            cron_entry = f"0 {start_time} * * {cron_days_of_week} {script_path} {scheme_params} # Booking ID: {booking_id}"
+            cron_entries.append(cron_entry)
 
-    # Handle repeat days: If empty, assume job should run every day
-    cron_days_of_week = "*"
-    if repeat_days:
-        cron_days_of_week = ','.join(str(day_map[day]) for day in repeat_days)
-
-    # Handle the case where start and end dates span across different months
-    cron_entry_format = f"0 {{start_hour}} {{start_day}}-{{end_day}} {{start_month}} {{cron_days}} {script_path} {port_names_str} {ip_addresses_str}"
-    
-    if start_date.month == end_date.month:
-        cron_start = cron_entry_format.format(
-            start_hour=earliest_start,
-            start_day=start_date.day,
-            end_day=end_date.day,
-            start_month=start_date.month,
-            cron_days=cron_days_of_week
-        )
-        cron_end = cron_entry_format.format(
-            start_hour=latest_end,
-            start_day=start_date.day,
-            end_day=end_date.day,
-            start_month=start_date.month,
-            cron_days=cron_days_of_week
-        )
     else:
-        cron_start = cron_entry_format.format(
-            start_hour=earliest_start,
-            start_day=start_date.day,
-            end_day=31,
-            start_month=start_date.month,
-            cron_days=cron_days_of_week
-        )
-        cron_end = cron_entry_format.format(
-            start_hour=latest_end,
-            start_day=start_date.day,
-            end_day=31,
-            start_month=start_date.month,
-            cron_days=cron_days_of_week
-        )
+        # Generate cron jobs for each month between start_date and end_date
+        current_date = start_date
+        while current_date <= end_date:
+            # Get the last day of the current month
+            last_day_of_month = monthrange(current_date.year, current_date.month)[1]
 
-        cron_start_next_month = cron_entry_format.format(
-            start_hour=earliest_start,
-            start_day=1,
-            end_day=end_date.day,
-            start_month=end_date.month,
-            cron_days=cron_days_of_week
-        )
-        cron_end_next_month = cron_entry_format.format(
-            start_hour=latest_end,
-            start_day=1,
-            end_day=end_date.day,
-            start_month=end_date.month,
-            cron_days=cron_days_of_week
-        )
+            if current_date == start_date and current_date == end_date:
+                # If start_date and end_date are the same, use a single day
+                day_part = f"{start_date.day}"
+            elif current_date.month == start_date.month and current_date.month == end_date.month:
+                # If the booking starts and ends in the same month, use a day range
+                day_part = f"{start_date.day}-{end_date.day}"
+            elif current_date.month == start_date.month:
+                # If it's the starting month, use start_date.day as the starting day
+                day_part = f"{start_date.day}-{last_day_of_month}"
+            elif current_date.month == end_date.month:
+                # If it's the ending month, use end_date.day as the ending day
+                day_part = f"1-{end_date.day}"
+            else:
+                # Otherwise, it's a full month, so use 1 to the last day of the month
+                day_part = f"1-{last_day_of_month}"
 
-        cron_entries.append(cron_start_next_month)
-        cron_entries.append(cron_end_next_month)
+            # Set the month part
+            month_part = f"{current_date.month}"
 
-    # Add the cron expressions for both the start and end times
-    cron_entries.append(cron_start)
-    cron_entries.append(cron_end)
+            # Set the cron days of the week if repeat_days are selected
+            cron_days_of_week = "*"
+            if repeat_days:
+                cron_days_of_week = ','.join(str(day_map[day]) for day in repeat_days)
 
-    logger.info("Cron expressions with script and parameters generated successfully")
+            # Create cron jobs for each time slot
+            for time_slot in time_slots:
+                start_time = time_slot_times[time_slot][0]
+                cron_entry = f"0 {start_time} {day_part} {month_part} {cron_days_of_week} {script_path} {scheme_params} # Booking ID: {booking_id}"
+                cron_entries.append(cron_entry)
+
+            # Move to the next month
+            if current_date.month == 12:
+                current_date = current_date.replace(year=current_date.year + 1, month=1, day=1)
+            else:
+                current_date = current_date.replace(month=current_date.month + 1, day=1)
+
+    logger.info(f"Cron expressions with booking ID {booking_id} generated successfully")
     return cron_entries
 
 @require_http_methods(["POST"])

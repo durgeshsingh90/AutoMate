@@ -115,39 +115,37 @@
     </select>
 </div>
 
-                <!-- Date Range Picker -->
-                <div class="mb-3">
-                    <label for="dateRange" class="form-label">Date Range*</label>
-                    <input type="text" class="form-control" id="dateRange" name="dateRange" placeholder="Select Date Range" required>
-                </div>
-            
-                <!-- Time Slot (AM, PM, Overnight) -->
-                <label class="form-label d-block">Time Slot*</label>
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="checkbox" id="amSlot" name="timeSlot" value="AM">
-                    <label class="form-check-label" for="amSlot">AM</label>
-                </div>
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="checkbox" id="pmSlot" name="timeSlot" value="PM">
-                    <label class="form-check-label" for="pmSlot">PM</label>
-                </div>
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="checkbox" id="overnightSlot" name="timeSlot" value="Overnight">
-                    <label class="form-check-label" for="overnightSlot">Overnight</label>
-                </div>
-                
-            
-                <!-- Repeat Days (Tuesday and Thursday) -->
-                <label class="form-label d-block">Repeat on Days*</label>
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="checkbox" id="repeatTuesday" name="repeatBooking" value="Tuesday">
-                    <label class="form-check-label" for="repeatTuesday">Tuesday</label>
-                </div>
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="checkbox" id="repeatThursday" name="repeatBooking" value="Thursday">
-                    <label class="form-check-label" for="repeatThursday">Thursday</label>
-                </div>
-                
+<!-- Date Range Picker -->
+<div class="mb-3">
+    <label for="dateRange" class="form-label">Date Range*</label>
+    <input type="text" class="form-control" id="dateRange" name="dateRange" placeholder="Select Date Range" required>
+    <div class="invalid-feedback" id="dateRangeError"></div> <!-- Error message for dateRange -->
+</div>
+
+<!-- Time Slot (AM, PM, Overnight) -->
+<div id="timeSlotContainer">
+    <label class="form-label d-block">Time Slot*</label>
+    <div class="form-check form-check-inline">
+        <input class="form-check-input" type="checkbox" id="amSlot" name="timeSlot" value="AM">
+        <label class="form-check-label" for="amSlot">AM</label>
+    </div>
+    <div class="form-check form-check-inline">
+        <input class="form-check-input" type="checkbox" id="pmSlot" name="timeSlot" value="PM">
+        <label class="form-check-label" for="pmSlot">PM</label>
+    </div>
+    <div class="form-check form-check-inline">
+        <input class="form-check-input" type="checkbox" id="overnightSlot" name="timeSlot" value="Overnight">
+        <label class="form-check-label" for="overnightSlot">Overnight</label>
+    </div>
+    <div class="text-danger" id="timeSlotError"></div> <!-- Error message for timeSlot -->
+</div>
+
+<!-- Open Slot Checkbox -->
+<div class="form-check">
+    <input class="form-check-input" type="checkbox" id="openSlot" name="openSlot">
+    <label class="form-check-label" for="openSlot">Open Slot</label>
+</div>
+
             
                 <!-- Submit Button -->
                 <button type="submit" class="btn btn-success w-100">Submit Booking</button>

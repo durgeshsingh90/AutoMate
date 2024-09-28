@@ -21,97 +21,56 @@ document.addEventListener('DOMContentLoaded', function() {
         events: '/slot_booking/get-bookings/',
 
         eventClick: function(info) {
-            // Handle double-click by asking user for confirmation
             if (confirm(`Are you sure you want to delete the booking for ${info.event.title}?`)) {
-                // If confirmed, send a request to delete the booking
-                deleteBooking(info.event.id);
+                deleteBooking(info.event.id);  // Pass the correct booking ID to the delete function
             }
         }
     });
 
     calendar.render();
 
-    // Handle date jump logic
-    document.getElementById('jumpToDate').addEventListener('click', function() {
-        var month = document.getElementById('monthSelect').value;
-        var year = document.getElementById('yearSelect').value;
-        var selectedDate = new Date(year, month);
-        calendar.gotoDate(selectedDate);
-    });
-
-    // Handle form submission via AJAX and prevent default browser form submission
+    // Handle form submission and validation
     document.getElementById('bookingForm').addEventListener('submit', function(event) {
         event.preventDefault();  // Prevent the default form submission
 
-        console.log("Form submission intercepted!");  // Debug to check if form submission is handled
+        var openSlotChecked = document.getElementById('openSlot').checked;
+        var formData = new FormData(this);  // Use FormData to handle the form data
 
-        // Submit the form via AJAX
+        if (openSlotChecked) {
+            // If "Open Slot" is checked, remove dateRange and timeSlot fields, and set timeSlot as "AM" and repeat_days as ["Tuesday", "Thursday"]
+            formData.delete('dateRange');  // Remove the dateRange field
+            formData.delete('timeSlot');   // Remove any timeSlot selections
+            formData.append('timeSlot', 'AM');  // Set timeSlot to AM
+            formData.delete('repeatBooking');  // Remove any other repeat days
+            formData.append('repeatBooking', 'Tuesday');  // Set repeat days to Tuesday
+            formData.append('repeatBooking', 'Thursday');  // Set repeat days to Thursday
+        } else {
+            // If "Open Slot" is not checked, handle regular date range and time slot selections
+            var dateRange = document.getElementById('dateRange').value;
+            var timeSlotChecked = document.querySelectorAll('input[name="timeSlot"]:checked').length > 0;
+
+            // Basic validation for date range and time slot
+            if (!dateRange || !timeSlotChecked) {
+                alert('Please select a valid date range and at least one time slot.');
+                return;
+            }
+        }
+
+        // Continue with form submission via AJAX with the modified formData
         fetch(this.action, {
             method: 'POST',
-            body: new FormData(this),
+            body: formData,
             headers: {
                 'X-CSRFToken': getCookie('csrftoken')
             }
         })
         .then(response => response.json())
         .then(data => {
-            console.log("Response received:", data);  // Debug to check server response
-
+            // Handle the response and show cron jobs, if applicable
             if (data.cron_jobs) {
-                // Populate the textarea with cron jobs wrapped in backticks
-                const cronJobsText = data.cron_jobs.map(job => `\`\`\`${job}\`\`\``).join('\n');
+                const cronJobsText = data.cron_jobs.map(job => `${job}`).join('\n');
                 document.getElementById('cronJobsContent').value = cronJobsText;
-
-                console.log("Showing modal...");  // Debug to check modal triggering
-                // Show the modal
                 new bootstrap.Modal(document.getElementById('cronJobsModal')).show();
-
-                // Handle "Add to Server" button click
-                document.getElementById('addCronToServer').addEventListener('click', function() {
-                    console.log("Adding cron job to server...");
-                    // Here, you'd call the backend to run a script or trigger a server-side action
-                    // to add the cron job on the server. For example:
-                    fetch('/slot_booking/add-cron-job/', {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRFToken': getCookie('csrftoken'),
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ cron_jobs: data.cron_jobs })
-                    })
-                    .then(response => response.json())
-                    .then(serverData => {
-                        if (serverData.success) {
-                            alert('Cron jobs successfully added to the server!');
-                            location.reload();  // Reload the page or calendar if needed
-                        } else {
-                            alert('Error adding cron jobs to the server.');
-                        }
-                    })
-                    .catch(error => console.error('Error:', error));
-                });
-
-// Handle "Skip" button click
-document.getElementById('skipCron').addEventListener('click', function(event) {
-    event.preventDefault(); // Prevent any default action from occurring (like form submission)
-    event.stopPropagation(); // Stop the event from bubbling up
-
-    console.log("Skipping cron job addition...");
-    
-    // Hide the modal
-    new bootstrap.Modal(document.getElementById('cronJobsModal')).hide();
-
-    // Refresh the page to reload the slot booking calendar
-    location.reload();  // Just refresh the page, no submission should happen
-});
-// Listen for when the modal is hidden, and ensure no form submission occurs
-document.getElementById('cronJobsModal').addEventListener('hidden.bs.modal', function (event) {
-    console.log('Modal closed, stopping any ongoing submission.');
-    // You could stop any potential form submission logic here, but the key is to prevent default on "Skip".
-});
-
-
-                
             } else if (data.message) {
                 console.log("Message:", data.message);
             }
@@ -121,62 +80,96 @@ document.getElementById('cronJobsModal').addEventListener('hidden.bs.modal', fun
         });
     });
 
-    // Copy cron jobs to clipboard
-    document.getElementById('copyCronJobs').addEventListener('click', function() {
-        var cronText = document.getElementById('cronJobsContent').value;
-        navigator.clipboard.writeText(cronText).then(function() {
-            alert('Cron jobs copied to clipboard!');
-        }, function(err) {
-            alert('Failed to copy cron jobs: ', err);
-        });
-    });
-});
-
-// Helper function to get CSRF token from cookies
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
-}
-
-
-
-function deleteBooking(bookingId) {
-    // Send an AJAX request to Django to delete the booking by ID
-    fetch(`/slot_booking/delete-booking/${bookingId}/`, {
-        method: 'DELETE',
-        headers: {
-            'X-CSRFToken': getCookie('csrftoken'), // Make sure you pass the CSRF token
-            'Content-Type': 'application/json'
-        }
-    })
-    .then(response => {
-        if (response.ok) {
-            alert('Booking deleted successfully!');
-            location.reload();  // Reload the calendar after deletion
-        } else {
-            alert('Error deleting booking!');
-        }
-    });
-}
-
-
-$(function() {
     // Initialize the date range picker
     $('#dateRange').daterangepicker({
         locale: {
-            format: 'DD/MM/YYYY'  // Customize the format as per your requirement
+            format: 'DD/MM/YYYY'
         },
         startDate: moment().startOf('day'),
-        endDate: moment().add(1, 'month').startOf('day')  // Default range
+        endDate: moment().startOf('day')
     });
+
+    // Handle "Open Slot" checkbox change event
+    document.getElementById('openSlot').addEventListener('change', function() {
+        var isChecked = this.checked;
+        var dateRangeInput = document.getElementById('dateRange');
+        var timeSlotCheckboxes = document.querySelectorAll('input[name="timeSlot"]');
+        var amSlotCheckbox = document.getElementById('amSlot');
+
+        if (isChecked) {
+            // Set "Always" as the dateRange value and disable it
+            originalDateRange = dateRangeInput.value;
+            dateRangeInput.value = 'Always';
+            dateRangeInput.disabled = true;
+
+            // Disable time slots but make sure AM is selected
+            timeSlotCheckboxes.forEach(function(checkbox) {
+                checkbox.disabled = true;
+            });
+            amSlotCheckbox.checked = true;  // Ensure AM is checked
+
+            // Clear error messages and styles if "Open Slot" is selected
+            resetFormValidation();
+        } else {
+            // Restore the original dateRange value and enable it
+            dateRangeInput.value = originalDateRange;
+            dateRangeInput.disabled = false;
+
+            // Enable time slots
+            timeSlotCheckboxes.forEach(function(checkbox) {
+                checkbox.disabled = false;
+            });
+        }
+    });
+
+    // Reload the page when the "Skip" button is clicked
+    document.getElementById('skipCron').addEventListener('click', function(event) {
+        event.preventDefault();  // Prevent default behavior
+        location.reload();  // Reload the page
+    });
+
+    // Helper function to delete a booking
+    function deleteBooking(bookingId) {
+        fetch(`/slot_booking/delete-booking/${bookingId}/`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),  // Ensure CSRF token is sent
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                alert('Booking deleted successfully!');
+                location.reload();  // Reload the page after deletion
+            } else {
+                alert('Error deleting booking!');
+            }
+        });
+    }
+
+    // Helper function to get CSRF token from cookies
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    // Helper function to reset validation errors
+    function resetFormValidation() {
+        // Clear any previous error styles or messages
+        document.getElementById('dateRange').classList.remove('is-invalid');
+        document.getElementById('dateRangeError').innerText = '';
+        
+        document.getElementById('timeSlotContainer').classList.remove('border', 'border-danger', 'rounded');
+        document.getElementById('timeSlotError').innerText = '';
+    }
 });
