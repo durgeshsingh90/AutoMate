@@ -10,13 +10,13 @@
         "start_date": "29/09/2024",
         "end_date": "29/09/2024",
         "time_slots": [
-            "AM"
+            "PM"
         ],
         "repeat_days": [],
         "cron_jobs": [
-            "0 8 29 9 * /app/f94gdos/booking.sh MasterCardRoute:10.20.7.208 # Booking ID: 1",
-            "0 13 29 9 * /app/f94gdos/booking.sh MasterCardRoute:10.1.1.1 # Rollback Booking ID: 1"
+            "0 13 29 9 * /app/f94gdos/booking.sh MasterCardRoute:10.20.7.208 # Booking ID: 2",
+            "0 18 29 9 * /app/f94gdos/booking.sh MasterCardRoute:10.1.1.1 # Rollback Booking ID: 2"
         ],
-        "booking_id": 1
+        "booking_id": 2
     }
 ]

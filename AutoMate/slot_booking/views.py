@@ -248,23 +248,123 @@ def get_bookings(request):
 
 @require_http_methods(["DELETE"])
 def delete_booking(request, booking_id):
-    if BOOKINGS_FILE.exists():
-        try:
+    logger.debug(f"Received request to delete Booking ID: {booking_id}")
+
+    try:
+        # Load the existing bookings from the JSON file
+        if BOOKINGS_FILE.exists():
             with BOOKINGS_FILE.open('r') as file:
                 bookings = json.load(file)
 
-            # Filter out the booking with the given booking_id
+            # Find the booking with the given booking_id
+            booking_to_delete = None
+            for booking in bookings:
+                if booking['booking_id'] == int(booking_id):
+                    booking_to_delete = booking
+                    break
+
+            if not booking_to_delete:
+                logger.warning(f"Booking ID {booking_id} not found.")
+                return HttpResponseBadRequest(f"Booking ID {booking_id} not found.")
+
+            # Extract server and owner from the booking information
+            server = booking_to_delete.get('server')
+            owner = booking_to_delete.get('owner')
+
+            if not server or not owner:
+                logger.error(f"Server or owner information missing for Booking ID {booking_id}.")
+                return JsonResponse({'success': False, 'error': 'Server or owner information missing.'}, status=400)
+
+            # Filter out the booking from the list and update the JSON file
             updated_bookings = [booking for booking in bookings if booking['booking_id'] != int(booking_id)]
 
             # Write the updated bookings back to the JSON file
             with BOOKINGS_FILE.open('w') as file:
                 json.dump(updated_bookings, file, indent=4)
 
-            return JsonResponse({"message": "Booking deleted successfully!"})
-        except Exception as e:
-            return HttpResponseBadRequest(f"Error deleting booking: {str(e)}")
-    
-    return HttpResponseBadRequest("Booking file not found.")
+            logger.info(f"Booking ID {booking_id} successfully deleted from the database.")
+
+            # Now, login to the server and remove the cron jobs with the booking ID
+            logger.info(f"Attempting to remove cron jobs for Booking ID {booking_id} from server {server}.")
+
+            # Use paramiko to SSH into the server and remove cron jobs for the deleted booking
+            result = remove_cron_jobs_from_server(booking_id, owner, server)
+
+            if result.get('success'):
+                logger.info(f"Cron jobs for Booking ID {booking_id} successfully removed from server {server}.")
+                return JsonResponse({"message": "Booking and cron jobs deleted successfully!"})
+            else:
+                logger.error(f"Error removing cron jobs for Booking ID {booking_id}: {result.get('error')}")
+                return JsonResponse(result, status=500)
+
+        else:
+            logger.error("Booking file not found.")
+            return HttpResponseBadRequest("Booking file not found.")
+
+    except Exception as e:
+        logger.exception(f"Error deleting Booking ID {booking_id}: {str(e)}")
+        return HttpResponseBadRequest(f"Error deleting booking: {str(e)}")
+
+
+# Function to remove cron jobs based on the booking ID
+def remove_cron_jobs_from_server(booking_id, owner, server):
+    ssh = paramiko.SSHClient()
+    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+
+    try:
+        # Connect to the server using paramiko
+        ssh.connect(server, username=owner)
+        logger.info(f"SSH connection established to {server} with user {owner} for Booking ID {booking_id}.")
+
+        # Fetch current crontab entries for the user f94gdos
+        command = "sudo su - f94gdos -c 'crontab -l'"
+        stdin, stdout, stderr = ssh.exec_command(command)
+
+        # Capture the current crontab
+        crontab_output = stdout.read().decode()
+        error = stderr.read().decode()
+
+        if error:
+            logger.error(f"Error fetching crontab for server {server}: {error}")
+            return {'success': False, 'error': error}
+
+        logger.debug(f"Crontab for server {server} fetched successfully.")
+
+        # Filter out cron jobs related to the given booking_id
+        updated_crontab = []
+        for line in crontab_output.splitlines():
+            if f"Booking ID: {booking_id}" not in line:  # If line does not contain the booking ID, keep it
+                updated_crontab.append(line)
+            else:
+                logger.debug(f"Removing cron job: {line}")
+
+        # Prepare the updated crontab (join list into a single string)
+        updated_crontab_string = "\n".join(updated_crontab)
+
+        # Update the crontab with the modified entries (excluding the deleted booking’s cron jobs)
+        update_command = f"echo \"{updated_crontab_string}\" | sudo su - f94gdos -c 'crontab -'"
+        stdin, stdout, stderr = ssh.exec_command(update_command)
+
+        output = stdout.read().decode()
+        error = stderr.read().decode()
+
+        if error:
+            logger.error(f"Error updating crontab for server {server}: {error}")
+            return {'success': False, 'error': error}
+
+        logger.info(f"Cron jobs for Booking ID {booking_id} successfully removed from server {server}.")
+
+        return {'success': True}
+
+    except paramiko.AuthenticationException:
+        logger.error(f"SSH authentication failed for server {server}.")
+        return {'success': False, 'error': 'Authentication failed.'}
+    except Exception as e:
+        logger.error(f"SSH connection error for server {server}: {str(e)}")
+        return {'success': False, 'error': str(e)}
+    finally:
+        ssh.close()
+        logger.info("SSH session closed.")
 
 
 def generate_cron_expression(start_date, end_date, repeat_days, time_slots, scheme_types, booking_id, server, is_open_slot=False):
@@ -366,16 +466,6 @@ def generate_cron_expression(start_date, end_date, repeat_days, time_slots, sche
     logger.info(f"Cron expressions with booking ID {booking_id} generated successfully")
     return cron_entries
 
-
-import paramiko
-from django.http import JsonResponse
-from django.views.decorators.http import require_http_methods
-import json
-
-import paramiko
-from django.http import JsonResponse
-from django.views.decorators.http import require_http_methods
-import json
 
 @require_http_methods(["POST"])
 def add_cron_job(request):

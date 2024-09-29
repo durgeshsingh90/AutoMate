@@ -135,23 +135,29 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Helper function to delete a booking
-    function deleteBooking(bookingId) {
-        fetch(`/slot_booking/delete-booking/${bookingId}/`, {
-            method: 'DELETE',
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken'),  // Ensure CSRF token is sent
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => {
-            if (response.ok) {
-                alert('Booking deleted successfully!');
-                location.reload();  // Reload the page after deletion
-            } else {
-                alert('Error deleting booking!');
-            }
-        });
-    }
+// Assuming you already have a function like this for deleting a booking
+// Function to delete a booking
+function deleteBooking(bookingId) {
+    fetch(`/slot_booking/delete-booking/${bookingId}/`, {
+        method: 'DELETE',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => {
+        if (response.ok) {
+            alert('Booking and cron jobs deleted successfully!');
+            location.reload();  // Reload the page after deletion
+        } else {
+            alert('Error deleting booking or cron jobs!');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
+
 
     // Helper function to get CSRF token from cookies
     function getCookie(name) {
