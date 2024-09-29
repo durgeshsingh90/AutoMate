@@ -56,3 +56,19 @@ button#jumpToDate {
     color: #0056b3;  /* Darker blue on hover */
 }
 
+.event-tooltip {
+    background-color: rgba(0, 0, 0, 0.8);
+    color: #fff;
+    padding: 10px;
+    border-radius: 5px;
+    position: absolute;
+    z-index: 1000;
+    white-space: normal;  /* Allow text to wrap */
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+    font-size: 12px;
+    user-select: text;  /* Enable text selection */
+    cursor: text;  /* Show text cursor to indicate selectable text */
+    max-width: 300px;  /* Set a max width for the tooltip to handle long text */
+    overflow-wrap: break-word;  /* Allow breaking long words */
+}
+

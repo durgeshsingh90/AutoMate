@@ -10,7 +10,7 @@ from django.apps import apps
 from calendar import monthrange
 
 # Set up a logger for this module
-logger = logging.getLogger('myapp')
+logger = logging.getLogger('slot_booking')
 
 # Define paths for configuration and booking files
 app_base_dir = Path(apps.get_app_config('slot_booking').path)
@@ -19,6 +19,7 @@ BOOKINGS_FILE = CONFIG_DIR / 'bookings.json'
 
 
 def calendar_view(request):
+    logger.info("entering calendar_view")
     logger.debug("Rendering calendar view")
 
     owners_file_path = CONFIG_DIR / 'owners.json'
@@ -79,13 +80,12 @@ def calendar_view(request):
         'scheme_types': scheme_types
     })
     logger.debug("Returning calendar view response")
+    logger.info("Exiting calendar_view")
+
     return return_data
 
-
-import json
-from datetime import datetime
-
 def save_booking(request):
+    logger.info("entering save_booking")
     logger.debug("Saving booking")
 
     if request.method == 'POST':
@@ -189,9 +189,11 @@ def save_booking(request):
             return HttpResponseBadRequest(f"Error saving booking: {str(e)}")
 
     logger.warning("Invalid request method for saving booking")
+    logger.info("exiting save_booking")
     return HttpResponseBadRequest("Invalid request method.")
 
 def get_bookings(request):
+    logger.info("entering get_bookings")
     bookings = []
     
     if BOOKINGS_FILE.exists():
@@ -223,31 +225,38 @@ def get_bookings(request):
                             continue  # Skip invalid dates
 
                         if date.weekday() in [day_map[day] for day in repeat_days]:
-                            events.append({
+                            event = {
                                 'id': booking['booking_id'],
                                 'title': booking['project_name'],
                                 'start': date.strftime('%Y-%m-%d'),
-                                'allDay': True
-                            })
+                                'allDay': True,
+                                'extendedProps': booking  # Send all booking details as extendedProps
+                            }
+                            events.append(event)
             else:
                 # Handle normal bookings with a specific date range
                 start_date = datetime.strptime(booking['start_date'], '%d/%m/%Y')
                 end_date = datetime.strptime(booking['end_date'], '%d/%m/%Y')
-                events.append({
+
+                event = {
                     'id': booking['booking_id'],
                     'title': booking['project_name'],
                     'start': start_date.strftime('%Y-%m-%d'),
                     'end': end_date.strftime('%Y-%m-%d'),
-                    'allDay': True
-                })
+                    'allDay': True,
+                    'extendedProps': booking  # Send all booking details as extendedProps
+                }
+                events.append(event)
+                logger.info(f'Added event: {event}')
         except ValueError as e:
             logger.error(f"Error parsing date for booking {booking['project_name']}: {str(e)}")
-
+    
+    logger.info("exiting get_bookings")
     return JsonResponse(events, safe=False)
-
 
 @require_http_methods(["DELETE"])
 def delete_booking(request, booking_id):
+    logger.info("entering delete_booking")
     logger.debug(f"Received request to delete Booking ID: {booking_id}")
 
     try:
@@ -303,11 +312,13 @@ def delete_booking(request, booking_id):
 
     except Exception as e:
         logger.exception(f"Error deleting Booking ID {booking_id}: {str(e)}")
+        logger.info("exiting delete_booking")
         return HttpResponseBadRequest(f"Error deleting booking: {str(e)}")
 
 
 # Function to remove cron jobs based on the booking ID
 def remove_cron_jobs_from_server(booking_id, owner, server):
+    logger.info("entering remove_cron_jobs_from_server")
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
@@ -365,9 +376,13 @@ def remove_cron_jobs_from_server(booking_id, owner, server):
     finally:
         ssh.close()
         logger.info("SSH session closed.")
+        logger.info("exiting remove_cron_jobs_from_server")
+
+        
 
 
 def generate_cron_expression(start_date, end_date, repeat_days, time_slots, scheme_types, booking_id, server, is_open_slot=False):
+    logger.info("entering generate_cron_expression")
     logger.debug("Generating cron expressions with script parameters")
     cron_entries = []
 
@@ -464,11 +479,14 @@ def generate_cron_expression(start_date, end_date, repeat_days, time_slots, sche
                 current_date = current_date.replace(month=current_date.month + 1, day=1)
 
     logger.info(f"Cron expressions with booking ID {booking_id} generated successfully")
+    logger.info("exiting generate_cron_expression")
     return cron_entries
 
 
 @require_http_methods(["POST"])
 def add_cron_job(request):
+    logger.info("entering add_cron_job")
+
     try:
         data = json.loads(request.body)
         cron_jobs = data.get('cron_jobs', [])
@@ -519,4 +537,5 @@ def add_cron_job(request):
 
     except Exception as e:
         logger.exception("Error adding cron jobs via SSH.")
+        logger.info("exiting add_cron_job")
         return JsonResponse({'success': False, 'error': str(e)}, status=500)

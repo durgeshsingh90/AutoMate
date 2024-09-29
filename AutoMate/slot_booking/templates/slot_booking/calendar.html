@@ -153,6 +153,8 @@
             <!-- Modal for displaying Cron Jobs -->
 <!-- Modal for displaying Cron Jobs -->
 <!-- Modal for displaying Cron Jobs -->
+<!-- Modal for displaying Cron Jobs -->
+<!-- Modal for displaying Cron Jobs -->
 <div class="modal fade" id="cronJobsModal" tabindex="-1" aria-labelledby="cronJobsModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -162,22 +164,20 @@
             </div>
             <div class="modal-body">
                 <p>Here are the cron jobs generated for this booking:</p>
-                <div class="d-flex align-items-center">
-                    <textarea class="form-control" id="cronJobsContent" readonly rows="4"></textarea>
-                    <button id="copyCronJobs" class="btn btn-link ms-2" title="Copy to clipboard">
-                        <i class="bi bi-clipboard"></i> <!-- Bootstrap clipboard icon -->
-                    </button>
-                </div>
+                <textarea class="form-control" id="cronJobsContent" readonly rows="4"></textarea>
                 <!-- Confirmation to add cron job to server -->
                 <div class="mt-4">
                     <p>Do you want to add this cron job to the server or skip it?</p>
                     <button id="addCronToServer" class="btn btn-primary">Add to Server</button>
-                    <button id="skipCron" class="btn btn-secondary ms-2">Skip</button>
+                    <button id="skipCron" class="btn btn-secondary">Skip</button>
+                    <button id="copyCronJobs" class="btn btn-link">Copy</button>
+
                 </div>
             </div>
         </div>
     </div>
 </div>
+
 
 
         </div>
