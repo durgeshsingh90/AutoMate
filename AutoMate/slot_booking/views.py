@@ -7,6 +7,7 @@ from django.shortcuts import render
 from django.http import JsonResponse, HttpResponseBadRequest
 from django.views.decorators.http import require_http_methods
 from django.apps import apps
+from calendar import monthrange
 
 # Set up a logger for this module
 logger = logging.getLogger('myapp')
@@ -112,6 +113,9 @@ def save_booking(request):
             # Get scheme types from the form
             scheme_types = request.POST.getlist('schemeType')  # Scheme types
 
+            # Get server from the form
+            server = request.POST.get('server')
+
             # Load the existing bookings data from the JSON file (if exists)
             if BOOKINGS_FILE.exists():
                 with BOOKINGS_FILE.open('r') as file:
@@ -122,6 +126,26 @@ def save_booking(request):
             else:
                 bookings = []
 
+            # Check for date range and time slot conflicts
+            for existing_booking in bookings:
+                # Convert existing booking's start and end dates to datetime
+                existing_start_date = datetime.strptime(existing_booking['start_date'], '%d/%m/%Y').date()
+                existing_end_date = datetime.strptime(existing_booking['end_date'], '%d/%m/%Y').date()
+
+                # Check if server, scheme types, and date range overlap
+                if (existing_booking['server'] == server and
+                    set(existing_booking['scheme_types']) == set(scheme_types) and
+                    # Check if date ranges overlap
+                    not (end_date < existing_start_date or start_date > existing_end_date)):
+                    
+                    # Check for any overlapping time slots between the new booking and existing bookings
+                    existing_time_slots = set(existing_booking['time_slots'])
+                    if existing_time_slots & set(new_time_slots):  # Check if there's an intersection of time slots
+                        logger.error("Booking conflict detected: One or more time slots and date ranges are already booked.")
+                        return JsonResponse({
+                            "error": "Booking conflict: The selected time slots and/or date range are already booked."
+                        }, status=400)
+
             # Generate a new booking ID (increment the last one)
             if bookings:
                 booking_id = max(b['booking_id'] for b in bookings) + 1
@@ -129,14 +153,14 @@ def save_booking(request):
                 booking_id = 1
 
             # Generate cron expressions
-            cron_entries = generate_cron_expression(start_date, end_date, new_repeat_days, new_time_slots, scheme_types, booking_id, is_open_slot)
+            cron_entries = generate_cron_expression(start_date, end_date, new_repeat_days, new_time_slots, scheme_types, booking_id, server, is_open_slot)
 
             # Collect other form data to store in the booking
             booking_data = {
                 'project_name': request.POST.get('projectName'),
                 'psp_name': request.POST.get('pspName'),
                 'owner': request.POST.get('owner'),
-                'server': request.POST.get('server'),
+                'server': server,
                 'scheme_types': scheme_types,  # Scheme types
                 'start_date': start_date.strftime('%d/%m/%Y') if start_date != '*' else '',  # Convert date to string or empty if it's an open slot
                 'end_date': end_date.strftime('%d/%m/%Y') if end_date != '*' else '',  # Convert date to string or empty if it's an open slot
@@ -243,16 +267,13 @@ def delete_booking(request, booking_id):
     return HttpResponseBadRequest("Booking file not found.")
 
 
-from calendar import monthrange
-
-from calendar import monthrange
-
-def generate_cron_expression(start_date, end_date, repeat_days, time_slots, scheme_types, booking_id, is_open_slot=False):
+def generate_cron_expression(start_date, end_date, repeat_days, time_slots, scheme_types, booking_id, server, is_open_slot=False):
     logger.debug("Generating cron expressions with script parameters")
     cron_entries = []
 
-    # Define the path to your script
+    # Define the path to your script and rollback script
     script_path = "/app/f94gdos/booking.sh"
+    rollback_script_path = "/app/f94gdos/booking.sh"  # Same script path for rollback
 
     # Map repeat_days (e.g., "Tuesday") to crontab day of week numbers
     day_map = {
@@ -267,10 +288,25 @@ def generate_cron_expression(start_date, end_date, repeat_days, time_slots, sche
         "Overnight": (18, 8)  # Start at 6 PM, end at 8 AM the next day
     }
 
-    # Concatenate all selected scheme types (port_name and ip_address pairs) into a single string
+    # Determine the rollback IP based on the server
+    if server == "dev77":
+        rollback_ip = "10.1.1.1"
+    elif server == "test77":
+        rollback_ip = "10.1.1.2"
+    else:
+        rollback_ip = "10.1.1.1"
+
+    # For the rollback cron job, all port names should map to the rollback IP
+    rollback_scheme_params = ' '.join([f"{port_name}:{rollback_ip}" for scheme_type in scheme_types for port_name, _ in [scheme_type.split(' - ')]])
+
+    # Concatenate all selected scheme types (port_name and ip_address pairs) into a single string for the start script
     scheme_params = ' '.join([f"{port_name}:{ip_address}" for scheme_type in scheme_types for port_name, ip_address in [scheme_type.split(' - ')]])
 
-    # Handle open slot case, where start_date and end_date are '*'
+    # Determine the earliest start time and latest end time based on selected time slots
+    earliest_start_time = min([time_slot_times[slot][0] for slot in time_slots])
+    latest_end_time = max([time_slot_times[slot][1] for slot in time_slots])
+
+    # Handle open slot case, where only the start cron job must be created
     if is_open_slot:
         day_part = "*"
         month_part = "*"
@@ -278,11 +314,9 @@ def generate_cron_expression(start_date, end_date, repeat_days, time_slots, sche
         if repeat_days:
             cron_days_of_week = ','.join(str(day_map[day]) for day in repeat_days)
 
-        # Create a cron job with * for day and month
-        for time_slot in time_slots:
-            start_time = time_slot_times[time_slot][0]
-            cron_entry = f"0 {start_time} * * {cron_days_of_week} {script_path} {scheme_params} # Booking ID: {booking_id}"
-            cron_entries.append(cron_entry)
+        # Create only the start cron job and omit the rollback job
+        cron_entry = f"0 {earliest_start_time} * * {cron_days_of_week} {script_path} {scheme_params} # Booking ID: {booking_id}"
+        cron_entries.append(cron_entry)
 
     else:
         # Generate cron jobs for each month between start_date and end_date
@@ -315,11 +349,13 @@ def generate_cron_expression(start_date, end_date, repeat_days, time_slots, sche
             if repeat_days:
                 cron_days_of_week = ','.join(str(day_map[day]) for day in repeat_days)
 
-            # Create cron jobs for each time slot
-            for time_slot in time_slots:
-                start_time = time_slot_times[time_slot][0]
-                cron_entry = f"0 {start_time} {day_part} {month_part} {cron_days_of_week} {script_path} {scheme_params} # Booking ID: {booking_id}"
-                cron_entries.append(cron_entry)
+            # Create the start cron job at the earliest start time
+            cron_entry = f"0 {earliest_start_time} {day_part} {month_part} {cron_days_of_week} {script_path} {scheme_params} # Booking ID: {booking_id}"
+            cron_entries.append(cron_entry)
+
+            # Add the rollback cron job at the latest end time
+            rollback_entry = f"0 {latest_end_time} {day_part} {month_part} {cron_days_of_week} {rollback_script_path} {rollback_scheme_params} # Rollback Booking ID: {booking_id}"
+            cron_entries.append(rollback_entry)
 
             # Move to the next month
             if current_date.month == 12:

@@ -7,35 +7,16 @@
         "scheme_types": [
             "MasterCardRoute - 10.20.7.208"
         ],
-        "start_date": "30/09/2024",
-        "end_date": "01/10/2024",
+        "start_date": "29/09/2024",
+        "end_date": "29/09/2024",
         "time_slots": [
-            "AM"
+            "PM"
         ],
         "repeat_days": [],
         "cron_jobs": [
-            "0 8 30-30 9 * /app/f94gdos/booking.sh MasterCardRoute:10.20.7.208 # Booking ID: 1",
-            "0 8 1-1 10 * /app/f94gdos/booking.sh MasterCardRoute:10.20.7.208 # Booking ID: 1"
+            "0 13 29 9 * /app/f94gdos/booking.sh MasterCardRoute:10.20.7.208 # Booking ID: 1",
+            "0 18 29 9 * /app/f94gdos/booking.sh MasterCardRoute:10.1.1.1 # Rollback Booking ID: 1"
         ],
         "booking_id": 1
-    },
-    {
-        "project_name": "test",
-        "psp_name": "test",
-        "owner": "ec2-user",
-        "server": "18.201.253.75",
-        "scheme_types": [
-            "MasterCardRoute - 10.20.7.208"
-        ],
-        "start_date": "28/09/2024",
-        "end_date": "28/09/2024",
-        "time_slots": [
-            "AM"
-        ],
-        "repeat_days": [],
-        "cron_jobs": [
-            "0 8 28 9 * /app/f94gdos/booking.sh MasterCardRoute:10.20.7.208 # Booking ID: 2"
-        ],
-        "booking_id": 2
     }
 ]
