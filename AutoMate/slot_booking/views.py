@@ -366,59 +366,67 @@ def generate_cron_expression(start_date, end_date, repeat_days, time_slots, sche
     logger.info(f"Cron expressions with booking ID {booking_id} generated successfully")
     return cron_entries
 
+
+import paramiko
+from django.http import JsonResponse
+from django.views.decorators.http import require_http_methods
+import json
+
+import paramiko
+from django.http import JsonResponse
+from django.views.decorators.http import require_http_methods
+import json
+
 @require_http_methods(["POST"])
 def add_cron_job(request):
-    logger.debug("Adding cron job via SSH")
-    
     try:
         data = json.loads(request.body)
         cron_jobs = data.get('cron_jobs', [])
-        owner = data.get('owner', '')
-        server = data.get('server', '')
+        owner = data.get('owner', '')  # SSH username (owner)
+        server = data.get('server', '')  # Server hostname
 
         if not owner or not server:
-            logger.warning("Missing owner or server in request data")
             return JsonResponse({'success': False, 'error': 'Owner or server information missing.'}, status=400)
 
+        # Setup SSH connection using paramiko
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
         try:
+            # Use the default private key (~/.ssh/id_rsa) for SSH connection
             ssh.connect(server, username=owner)
+
             logger.info(f"SSH connection established to {server} with user {owner}")
 
-            cron_job_commands = "\n".join([f'(crontab -l 2>/dev/null; echo "{cron_job}") | crontab -' for cron_job in cron_jobs])
+            # Prepare and execute cron job commands one by one
+            for cron_job in cron_jobs:
+                # Prepare the command to add a cron job for user f94gdos
+                cron_command = f'(crontab -l 2>/dev/null; echo "{cron_job}") | crontab -'
+                command = f"sudo su - f94gdos -c '{cron_command}'"
+                
+                logger.debug(f"Executing command: {command}")
+                
+                # Execute the command to add the cron job
+                stdin, stdout, stderr = ssh.exec_command(command)
 
-            command = f"""
-            sudo su - f94gdos -c 'bash -s' <<EOF
-            {cron_job_commands}
-            EOF
-            """
-            logger.debug(f"Executing SSH command: {command}")
+                # Capture output and errors
+                output = stdout.read().decode()
+                error = stderr.read().decode()
 
-            stdin, stdout, stderr = ssh.exec_command(command)
-
-            output = stdout.read().decode()
-            error = stderr.read().decode()
-
-            if error:
-                logger.error(f"Error during SSH execution: {error}")
-                return JsonResponse({'success': False, 'error': error}, status=500)
+                if error:
+                    return JsonResponse({'success': False, 'error': error}, status=500)
 
             ssh.close()
-            logger.info("SSH session closed")
+            logger.info("SSH session closed.")
 
-            return_data = JsonResponse({'success': True, 'output': output})
-            logger.debug("Returning success response for add cron job")
-            return return_data
+            return JsonResponse({'success': True, 'output': 'Cron jobs successfully added to the server.'})
 
         except paramiko.AuthenticationException:
-            logger.error("SSH authentication failed")
             return JsonResponse({'success': False, 'error': 'Authentication failed.'}, status=403)
         except Exception as e:
-            logger.exception("Error during SSH connection")
+            logger.exception("SSH connection error.")
             return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
     except Exception as e:
-        logger.exception("Error processing cron job addition")
+        logger.exception("Error adding cron jobs via SSH.")
         return JsonResponse({'success': False, 'error': str(e)}, status=500)

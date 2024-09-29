@@ -3,19 +3,19 @@
         "project_name": "test",
         "psp_name": "test",
         "owner": "ec2-user",
-        "server": "18.201.253.75",
+        "server": "18.201.156.85",
         "scheme_types": [
             "MasterCardRoute - 10.20.7.208"
         ],
         "start_date": "29/09/2024",
         "end_date": "29/09/2024",
         "time_slots": [
-            "PM"
+            "AM"
         ],
         "repeat_days": [],
         "cron_jobs": [
-            "0 13 29 9 * /app/f94gdos/booking.sh MasterCardRoute:10.20.7.208 # Booking ID: 1",
-            "0 18 29 9 * /app/f94gdos/booking.sh MasterCardRoute:10.1.1.1 # Rollback Booking ID: 1"
+            "0 8 29 9 * /app/f94gdos/booking.sh MasterCardRoute:10.20.7.208 # Booking ID: 1",
+            "0 13 29 9 * /app/f94gdos/booking.sh MasterCardRoute:10.1.1.1 # Rollback Booking ID: 1"
         ],
         "booking_id": 1
     }

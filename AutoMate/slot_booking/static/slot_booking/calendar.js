@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     var calendarEl = document.getElementById('calendar');
 
+    // Initialize the FullCalendar
     var calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'dayGridMonth',
         headerToolbar: {
@@ -29,61 +30,61 @@ document.addEventListener('DOMContentLoaded', function() {
 
     calendar.render();
 
-// Handle form submission and validation
-document.getElementById('bookingForm').addEventListener('submit', function(event) {
-    event.preventDefault();  // Prevent the default form submission
+    // Handle form submission and validation
+    document.getElementById('bookingForm').addEventListener('submit', function(event) {
+        event.preventDefault();  // Prevent the default form submission
 
-    var openSlotChecked = document.getElementById('openSlot').checked;
-    var formData = new FormData(this);  // Use FormData to handle the form data
+        var openSlotChecked = document.getElementById('openSlot').checked;
+        var formData = new FormData(this);  // Use FormData to handle the form data
 
-    if (openSlotChecked) {
-        // If "Open Slot" is checked, remove dateRange and timeSlot fields, and set timeSlot as "AM" and repeat_days as ["Tuesday", "Thursday"]
-        formData.delete('dateRange');  // Remove the dateRange field
-        formData.delete('timeSlot');   // Remove any timeSlot selections
-        formData.append('timeSlot', 'AM');  // Set timeSlot to AM
-        formData.delete('repeatBooking');  // Remove any other repeat days
-        formData.append('repeatBooking', 'Tuesday');  // Set repeat days to Tuesday
-        formData.append('repeatBooking', 'Thursday');  // Set repeat days to Thursday
-    } else {
-        // If "Open Slot" is not checked, handle regular date range and time slot selections
-        var dateRange = document.getElementById('dateRange').value;
-        var timeSlotChecked = document.querySelectorAll('input[name="timeSlot"]:checked').length > 0;
+        if (openSlotChecked) {
+            // If "Open Slot" is checked, remove dateRange and timeSlot fields, and set timeSlot as "AM" and repeat_days as ["Tuesday", "Thursday"]
+            formData.delete('dateRange');  // Remove the dateRange field
+            formData.delete('timeSlot');   // Remove any timeSlot selections
+            formData.append('timeSlot', 'AM');  // Set timeSlot to AM
+            formData.delete('repeatBooking');  // Remove any other repeat days
+            formData.append('repeatBooking', 'Tuesday');  // Set repeat days to Tuesday
+            formData.append('repeatBooking', 'Thursday');  // Set repeat days to Thursday
+        } else {
+            // If "Open Slot" is not checked, handle regular date range and time slot selections
+            var dateRange = document.getElementById('dateRange').value;
+            var timeSlotChecked = document.querySelectorAll('input[name="timeSlot"]:checked').length > 0;
 
-        // Basic validation for date range and time slot
-        if (!dateRange || !timeSlotChecked) {
-            alert('Please select a valid date range and at least one time slot.');
-            return;
+            // Basic validation for date range and time slot
+            if (!dateRange || !timeSlotChecked) {
+                alert('Please select a valid date range and at least one time slot.');
+                return;
+            }
         }
-    }
 
-    // Continue with form submission via AJAX with the modified formData
-    fetch(this.action, {
-        method: 'POST',
-        body: formData,
-        headers: {
-            'X-CSRFToken': getCookie('csrftoken')
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        // Handle server error responses
-        if (data.error) {
-            // If there's an error (e.g., duplicate booking), display it to the user
-            alert(data.error);  // Display error message in an alert
-        } else if (data.cron_jobs) {
-            // If booking was successful, display the cron jobs in the modal
-            const cronJobsText = data.cron_jobs.map(job => `${job}`).join('\n');
-            document.getElementById('cronJobsContent').value = cronJobsText;
-            new bootstrap.Modal(document.getElementById('cronJobsModal')).show();
-        } else if (data.message) {
-            console.log("Message:", data.message);
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('An unexpected error occurred. Please try again.');
+        // Continue with form submission via AJAX with the modified formData
+        fetch(this.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Handle server error responses
+            if (data.error) {
+                // If there's an error (e.g., duplicate booking), display it to the user
+                alert(data.error);  // Display error message in an alert
+            } else if (data.cron_jobs) {
+                // If booking was successful, display the cron jobs in the modal
+                const cronJobsText = data.cron_jobs.map(job => `${job}`).join('\n');
+                document.getElementById('cronJobsContent').value = cronJobsText;
+                new bootstrap.Modal(document.getElementById('cronJobsModal')).show();
+            } else if (data.message) {
+                console.log("Message:", data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An unexpected error occurred. Please try again.');
+        });
     });
-});
 
     // Initialize the date range picker
     $('#dateRange').daterangepicker({
@@ -177,4 +178,48 @@ document.getElementById('bookingForm').addEventListener('submit', function(event
         document.getElementById('timeSlotContainer').classList.remove('border', 'border-danger', 'rounded');
         document.getElementById('timeSlotError').innerText = '';
     }
+
+    // Add Cron Jobs to Server on Button Click
+    document.getElementById('addCronToServer').addEventListener('click', function(event) {
+        event.preventDefault();  // Prevent any form submission action
+
+        var cronJobsText = document.getElementById('cronJobsContent').value.trim();
+        var owner = document.getElementById('owner').value;  // Assuming 'owner' is available in the form
+        var server = document.getElementById('server').value;  // Assuming 'server' is available in the form
+
+        if (!cronJobsText || !owner || !server) {
+            alert('Missing cron jobs, owner, or server information.');
+            return;
+        }
+
+        // Prepare cron jobs as an array
+        var cronJobs = cronJobsText.split('\n');
+
+        // Send a request to the server to add the cron jobs via SSH
+        fetch('/slot_booking/add-cron-job/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')  // Make sure you have CSRF token handling
+            },
+            body: JSON.stringify({
+                cron_jobs: cronJobs,
+                owner: owner,
+                server: server
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Cron jobs successfully added to the server!');
+                location.reload();  // Reload the page or calendar if needed
+            } else {
+                alert('Error adding cron jobs to the server: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while adding cron jobs to the server.');
+        });
+    });
 });
