@@ -225,29 +225,36 @@ def get_bookings(request):
                             continue  # Skip invalid dates
 
                         if date.weekday() in [day_map[day] for day in repeat_days]:
-                            event = {
+                            event_title = (
+                                f"{booking['project_name']} | Owner: {booking.get('owner', 'N/A')} | "
+                                f"Server: {booking.get('server', 'N/A')} | Time: {', '.join(booking.get('time_slots', []))}"
+                            )
+                            events.append({
                                 'id': booking['booking_id'],
-                                'title': booking['project_name'],
+                                'title': event_title,
                                 'start': date.strftime('%Y-%m-%d'),
                                 'allDay': True,
                                 'extendedProps': booking  # Send all booking details as extendedProps
-                            }
-                            events.append(event)
+                            })
             else:
                 # Handle normal bookings with a specific date range
                 start_date = datetime.strptime(booking['start_date'], '%d/%m/%Y')
                 end_date = datetime.strptime(booking['end_date'], '%d/%m/%Y')
 
-                event = {
+                event_title = (
+                    f"{booking['project_name']} | {booking.get('owner', 'N/A')} | "
+                    f"{booking.get('server', 'N/A')} | {', '.join(booking.get('time_slots', []))}"
+                )
+
+                events.append({
                     'id': booking['booking_id'],
-                    'title': booking['project_name'],
+                    'title': event_title,  # Title now includes project name, owner, server, and timeslot
                     'start': start_date.strftime('%Y-%m-%d'),
                     'end': end_date.strftime('%Y-%m-%d'),
                     'allDay': True,
                     'extendedProps': booking  # Send all booking details as extendedProps
-                }
-                events.append(event)
-                logger.info(f'Added event: {event}')
+                })
+                logger.info(f'Added event: {event_title}')
         except ValueError as e:
             logger.error(f"Error parsing date for booking {booking['project_name']}: {str(e)}")
     

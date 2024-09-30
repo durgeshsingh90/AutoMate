@@ -18,5 +18,42 @@
             "0 13 29 9 * /app/f94gdos/booking.sh MasterCardRoute:10.1.1.1 # Rollback Booking ID: 1"
         ],
         "booking_id": 1
+    },
+    {
+        "project_name": "test",
+        "psp_name": "test",
+        "owner": "ec2-user",
+        "server": "18.201.156.85",
+        "scheme_types": [
+            "MasterCardRoute - 10.20.7.208",
+            "MasterCardRoute - 10.20.7.209",
+            "MasterCardRoute - 10.20.7.18",
+            "MasterCardRouteIPG - 10.20.7.208",
+            "MasterCardRouteDX - 10.20.7.18",
+            "MasterCardRoute - 10.20.7.209",
+            "VisaRoute - 10.20.7.208",
+            "VisaRoute - 10.20.7.209",
+            "VisaRoute - 10.20.7.18",
+            "VisaRouteIPG - 10.20.7.208",
+            "VisaRouteDX - 10.20.7.18",
+            "VisaRoute - 10.20.7.209",
+            "DinersRoute - 10.20.7.208",
+            "DinersRoute - 10.20.7.209",
+            "DinersRoute - 10.20.7.18",
+            "DinersRouteIPG - 10.20.7.208",
+            "DinersRouteDX - 10.20.7.18",
+            "DinersRoute - 10.20.7.209"
+        ],
+        "start_date": "01/10/2024",
+        "end_date": "04/10/2024",
+        "time_slots": [
+            "PM"
+        ],
+        "repeat_days": [],
+        "cron_jobs": [
+            "0 13 1-4 10 * /app/f94gdos/booking.sh MasterCardRoute:10.20.7.208 MasterCardRoute:10.20.7.209 MasterCardRoute:10.20.7.18 MasterCardRouteIPG:10.20.7.208 MasterCardRouteDX:10.20.7.18 MasterCardRoute:10.20.7.209 VisaRoute:10.20.7.208 VisaRoute:10.20.7.209 VisaRoute:10.20.7.18 VisaRouteIPG:10.20.7.208 VisaRouteDX:10.20.7.18 VisaRoute:10.20.7.209 DinersRoute:10.20.7.208 DinersRoute:10.20.7.209 DinersRoute:10.20.7.18 DinersRouteIPG:10.20.7.208 DinersRouteDX:10.20.7.18 DinersRoute:10.20.7.209 # Booking ID: 2",
+            "0 18 1-4 10 * /app/f94gdos/booking.sh MasterCardRoute:10.1.1.1 MasterCardRoute:10.1.1.1 MasterCardRoute:10.1.1.1 MasterCardRouteIPG:10.1.1.1 MasterCardRouteDX:10.1.1.1 MasterCardRoute:10.1.1.1 VisaRoute:10.1.1.1 VisaRoute:10.1.1.1 VisaRoute:10.1.1.1 VisaRouteIPG:10.1.1.1 VisaRouteDX:10.1.1.1 VisaRoute:10.1.1.1 DinersRoute:10.1.1.1 DinersRoute:10.1.1.1 DinersRoute:10.1.1.1 DinersRouteIPG:10.1.1.1 DinersRouteDX:10.1.1.1 DinersRoute:10.1.1.1 # Rollback Booking ID: 2"
+        ],
+        "booking_id": 2
     }
 ]
