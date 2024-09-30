@@ -279,40 +279,40 @@ def parse_bm6x(value):
     return parsed_fields
 
 
-def process_file(request):
-    if request.method == 'POST' and request.FILES.get('file'):
-        file = request.FILES['file']
+# def process_file(request):
+#     if request.method == 'POST' and request.FILES.get('file'):
+#         file = request.FILES['file']
 
-        try:
-            # Read the CSV file
-            decoded_file = file.read().decode('utf-8')
-            reader = csv.DictReader(io.StringIO(decoded_file))
+#         try:
+#             # Read the CSV file
+#             decoded_file = file.read().decode('utf-8')
+#             reader = csv.DictReader(io.StringIO(decoded_file))
             
-            # Initialize a list to store processed results
-            processed_results = []
+#             # Initialize a list to store processed results
+#             processed_results = []
             
-            logger.info("Processing CSV file with multiple _raw entries.")
+#             logger.info("Processing CSV file with multiple _raw entries.")
 
-            # Iterate over each row in the CSV and process the _raw data
-            for row in reader:
-                raw_data = row.get('_raw', '').strip()
+#             # Iterate over each row in the CSV and process the _raw data
+#             for row in reader:
+#                 raw_data = row.get('_raw', '').strip()
                 
-                if raw_data:
-                    logger.debug(f"Processing _raw data: {raw_data}")
+#                 if raw_data:
+#                     logger.debug(f"Processing _raw data: {raw_data}")
                     
-                    # Process each _raw log data with parse_iso8583
-                    parsed_data = parse_iso8583(raw_data)
+#                     # Process each _raw log data with parse_iso8583
+#                     parsed_data = parse_iso8583(raw_data)
                     
-                    # Store the processed data
-                    processed_results.append(parsed_data)
+#                     # Store the processed data
+#                     processed_results.append(parsed_data)
             
-            logger.info(f"Completed processing {len(processed_results)} rows.")
+#             logger.info(f"Completed processing {len(processed_results)} rows.")
 
-            # Optionally, return the processed data as JSON or save it to a file
-            return JsonResponse({'status': 'success', 'processed_data': processed_results})
+#             # Optionally, return the processed data as JSON or save it to a file
+#             return JsonResponse({'status': 'success', 'processed_data': processed_results})
         
-        except Exception as e:
-            logger.error(f"Error processing file: {e}")
-            return JsonResponse({'status': 'error', 'message': 'Failed to process file'})
+#         except Exception as e:
+#             logger.error(f"Error processing file: {e}")
+#             return JsonResponse({'status': 'error', 'message': 'Failed to process file'})
 
-    return JsonResponse({'status': 'error', 'message': 'No file provided or invalid request method'})
+#     return JsonResponse({'status': 'error', 'message': 'No file provided or invalid request method'})
