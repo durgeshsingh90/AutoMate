@@ -103,15 +103,15 @@ if [ "$ALL_DONE" = true ]; then
 
     if { [ "$DAY_OF_WEEK" -eq 2 ] || [ "$DAY_OF_WEEK" -eq 4 ]; } && [ "$CURRENT_HOUR" -ge 06 ] && [ "$CURRENT_HOUR" -le 11 ]; then
         # If today is Tuesday (2) or Thursday (4) and the time is between 6 AM and 11 AM
-        subject="Open Slot Started | $username | All Jobs Processed"
+        subject="Open Slot Started | $username"
         
         # Create a body that includes all search_term:ip_address pairs
-        body="****************Open Slot Started. Routed $username for the following search terms and IP addresses to Astrex:****************\n"
+        body="****************Open Slot Started. Routed $username for the following Schemes:****************\n"
         
         for PAIR in "$@"; do
             SEARCH_TERM=$(echo "$PAIR" | cut -d':' -f1)
             IP_ADDRESS=$(echo "$PAIR" | cut -d':' -f2)
-            body+="Search Term: $SEARCH_TERM, IP Address: $IP_ADDRESS\n"
+            body+="Schemes: $SEARCH_TERM to $IP_ADDRESS\n"
         done
         
         # Send email for Open Slot
@@ -119,13 +119,13 @@ if [ "$ALL_DONE" = true ]; then
 
     else
         # Send email for other times with search term and IP routing information
-        subject="Routing Information | $username"
-        body="Routed $username for the following:\n"
+        subject="Booked slot | $username"
+        body="****************Open Slot Started. Routed $username for the following Schemes:****************\n"
         
         for PAIR in "$@"; do
             SEARCH_TERM=$(echo "$PAIR" | cut -d':' -f1)
             IP_ADDRESS=$(echo "$PAIR" | cut -d':' -f2)
-            body+="Search Term: $SEARCH_TERM, IP Address: $IP_ADDRESS\n"
+            body+="Schemes: $SEARCH_TERM, IP Address: $IP_ADDRESS\n"
         done
 
         # Send the custom email notification
