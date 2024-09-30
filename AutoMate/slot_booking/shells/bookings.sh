@@ -95,6 +95,7 @@ for PAIR in "$@"; do
     fi
 done
 
+#Mail sending
 if [ "$ALL_DONE" = true ]; then
     sender=oasis77@fiserv.com
     username=$(id -un)
@@ -103,14 +104,22 @@ if [ "$ALL_DONE" = true ]; then
     if { [ "$DAY_OF_WEEK" -eq 2 ] || [ "$DAY_OF_WEEK" -eq 4 ]; } && [ "$CURRENT_HOUR" -ge 06 ] && [ "$CURRENT_HOUR" -le 11 ]; then
         # If today is Tuesday (2) or Thursday (4) and the time is between 6 AM and 11 AM
         subject="Open Slot Started | $username | All Jobs Processed"
-        body="****************Open Slot Started. Routed $username for ${SEARCH_TERMS[*]} to Astrex ****************"
+        
+        # Create a body that includes all search_term:ip_address pairs
+        body="****************Open Slot Started. Routed $username for the following search terms and IP addresses to Astrex:****************\n"
+        
+        for PAIR in "$@"; do
+            SEARCH_TERM=$(echo "$PAIR" | cut -d':' -f1)
+            IP_ADDRESS=$(echo "$PAIR" | cut -d':' -f2)
+            body+="Search Term: $SEARCH_TERM, IP Address: $IP_ADDRESS\n"
+        done
         
         # Send email for Open Slot
-        echo "$body" | mail -s "$subject" $maillist
+        echo -e "$body" | mail -s "$subject" $maillist
 
     else
         # Send email for other times with search term and IP routing information
-        subject="Routing $username"
+        subject="Routing Information | $username"
         body="Routed $username for the following:\n"
         
         for PAIR in "$@"; do
