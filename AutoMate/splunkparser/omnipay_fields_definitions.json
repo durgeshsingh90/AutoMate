@@ -26,7 +26,6 @@
     "062": { "name": "Reserved Private", "length": null },
     "DE055": {
       "subfields": {
-        "5F2A": { "name": "Transaction currency code", "max_length": 2 },
         "71": { "name": "Issuer script template 1", "max_length": 255 },
         "72": { "name": "Issuer script template 2", "max_length": 255 },
         "82": { "name": "Application interchange profile", "max_length": 2 },
@@ -53,9 +52,11 @@
         "9F53": { "name": "Transaction category code (MC)", "max_length": 1 },
         "9F5B": { "name": "Issuer Script Results (VISA)", "max_length": 20 },
         "9F60": { "name": "Authenticated Application Data", "max_length": 128 },
-        "DF31": { "name": "Issuer Script Results (Union Pay)", "max_length": 20 },
         "9F6E": { "name": "Form Factor Indicator (Visa and Diners)", "max_length": 6 },
-        "DF3F": { "name": "Storage Data (Diners)", "max_length": 114 }
+        "DF31": { "name": "Issuer Script Results (Union Pay)", "max_length": 20 },
+        "DF3F": { "name": "Storage Data (Diners)", "max_length": 114 },
+        "5F2A": { "name": "Transaction currency code", "max_length": 2 }
+
       }
     }
   }
