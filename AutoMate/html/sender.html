@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hexadecimal Converter</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <h1 class="mt-5 text-center">Hexadecimal Converter</h1>
+        <div class="row">
+            <div class="col-md-6">
+                <label for="inputData" class="form-label">Input Data (JSON format)</label>
+                <textarea class="form-control" id="inputData" rows="15" placeholder='Paste your JSON data here'></textarea>
+            </div>
+            <div class="col-md-6">
+                <label for="outputHex" class="form-label">Hexadecimal Output</label>
+                <textarea class="form-control" id="outputHex" rows="15" readonly placeholder="Hexadecimal message will appear here"></textarea>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Function to convert string to hex
+        function stringToHex(str) {
+            return Array.from(str).map(c => c.charCodeAt(0).toString(16).padStart(2, '0')).join('');
+        }
+
+        // Function to process object and convert values to hex
+        function convertToHex(obj) {
+            let hexString = '';
+
+            for (let key in obj) {
+                if (typeof obj[key] === 'object') {
+                    hexString += convertToHex(obj[key]);
+                } else {
+                    hexString += stringToHex(obj[key]);
+                }
+            }
+
+            return hexString;
+        }
+
+        // Function to handle real-time conversion
+        function handleRealTimeConversion() {
+            const inputData = document.getElementById('inputData').value;
+            try {
+                const jsonData = JSON.parse(inputData); // Parse input JSON data
+                const hexResult = convertToHex(jsonData); // Convert to hex
+                document.getElementById('outputHex').value = hexResult; // Display the result
+            } catch (error) {
+                document.getElementById('outputHex').value = 'Invalid JSON format. Please check your input.';
+            }
+        }
+
+        // Real-time conversion on input
+        document.getElementById('inputData').addEventListener('input', handleRealTimeConversion);
+    </script>
+</body>
+</html>

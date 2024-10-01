@@ -156,6 +156,20 @@
     let modifiedLines = [];
     let useAnd = false; // To keep track if "AND" should be used between lines
 
+    let fullInputText = lines.join('').replace(/\s/g, ''); // Combine all lines into one string, removing spaces
+    if (fullInputText.length > 30) {
+        // If the total length of the numbers is more than 30, just remove the "3" before every digit
+        let cleanedNumber = '';
+        for (let i = 0; i < fullInputText.length; i += 2) {
+            if (fullInputText[i] === '3') {
+                cleanedNumber += fullInputText[i + 1];
+            }
+        }
+        // Output the cleaned number directly without any AND/OR logic
+        document.getElementById('outputNumbers').value = cleanedNumber;
+        return; // Skip further processing
+    }
+
     for (let i = 0; i < lines.length; i++) {
         let line = lines[i];
         let modifiedLine = line;
