@@ -26,7 +26,7 @@
 #    - Version 1.0 (2024-09-02) - Durgesh Singh - Initial version
 #    - Version 1.1 (2024-09-05) - Durgesh Singh - Modified to accept multiple search terms and added Conditional email
 #    - Version 1.2 (2024-09-30) - Durgesh Singh - Modified to accept search_term:ip_address pairs and added custom email logic
-#    - Version 1.3 (2024-09-30) - Durgesh Singh - Email sent only once, summarizing all parameters
+#    - Version 1.3 (2024-10-01) - Durgesh Singh - Email sent only once, summarizing all parameters
 ##############################################################################################
 
 # Check if at least one argument is provided
@@ -100,6 +100,7 @@ if [ "$ALL_DONE" = true ]; then
     sender=oasis77@fiserv.com
     username=$(id -un)
     maillist=niall.gilmartin@fiserv.com,arkadiusz.forycki@fiserv.com,syed.muhammad@fiserv.com,adelina.vasamivasami@fiserv.com,durgesh.singh@fiserv.com
+    # maillist=durgesh.singh@fiserv.com
 
     if { [ "$DAY_OF_WEEK" -eq 2 ] || [ "$DAY_OF_WEEK" -eq 4 ]; } && [ "$CURRENT_HOUR" -ge 06 ] && [ "$CURRENT_HOUR" -le 11 ]; then
         # If today is Tuesday (2) or Thursday (4) and the time is between 6 AM and 11 AM
@@ -120,12 +121,12 @@ if [ "$ALL_DONE" = true ]; then
     else
         # Send email for other times with search term and IP routing information
         subject="Booked slot | $username"
-        body="****************Open Slot Started. Routed $username for the following Schemes:****************\n"
+        body="****************Routed $username for the following Schemes:****************\n"
         
         for PAIR in "$@"; do
             SEARCH_TERM=$(echo "$PAIR" | cut -d':' -f1)
             IP_ADDRESS=$(echo "$PAIR" | cut -d':' -f2)
-            body+="Schemes: $SEARCH_TERM, IP Address: $IP_ADDRESS\n"
+            body+="Schemes: $SEARCH_TERM to $IP_ADDRESS\n"
         done
 
         # Send the custom email notification
