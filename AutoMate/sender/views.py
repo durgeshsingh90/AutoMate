@@ -50,3 +50,14 @@ def yaml_schema_config(request):
     else:
         form = YamlSchemaForm(instance=schema)
     return render(request, 'sender/yaml_schema_config.html', {'form': form, 'schema': schema.schema_content})
+
+from django.http import JsonResponse
+import os
+import json
+
+
+def get_field_definitions(request):
+    file_path = os.path.join(os.path.dirname(__file__), 'config', 'omnipay_fields_definitions.json')
+    with open(file_path, 'r') as file:
+        data = json.load(file)
+    return JsonResponse(data)

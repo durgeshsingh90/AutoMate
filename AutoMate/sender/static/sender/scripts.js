@@ -1,105 +1,144 @@
-document.addEventListener('DOMContentLoaded', function() {
-    var editor = ace.edit("editor");
-    editor.setTheme("ace/theme/github");
-    editor.session.setMode("ace/mode/yaml");
-    editor.setOptions({
-        maxLines: 30,
-        minLines: 30,
-        wrap: true
+// Load JSON definitions on page load
+let fieldDefinitions = {};
+
+window.onload = function() {
+    fetch('/get-field-definitions/')
+    .then(response => response.json())
+    .then(data => {
+        fieldDefinitions = data.fields; // Access the 'fields' object
+        console.log('Field definitions loaded:', fieldDefinitions);
+    })
+    .catch(error => {
+        console.error('Error loading field definitions:', error);
     });
+};
 
-    var form = document.getElementById('transaction-form');
-    var errorContainer = document.getElementById('error-container');
-    var dataField = document.getElementById('data');
+function validateBitmaps() {
+    const inputMessage = document.getElementById("inputMessage").value;
+    const validationResult = document.getElementById("validationResult");
 
-    function addWarning(message, row) {
-        var warningElement = document.createElement("div");
-        warningElement.className = "warning-message";
-        warningElement.textContent = message;
-        errorContainer.appendChild(warningElement);
-
-        editor.session.addMarker(new ace.Range(row, 0, row, 1), "ace_warning-line", "fullLine");
+    // Parse the input message as JSON
+    let inputObj;
+    try {
+        inputObj = JSON.parse(inputMessage);
+    } catch (e) {
+        validationResult.innerHTML = "<span class='error'>Invalid JSON format!</span>";
+        return;
     }
 
-    function addError(message, row) {
-        var errorElement = document.createElement("div");
-        errorElement.className = "error-message";
-        errorElement.textContent = message;
-        errorContainer.appendChild(errorElement);
+    let errors = [];
 
-        editor.session.addMarker(new ace.Range(row, 0, row, 1), "ace_error-line", "fullLine");
-    }
-
-    form.addEventListener('submit', function(event) {
-        var valid = true;
-        errorContainer.innerHTML = ''; // Clear previous messages
-        editor.session.clearAnnotations();
-
-        var data = editor.getValue();
-        try {
-            var parsedData = jsyaml.load(data);
-        } catch (e) {
-            valid = false;
-            addError('Invalid YAML format: ' + e.message, e.mark.line);
-            // Still allow form submission, so no event.preventDefault()
-            return;
+    // Loop through the input bitmaps and validate against JSON definitions
+    for (const fieldKey in inputObj) {
+        if (fieldKey === "mti") {
+            continue; // Skip MTI as it's not part of the fields definitions
         }
 
-        var lengthCriteria = {
-            'mti': [4, 4],
-            'DE002': [16, 19],
-            'DE003': [6, 6],
-            'DE004': [1, 12],
-            'DE007': [10, 10],
-            'DE011': [6, 6],
-            'DE012': [6, 6],
-            'DE013': [4, 4],
-            'DE014': [4, 4],
-            'DE018': [4, 4],
-            'DE019': [3, 3],
-            'DE022': [3, 3],
-            'DE023': [3, 3],
-            'DE025': [2, 2],
-            'DE032': [2, 11],
-            'DE035': [37, 37],
-            'DE037': [12, 12],
-            'DE041': [8, 8],
-            'DE042': [15, 15],
-            'DE043': [1, 40],
-            'DE049': [3, 3],
-            'DE055': [1, 255],
-            'DE060': {
-                '37': [1, 30],
-                '53': [3, 3]
+        let fieldNumber = fieldKey.replace("BM", "").padStart(3, '0'); // Normalize field number
+        let fieldValue = inputObj[fieldKey];
+
+        if (!fieldDefinitions[fieldNumber]) {
+            errors.push(`Field ${fieldNumber} is not defined in the field definitions.`);
+            continue;
+        }
+
+        let fieldDef = fieldDefinitions[fieldNumber];
+        let expectedLength = fieldDef.length || fieldDef.max_length;
+
+        if (fieldNumber === "055") {
+            // Handle DE055 with subfields
+            errors.push(...validateDE055(fieldValue, fieldDef.subfields));
+        } else if (typeof fieldValue === "object") {
+            // Handle composite fields like BM060
+            errors.push(...validateCompositeField(fieldValue, fieldNumber, fieldDef));
+        } else {
+            // Validate field length
+            if (expectedLength && fieldValue.toString().length > expectedLength) {
+                errors.push(`Field ${fieldNumber} (${fieldDef.name}) exceeds the maximum length of ${expectedLength}.`);
             }
-        };
+        }
+    }
 
-        Object.entries(parsedData.data_elements).forEach(([key, value], rowIndex) => {
-            if (lengthCriteria.hasOwnProperty(key)) {
-                var criteria = lengthCriteria[key];
+    // Show validation result
+    if (errors.length > 0) {
+        validationResult.innerHTML = "<span class='error'>" + errors.join('<br>') + "</span>";
+    } else {
+        validationResult.innerHTML = "<span>Validation passed!</span>";
+    }
+}
 
-                if (typeof criteria === 'object' && !Array.isArray(criteria)) {
-                    // Nested object validation (e.g., DE060)
-                    Object.entries(value).forEach(([subKey, subValue]) => {
-                        if (criteria.hasOwnProperty(subKey)) {
-                            var subCriteria = criteria[subKey];
-                            if (subValue.length < subCriteria[0] || subValue.length > subCriteria[1]) {
-                                valid = false;
-                                addWarning(`${key}.${subKey} length should be between ${subCriteria[0]} and ${subCriteria[1]} characters.`, rowIndex);
-                            }
-                        }
-                    });
-                } else {
-                    // Simple value validation
-                    if (value.length < criteria[0] || value.length > criteria[1]) {
-                        valid = false;
-                        addWarning(`${key} length should be between ${criteria[0]} and ${criteria[1]} characters.`, rowIndex);
-                    }
-                }
-            }
-        });
+function validateDE055(fieldValue, subfields) {
+    let errors = [];
+    // Assuming fieldValue is a hex string representing TLV data
+    // Implement TLV parsing logic here
+    // For illustration purposes, let's assume fieldValue is an object
+    let de055Fields;
+    try {
+        // Convert fieldValue from hex string to object if necessary
+        de055Fields = parseTLV(fieldValue); // You need to implement parseTLV
+    } catch (e) {
+        errors.push("Invalid DE055 format.");
+        return errors;
+    }
 
-        // Update hidden textarea with editor content
-        dataField.value = data;
-    });
-});
+    for (const tag in de055Fields) {
+        if (!subfields[tag]) {
+            errors.push(`Subfield ${tag} is not defined in DE055 subfields.`);
+            continue;
+        }
+        let expectedLength = subfields[tag].max_length;
+        let value = de055Fields[tag];
+
+        if (value.length > expectedLength * 2) { // Multiply by 2 if value is in hex
+            errors.push(`Subfield ${tag} (${subfields[tag].name}) exceeds maximum length of ${expectedLength}.`);
+        }
+    }
+
+    return errors;
+}
+
+function validateCompositeField(fieldValue, fieldNumber, fieldDef) {
+    let errors = [];
+    // Implement validation logic for composite fields
+    for (const subfield in fieldValue) {
+        // You can define subfield validations here
+        // For now, we can just check that the subfields exist
+        if (!fieldDef.subfields || !fieldDef.subfields[subfield]) {
+            errors.push(`Subfield ${subfield} in Field ${fieldNumber} is not defined.`);
+        }
+    }
+    return errors;
+}
+
+function parseTLV(hexString) {
+    // Implement TLV parsing logic here
+    // This function should return an object with tag-value pairs
+    // For example: { "9F1A": "1234", "5F2A": "5678" }
+    let result = {};
+    let index = 0;
+
+    while (index < hexString.length) {
+        // Read tag
+        let tag = hexString.substr(index, 2);
+        index += 2;
+
+        // Check for multi-byte tag
+        if ((parseInt(tag, 16) & 0x1F) === 0x1F) {
+            tag += hexString.substr(index, 2);
+            index += 2;
+        }
+
+        // Read length
+        let lengthHex = hexString.substr(index, 2);
+        index += 2;
+        let length = parseInt(lengthHex, 16);
+
+        // Read value
+        let value = hexString.substr(index, length * 2);
+        index += length * 2;
+
+        result[tag] = value;
+    }
+
+    return result;
+}

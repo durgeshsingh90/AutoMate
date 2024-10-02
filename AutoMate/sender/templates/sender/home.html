@@ -3,458 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JSON/YAML Editor with Advanced Features</title>
-    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <title>Webpage Layout</title>
     <style>
-        #editor {
-            height: 70vh;
-            width: 100%;
+        * {
+            box-sizing: border-box;
         }
-        #statusBar {
-            height: 30px;
-            width: 100%;
-            background-color: #f7f7f7;
-            border-top: 1px solid #ccc;
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: Arial, sans-serif;
+        }
+        .container {
             display: flex;
-            align-items: center;
-            padding: 0 10px;
-            font-size: 12px;
+            height: 100vh;
         }
-        #statusBar div, #statusBar button, #statusBar label {
-            margin-right: 15px;
+        .explorer {
+            width: 20%;
+            background-color: #f4f4f4;
+            padding: 20px;
+            border-right: 2px solid #ccc;
         }
-        #explorer {
-            height: calc(100vh - 100px);
-            overflow-y: auto;
+        .middle-box {
+            width: 60%;
+            padding: 20px;
+        }
+        .right-box {
+            width: 20%;
+            padding: 20px;
+            background-color: #f4f4f4;
+            border-left: 2px solid #ccc;
+        }
+        textarea {
+            width: 100%;
+            height: 100%;
             padding: 10px;
-            padding-top: 0;
-        }
-        .file-item {
-            cursor: pointer;
-            padding: 5px;
-            border-bottom: 1px solid #eee;
-        }
-        .file-item:hover {
-            background-color: #f0f0f0;
-        }
-        .file-item.active {
-            background-color: #e0e0e0;
-        }
-        .group-item {
-            padding: 5px;
-        }
-        .group-item h6 {
-            display: flex;
-            justify-content: space-between;
-            cursor: pointer;
-            margin-bottom: 0;
-        }
-        .group-item h6:hover {
-            background-color: #f0f0f0;
-        }
-        .group-item .file-item {
-            padding-left: 20px;
-        }
-        #groupName, #testCaseName {
-            margin-bottom: 10px;
-            display: inline-block;
-            width: auto;
-        }
-        #topActions {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+            resize: none;
         }
     </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.13.13/beautify.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
 </head>
 <body>
-    <div class="container-fluid mt-4">
-        <h2 class="text-center">JSON/YAML Editor with Advanced Features</h2>
-        <div class="row">
-            <div class="col-md-3">
-                <h5>Explorer</h5>
-                <div id="explorer"></div>
-                <button id="createGroupButton" class="btn btn-secondary btn-sm mt-2">Create Group</button>
-                <button id="groupByBM032Button" class="btn btn-secondary btn-sm mt-2">Group by BM032</button>
-            </div>
-            <div class="col-md-9">
-                <div id="topActions">
-                    <div>
-                        <input type="text" id="groupName" class="form-control" placeholder="Enter group name">
-                        <input type="text" id="testCaseName" class="form-control" placeholder="Enter test case name">
-                        <button id="saveButton" class="btn btn-primary">Save</button>
-                    </div>
-                    <div id="fileActions">
-                        <input type="file" id="importButton" class="btn btn-secondary" style="display: none;">
-                        <label for="importButton" class="btn btn-secondary">Import</label>
-                        <button id="exportButton" class="btn btn-success">Export</button>
-                    </div>
-                </div>
-                <div id="editor"></div>
-                <div id="statusBar">
-                    <div id="lengthInfo">Length: 0</div>
-                    <div id="linesInfo">Lines: 0</div>
-                    <div id="lnColInfo">Ln: 0, Col: 0</div>
-                    <div id="selInfo">Sel: 0</div>
-                    <div id="posInfo">Pos: 0</div>
-                    <label>
-                        <input type="checkbox" id="wordWrapToggle"> Word Wrap
-                    </label>
-                    <button id="prettyButton">Pretty</button>
-                </div>
-            </div>
+    <div class="container">
+        <div class="explorer">
+            <h2>Explorer</h2>
+            <ul>
+                <li>Item 1</li>
+                <li>Item 2</li>
+                <li>Item 3</li>
+            </ul>
+        </div>
+        <div class="middle-box">
+            <textarea placeholder="Large Text Box in the Middle"></textarea>
+        </div>
+        <div class="right-box">
+            <textarea placeholder="Text Box on the Right"></textarea>
         </div>
     </div>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js"></script>
-    <script>
-        var editor = ace.edit("editor");
-        editor.setTheme("ace/theme/monokai");
-        editor.session.setMode("ace/mode/yaml");
-        editor.setShowPrintMargin(false);
-        editor.setShowInvisibles(false);
-        editor.setDisplayIndentGuides(false);
-        editor.setOptions({
-            enableBasicAutocompletion: true,
-            enableLiveAutocompletion: true,
-            enableSnippets: true,
-            showLineNumbers: true,
-            tabSize: 2
-        });
-
-        var lengthRequirements = {
-            'mti': { min: 4, max: 4 },
-            'BM002': { min: 16, max: 16 },
-            'BM003': { min: 6, max: 6 },
-            'BM004': { min: 1, max: 12 },
-            'BM007': { min: 10, max: 10 },
-            'BM011': { min: 6, max: 6 },
-            'BM012': { min: 6, max: 6 },
-            'BM013': { min: 4, max: 4 },
-            'BM014': { min: 4, max: 4 },
-            'BM018': { min: 4, max: 4 },
-            'BM019': { min: 3, max: 3 },
-            'BM022': { min: 3, max: 3 },
-            'BM023': { min: 3, max: 3 },
-            'BM025': { min: 2, max: 2 },
-            'BM032': { min: 6, max: 6 },
-            'BM035': { min: 36, max: 37 },
-            'BM037': { min: 12, max: 12 },
-            'BM041': { min: 8, max: 8 },
-            'BM042': { min: 15, max: 15 },
-            'BM043': { min: 1, max: 40 },
-            'BM049': { min: 3, max: 3 },
-            'BM055': { min: 1, max: 999 },
-            'BM060': { // Custom validation for BM060 subfields
-                subfields: {
-                    '37': { min: 29, max: 29 },
-                    '53': { min: 3, max: 3 }
-                }
-            }
-        };
-
-        function updateStatusBar() {
-            var lengthInfo = document.getElementById('lengthInfo');
-            var linesInfo = document.getElementById('linesInfo');
-            var lnColInfo = document.getElementById('lnColInfo');
-            var selInfo = document.getElementById('selInfo');
-            var posInfo = document.getElementById('posInfo');
-
-            var session = editor.getSession();
-            var content = editor.getValue();
-            var cursor = editor.getCursorPosition();
-            var selectionRange = editor.getSelectionRange();
-
-            lengthInfo.textContent = `Length: ${content.length}`;
-            linesInfo.textContent = `Lines: ${session.getLength()}`;
-            lnColInfo.textContent = `Ln: ${cursor.row + 1}, Col: ${cursor.column + 1}`;
-            selInfo.textContent = `Sel: ${Math.abs(selectionRange.end.row - selectionRange.start.row) + Math.abs(selectionRange.end.column - selectionRange.start.column)}`;
-            posInfo.textContent = `Pos: ${editor.getSelection().getCursor().column}`;
-        }
-
-        document.getElementById('wordWrapToggle').addEventListener('change', function(event) {
-            var isChecked = event.target.checked;
-            editor.getSession().setUseWrapMode(isChecked);
-        });
-
-        document.getElementById('prettyButton').addEventListener('click', function() {
-            var content = editor.getValue();
-            try {
-                if (content.trim().startsWith('{') || content.trim().startsWith('[')) {
-                    // Beautify JSON
-                    var beautified = js_beautify(content, { indent_size: 2 });
-                    editor.setValue(beautified, -1);
-                } else {
-                    // Beautify YAML
-                    var yamlData = jsyaml.load(content);
-                    var beautifiedYaml = jsyaml.dump(yamlData, { indent: 2 });
-                    editor.setValue(beautifiedYaml, -1);
-                }
-            } catch (e) {
-                console.error('Error beautifying content:', e.message);
-            }
-        });
-
-        function findLineNumber(content, key) {
-            var lines = content.split('\n');
-            for (var i = 0; i < lines.length; i++) {
-                var trimmedLine = lines[i].trim();
-                if (trimmedLine.startsWith(key + ':') || trimmedLine.startsWith('"' + key + '":') || trimmedLine.startsWith("'" + key + "':")) {
-                    return i;
-                }
-            }
-            return -1;
-        }
-
-        function validateContent(content, data) {
-            var annotations = [];
-            for (var key in data) {
-                if (data.hasOwnProperty(key) && lengthRequirements[key]) {
-                    if (key === 'BM060' && typeof data[key] === 'object') {
-                        // Validate BM060 subfields
-                        for (var subKey in data[key]) {
-                            if (data[key].hasOwnProperty(subKey) && lengthRequirements[key].subfields[subKey]) {
-                                var value = data[key][subKey];
-                                var { min, max } = lengthRequirements[key].subfields[subKey];
-                                if (value.length < min || value.length > max) {
-                                    var lineNumber = findLineNumber(content, subKey);
-                                    annotations.push({
-                                        row: lineNumber,
-                                        column: 0,
-                                        text: `Warning: The value of BM060 subfield ${subKey} should be between ${min} and ${max} characters long.`,
-                                        type: "warning"
-                                    });
-                                }
-                            }
-                        }
-                    } else {
-                        var value = data[key];
-                        var { min, max } = lengthRequirements[key];
-                        if (value.length < min || value.length > max) {
-                            var lineNumber = findLineNumber(content, key);
-                            annotations.push({
-                                row: lineNumber,
-                                column: 0,
-                                text: `Warning: The value of ${key} should be between ${min} and ${max} characters long.`,
-                                type: "warning"
-                            });
-                        }
-                    }
-                }
-            }
-            return annotations;
-        }
-
-        function debounce(func, wait) {
-            var timeout;
-            return function() {
-                var context = this, args = arguments;
-                clearTimeout(timeout);
-                timeout = setTimeout(function() {
-                    func.apply(context, args);
-                }, wait);
-            };
-        }
-
-        var validateEditorContent = debounce(function() {
-            var content = editor.getValue();
-            var annotations = [];
-            try {
-                if (content.trim()) {
-                    if (content.trim().startsWith('{') || content.trim().startsWith('[')) {
-                        var jsonData = JSON.parse(content);
-                        editor.getSession().setMode("ace/mode/json");
-                        annotations = validateContent(content, jsonData);
-                    } else {
-                        var yamlData = jsyaml.load(content);
-                        editor.getSession().setMode("ace/mode/yaml");
-                        annotations = validateContent(content, yamlData);
-                    }
-                }
-            } catch (e) {
-                var errorMessage = e.message;
-                var lineNumberMatch = errorMessage.match(/at line (\d+)/i);
-                if (lineNumberMatch) {
-                    var lineNumber = parseInt(lineNumberMatch[1]) - 1;
-                    annotations.push({
-                        row: lineNumber,
-                        column: 0,
-                        text: errorMessage,
-                        type: "error"
-                    });
-                } else {
-                    annotations.push({
-                        row: 0,
-                        column: 0,
-                        text: errorMessage,
-                        type: "error"
-                    });
-                }
-            }
-            // Apply annotations after a delay to ensure stability
-            setTimeout(function() {
-                editor.getSession().setAnnotations(annotations);
-            }, 0);
-            updateStatusBar();
-        }, 500);
-
-        editor.getSession().on('change', validateEditorContent);
-
-        editor.selection.on('changeCursor', updateStatusBar);
-        editor.selection.on('changeSelection', updateStatusBar);
-
-        // Initial status bar update
-        updateStatusBar();
-
-        // File management
-        const fileStructure = [];
-
-        function refreshExplorer() {
-            const explorer = document.getElementById('explorer');
-            explorer.innerHTML = '';
-            fileStructure.forEach((group, groupIndex) => {
-                const groupItem = document.createElement('div');
-                groupItem.className = 'group-item';
-                const groupTitle = document.createElement('h6');
-                groupTitle.innerHTML = `<span>${group.name}</span> <span class="toggle-button">-</span>`;
-                groupTitle.addEventListener('click', function() {
-                    const files = groupItem.querySelectorAll('.file-item');
-                    files.forEach(file => file.classList.toggle('hidden'));
-                    const toggleButton = groupTitle.querySelector('.toggle-button');
-                    toggleButton.textContent = toggleButton.textContent === '-' ? '+' : '-';
-                });
-                groupItem.appendChild(groupTitle);
-
-                group.files.forEach((file, fileIndex) => {
-                    const fileItem = document.createElement('div');
-                    fileItem.className = 'file-item';
-                    fileItem.textContent = file.name;
-                    fileItem.dataset.groupIndex = groupIndex;
-                    fileItem.dataset.fileIndex = fileIndex;
-                    fileItem.addEventListener('click', () => {
-                        document.querySelectorAll('.file-item').forEach(item => item.classList.remove('active'));
-                        fileItem.classList.add('active');
-                        editor.setValue(file.content, -1);
-                    });
-                    groupItem.appendChild(fileItem);
-                });
-
-                explorer.appendChild(groupItem);
-            });
-        }
-
-        document.getElementById('saveButton').addEventListener('click', function() {
-            const content = editor.getValue();
-            const groupName = document.getElementById('groupName').value.trim();
-            const testCaseName = document.getElementById('testCaseName').value.trim();
-            if (groupName && testCaseName) {
-                let group = fileStructure.find(g => g.name === groupName);
-                if (!group) {
-                    group = { name: groupName, files: [] };
-                    fileStructure.push(group);
-                }
-                const file = { name: testCaseName, content: content };
-                group.files.push(file);
-                refreshExplorer();
-            } else {
-                alert('Please enter both group name and test case name.');
-            }
-        });
-
-        document.getElementById('createGroupButton').addEventListener('click', function() {
-            const groupName = document.getElementById('groupName').value.trim();
-            if (groupName) {
-                let group = fileStructure.find(g => g.name === groupName);
-                if (!group) {
-                    fileStructure.push({ name: groupName, files: [] });
-                    refreshExplorer();
-                } else {
-                    alert('Group already exists.');
-                }
-            } else {
-                alert('Please enter a group name.');
-            }
-        });
-
-        document.getElementById('groupByBM032Button').addEventListener('click', function() {
-            const bm032Groups = {};
-
-            fileStructure.forEach(group => {
-                group.files.forEach(file => {
-                    const content = file.content;
-                    let parsedContent;
-                    try {
-                        parsedContent = content.trim().startsWith('{') ? JSON.parse(content) : jsyaml.load(content);
-                    } catch (e) {
-                        return;
-                    }
-                    const bm032Value = parsedContent.BM032;
-                    if (bm032Value) {
-                        if (!bm032Groups[bm032Value]) {
-                            bm032Groups[bm032Value] = [];
-                        }
-                        bm032Groups[bm032Value].push({ name: file.name, content: file.content });
-                    }
-                });
-            });
-
-            fileStructure.length = 0;
-            for (const bm032Value in bm032Groups) {
-                fileStructure.push({ name: `BM032: ${bm032Value}`, files: bm032Groups[bm032Value] });
-            }
-
-            refreshExplorer();
-        });
-
-        document.getElementById('importButton').addEventListener('change', function(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const content = e.target.result;
-                    const groupName = document.getElementById('groupName').value.trim() || file.name.split('.')[0];
-                    const testCaseName = document.getElementById('testCaseName').value.trim() || file.name;
-                    if (groupName && testCaseName) {
-                        let group = fileStructure.find(g => g.name === groupName);
-                        if (!group) {
-                            group = { name: groupName, files: [] };
-                            fileStructure.push(group);
-                        }
-                        const importedFile = { name: testCaseName, content: content };
-                        group.files.push(importedFile);
-                        refreshExplorer();
-                    } else {
-                        alert('Please enter both group name and test case name.');
-                    }
-                };
-                reader.readAsText(file);
-            }
-        });
-
-        document.getElementById('exportButton').addEventListener('click', function() {
-            const content = editor.getValue();
-            const fileName = document.getElementById('testCaseName').value.trim() || 'test_case_export.json';
-            if (fileName) {
-                const blob = new Blob([content], { type: "application/json;charset=utf-8" });
-                const link = document.createElement("a");
-                link.href = URL.createObjectURL(blob);
-                link.download = fileName;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            }
-        });
-
-        // Save with Ctrl + S
-        document.addEventListener('keydown', function(event) {
-            if ((event.ctrlKey || event.metaKey) && event.key === 's') {
-                event.preventDefault();
-                document.getElementById('saveButton').click();
-            }
-        });
-    </script>
 </body>
 </html>

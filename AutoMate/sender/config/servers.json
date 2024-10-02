@@ -1,0 +1,15 @@
+[
+    {
+      "server_name": "omnipay",
+      "hostname": "34.245.237.239"
+    },
+    {
+      "server_name": "Staging Server",
+      "hostname": "staging.example.com"
+    },
+    {
+      "server_name": "Development Server",
+      "hostname": "dev.example.com"
+    }
+  ]
+  
