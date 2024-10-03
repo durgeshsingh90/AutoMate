@@ -212,29 +212,88 @@ def get_bookings(request):
             servers_list = json.load(servers_file)
             servers = {server['hostname']: server['color'] for server in servers_list}
 
+    # Map repeat_days (e.g., "Tuesday") to crontab day of week numbers
+    day_map = {
+        "Sunday": 6, "Monday": 0, "Tuesday": 1, "Wednesday": 2,
+        "Thursday": 3, "Friday": 4, "Saturday": 5
+    }
+
     for booking in bookings:
         try:
-            start_date = datetime.strptime(booking['start_date'], '%d/%m/%Y')
-            end_date = datetime.strptime(booking['end_date'], '%d/%m/%Y')
+            # Handle open slot where start_date and end_date are empty strings
+            if booking['start_date'] == "" and booking['end_date'] == "":
+                # Open slot booking logic (based on repeat_days)
+                repeat_days = booking.get('repeat_days', [])
+                time_slots = ', '.join(booking['time_slots']) if isinstance(booking['time_slots'], list) else booking['time_slots']
+                scheme_types = ', '.join(booking['scheme_types']) if isinstance(booking['scheme_types'], list) else booking['scheme_types']
 
-            # Retrieve the color based on the server hostname
-            server_color = servers.get(booking['server'], '#000000')  # Default to black if no color is found
+                # Retrieve the color based on the server hostname
+                server_color = servers.get(booking['server'], '#000000')  # Default to black if no color is found
 
-            events.append({
-                'id': booking['booking_id'],
-                'title': f"{booking['project_name']} ({booking['server']}, {booking['owner']})",  # Display server and owner
-                'start': start_date.strftime('%Y-%m-%d'),
-                'end': end_date.strftime('%Y-%m-%d'),
-                'color': server_color,  # Assign color based on the server
-                'allDay': True,
-                'extendedProps': {
-                    'server': booking['server'],
-                    'owner': booking['owner'],
-                    'timeslot': booking['time_slots'],
-                    'project_name': booking['project_name'],
-                    'repeat_days': booking.get('repeat_days', [])
-                }
-            })
+                # For each month, generate events for the specified repeat days
+                for month in range(1, 13):  # Loop through all months
+                    for day in range(1, 32):  # Loop through days in each month
+                        try:
+                            # Create a date object for each day
+                            date = datetime(year=datetime.now().year, month=month, day=day)
+                        except ValueError:
+                            # Skip invalid dates (e.g., February 30th)
+                            continue
+                        
+                        # Check if the current date's weekday matches any of the repeat days
+                        if date.weekday() in [day_map[day] for day in repeat_days]:
+                            events.append({
+                                'id': booking['booking_id'],
+                                'title': f"Open Slot - {time_slots} - {scheme_types}",
+                                'start': date.strftime('%Y-%m-%d'),  # Use the date for the event
+                                'end': None,  # No end date for each event
+                                'color': server_color,  # Assign color based on the server
+                                'allDay': True,
+                                'extendedProps': {
+                                    'booking_id': booking['booking_id'],
+                                    'project_name': booking['project_name'],
+                                    'owner': booking['owner'],
+                                    'server': booking['server'],
+                                    'scheme_types': scheme_types,
+                                    'timeslot': time_slots,
+                                    'start_date': 'Open',  # Represent as open
+                                    'end_date': 'Open',    # Represent as open
+                                    'cron_jobs': booking.get('cron_jobs', []),  # Cron jobs
+                                    'repeat_days': repeat_days,  # Repeat days
+                                }
+                            })
+
+            else:
+                # Handle normal bookings with a specific date range
+                start_date = datetime.strptime(booking['start_date'], '%d/%m/%Y')
+                end_date = datetime.strptime(booking['end_date'], '%d/%m/%Y')
+
+                server_color = servers.get(booking['server'], '#000000')  # Default to black if no color is found
+
+                time_slots = ', '.join(booking['time_slots']) if isinstance(booking['time_slots'], list) else booking['time_slots']
+                scheme_types = ', '.join(booking['scheme_types']) if isinstance(booking['scheme_types'], list) else booking['scheme_types']
+
+                events.append({
+                    'id': booking['booking_id'],
+                    'title': f"{time_slots} - {scheme_types}",
+                    'start': start_date.strftime('%Y-%m-%d'),
+                    'end': end_date.strftime('%Y-%m-%d'),
+                    'color': server_color,  # Assign color based on the server
+                    'allDay': True,
+                    'extendedProps': {
+                        'booking_id': booking['booking_id'],
+                        'project_name': booking['project_name'],
+                        'psp_name': booking.get('psp_name', 'N/A'),  # Include PSP name if available
+                        'owner': booking['owner'],
+                        'server': booking['server'],
+                        'scheme_types': scheme_types,
+                        'timeslot': time_slots,
+                        'start_date': booking['start_date'],
+                        'end_date': booking['end_date'],
+                        'cron_jobs': booking.get('cron_jobs', []),  # Cron jobs
+                        'repeat_days': booking.get('repeat_days', []),  # Repeat days
+                    }
+                })
         except ValueError as e:
             logger.error(f"Error parsing date for booking {booking['project_name']}: {str(e)}")
     
