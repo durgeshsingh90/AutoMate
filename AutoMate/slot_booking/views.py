@@ -90,15 +90,15 @@ def save_booking(request):
 
     if request.method == 'POST':
         try:
-            # Check if "dateRange" is missing, treat as open slot
+            # Check if "dateRange" is missing or set to '*', treat as open slot
             date_range = request.POST.get('dateRange', None)
-            is_open_slot = date_range is None or date_range == '*'
+            is_open_slot = date_range is None or date_range == '*' or date_range == ""
 
             # Handle open slot case
             if is_open_slot:
                 start_date = "*"
                 end_date = "*"
-                new_repeat_days = request.POST.getlist('repeatBooking', ['Tuesday', 'Thursday'])  # Use default repeat days for open slot
+                new_repeat_days = request.POST.getlist('repeatBooking', ['Tuesday', 'Thursday'])  # Default repeat days for open slot
                 new_time_slots = ['AM']  # Default time slot for open slots
             else:
                 # If date range is provided, split into start and end dates
@@ -126,25 +126,29 @@ def save_booking(request):
             else:
                 bookings = []
 
-            # Check for date range and time slot conflicts
-            for existing_booking in bookings:
-                # Convert existing booking's start and end dates to datetime
-                existing_start_date = datetime.strptime(existing_booking['start_date'], '%d/%m/%Y').date()
-                existing_end_date = datetime.strptime(existing_booking['end_date'], '%d/%m/%Y').date()
+            # Check for date range and time slot conflicts, but only for non-open slots
+            if not is_open_slot:
+                for existing_booking in bookings:
+                    existing_start_date = existing_booking.get('start_date')
+                    existing_end_date = existing_booking.get('end_date')
 
-                # Check if server, scheme types, and date range overlap
-                if (existing_booking['server'] == server and
-                    set(existing_booking['scheme_types']) == set(scheme_types) and
-                    # Check if date ranges overlap
-                    not (end_date < existing_start_date or start_date > existing_end_date)):
-                    
-                    # Check for any overlapping time slots between the new booking and existing bookings
-                    existing_time_slots = set(existing_booking['time_slots'])
-                    if existing_time_slots & set(new_time_slots):  # Check if there's an intersection of time slots
-                        logger.error("Booking conflict detected: One or more time slots and date ranges are already booked.")
-                        return JsonResponse({
-                            "error": "Booking conflict: The selected time slots and/or date range are already booked."
-                        }, status=400)
+                    # Check if the existing booking has valid dates and is not an open slot
+                    if existing_start_date and existing_end_date:
+                        existing_start_date = datetime.strptime(existing_start_date, '%d/%m/%Y').date()
+                        existing_end_date = datetime.strptime(existing_end_date, '%d/%m/%Y').date()
+
+                        # Check if server, scheme types, and date range overlap
+                        if (existing_booking['server'] == server and
+                            set(existing_booking['scheme_types']) == set(scheme_types) and
+                            not (end_date < existing_start_date or start_date > existing_end_date)):
+
+                            # Check for overlapping time slots between the new booking and existing bookings
+                            existing_time_slots = set(existing_booking['time_slots'])
+                            if existing_time_slots & set(new_time_slots):  # Check if there's an intersection of time slots
+                                logger.error("Booking conflict detected: One or more time slots and date ranges are already booked.")
+                                return JsonResponse({
+                                    "error": "Booking conflict: The selected time slots and/or date range are already booked."
+                                }, status=400)
 
             # Generate a new booking ID (increment the last one)
             if bookings:
@@ -602,13 +606,10 @@ def add_cron_job(request):
             return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
     except Exception as e:
-<<<<<<< HEAD
         logger.exception("Error adding cron jobs via SSH.")
         logger.info("exiting add_cron_job")
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
 
-=======
         logger.error(f"Error in add_cron_job: {str(e)}")
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
->>>>>>> 910dd2a4039b0c5fb8675d4933c7c8767f08c57a
