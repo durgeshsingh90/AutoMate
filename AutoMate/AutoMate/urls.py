@@ -25,6 +25,8 @@ urlpatterns = [
     path('mclogsfilter/', include('mclogsfilter.urls')),
     path('SplunkRRN/', TemplateView.as_view(template_name='SplunkRRN.html'), name='SplunkRRN'),
     path('json2yaml/', TemplateView.as_view(template_name='json2yaml.html'), name='json2yaml'),
+    path('compare/', TemplateView.as_view(template_name='compare.html'), name='compare'),
+
     path('sender/', include('sender.urls')),
     path('certifications/', include('certifications.urls')),
     path('bookings/', include('bookings.urls')),

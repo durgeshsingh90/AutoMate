@@ -7,90 +7,55 @@
     <!-- Bootstrap CSS CDN -->
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        /* Flexbox container and input styling */
-        .flex-container {
-            display: flex;
-            flex-direction: row;
-            align-items: flex-start;
-        }
-
-        .input-section {
-            margin-right: 20px;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .line-numbers {
-            border: 1px solid #ced4da;
+        body {
             background-color: #f8f9fa;
-            padding: 8px;
-            text-align: right;
-            color: #6c757d;
-            user-select: none;
-            width: 30px;
-            height: 100%;
-            overflow: hidden;
-            position: absolute;
-            left: 0;
-            top: 0;
         }
 
-        .textarea-wrapper {
-            position: relative;
-            display: flex;
+        .container {
+            max-width: 1200px;
         }
 
-        #inputNumbers {
-            padding-left: 40px; /* Space for line numbers */
-            width: 100%;
-            resize: vertical;
+        .editor-header {
+            background-color: #007bff;
+            color: white;
+            padding: 10px;
+            font-weight: bold;
+            border-radius: 5px 5px 0 0;
         }
 
-        .output-section {
-            flex: 2;
-            display: flex;
-            flex-direction: column;
-            width: 100%;
+        /* Monaco Editor */
+        #inputEditor {
+            height: 300px;
+            border: 1px solid #ced4da;
+            border-radius: 0 0 5px 5px;
         }
 
-        #outputNumbers {
-            flex-grow: 1;
-            resize: both;
-            overflow: auto;
-            min-height: 300px;
-            width: 100%;
-            margin-bottom: 10px;
+        .output-section textarea {
+            height: 300px;
+            resize: none;
+            border-radius: 5px;
         }
 
-        .copy-button {
-            align-self: flex-start;
-        }
-
-        .line-status {
-            margin-top: 5px;
-            font-size: 14px;
-            color: #6c757d;
+        .btn-block {
+            margin-top: 10px;
         }
     </style>
 </head>
-<body class="bg-light d-flex justify-content-center align-items-center vh-100">
-    <a href="{% url 'first_page:home' %}" class="btn btn-primary position-fixed" style="top: 10px; left: 10px;">Home</a>
-    
-    <div class="container bg-white p-4 rounded shadow d-flex">
-        <div class="flex-container w-100">
-            <div class="input-section">
-                <label for="inputNumbers" class="font-weight-bold">Enter RRN numbers:</label>
-                <div class="textarea-wrapper">
-                    <div id="lineNumbers" class="line-numbers">1</div>
-                    <textarea id="inputNumbers" class="form-control mb-2" rows="10" oninput="modifyNumbers(); updateLineNumbers();"></textarea>
-                </div>
-                <!-- Checkbox for Additional Options -->
-                <div class="form-check">
+<body class="bg-light">
+    <div class="container bg-white p-4 rounded shadow mt-5">
+        <h2 class="text-center mb-4">Splunk RRN Search Builder</h2>
+        <div class="row">
+            <!-- Input Section -->
+            <div class="col-md-6">
+                <div class="editor-header">Enter RRN numbers:</div>
+                <div id="inputEditor"></div>
+
+                <!-- Options Section -->
+                <div class="form-check mt-3">
                     <input type="checkbox" id="addIndex" class="form-check-input" onchange="modifyNumbers()" checked>
                     <label for="addIndex" class="form-check-label">Add "index = 'application_omnipay'"</label>
                 </div>
-                <!-- Checkboxes for Host Options -->
+
                 <div class="form-check">
                     <input type="checkbox" id="addHost1" class="form-check-input" onchange="modifyNumbers()">
                     <label for="addHost1" class="form-check-label">Add "host = a4pvap068"</label>
@@ -111,16 +76,16 @@
                     <input type="checkbox" id="addHost5" class="form-check-input" onchange="modifyNumbers()">
                     <label for="addHost5" class="form-check-label">Add "host = a4pvap1004"</label>
                 </div>
-                <!-- Status for Total Number of Lines -->
-                <div id="lineStatus" class="line-status">Total Lines: 1</div>
-                <!-- Button to Remove Empty Lines -->
-                <button class="btn btn-secondary mt-2" onclick="removeEmptyLines()">Remove Empty Lines</button>
+
+                <div id="lineStatus" class="line-status mt-2">Total Lines: 1</div>
+                <button class="btn btn-secondary btn-block" onclick="removeEmptyLines()">Remove Empty Lines</button>
             </div>
-            <div class="output-section">
-                <label for="outputNumbers" class="font-weight-bold">Splunk Search:</label>
-                <!-- Enlarged Output Textarea -->
-                <textarea id="outputNumbers" class="form-control mb-2" readonly></textarea>
-                <button id="copyButton" class="btn btn-primary copy-button" onclick="copyToClipboard()">Copy</button>
+
+            <!-- Output Section -->
+            <div class="col-md-6 output-section">
+                <div class="editor-header">Splunk Search Output:</div>
+                <textarea id="outputNumbers" class="form-control" readonly></textarea>
+                <button id="copyButton" class="btn btn-primary btn-block" onclick="copyToClipboard()">Copy to Clipboard</button>
             </div>
         </div>
     </div>
@@ -129,139 +94,130 @@
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js" integrity="sha512-EkNKj8EZ5ddm9fyR0qJ4ufyjzC1MQcvBQFjUtA33sShb3y8uEr3d3wGp/Jmg3KoUti/2WkO+gjO2F9Y1slCOqg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <!-- Monaco Editor -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.33.0/min/vs/loader.min.js"></script>
 
     <script>
-        document.addEventListener('DOMContentLoaded', (event) => {
-            // Load input from local storage
+        let inputEditor;
+
+        // Load Monaco Editor
+        require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.33.0/min/vs' }});
+        require(['vs/editor/editor.main'], function () {
+            // Initialize Monaco Editor for Input
+            inputEditor = monaco.editor.create(document.getElementById('inputEditor'), {
+                value: '',
+                language: 'plaintext',
+                theme: 'vs-light',
+                automaticLayout: true
+            });
+
+            // Load input from local storage if available
             const savedInput = localStorage.getItem('inputNumbers');
             if (savedInput) {
-                document.getElementById('inputNumbers').value = savedInput;
+                inputEditor.setValue(savedInput);
                 modifyNumbers();
                 updateLineNumbers(); // Update line numbers on load
             }
+
+            // Bind to input changes
+            inputEditor.onDidChangeModelContent(() => {
+                modifyNumbers();
+                updateLineNumbers();
+            });
         });
 
+        // Modify your existing functions to use Monaco Editor
+
         function modifyNumbers() {
-    const input = document.getElementById('inputNumbers').value;
-    localStorage.setItem('inputNumbers', input); // Save input to local storage
+            const input = inputEditor.getValue(); // Get value from Monaco Editor
+            localStorage.setItem('inputNumbers', input); // Save input to local storage
 
-    const addIndex = document.getElementById('addIndex').checked;
-    const addHost1 = document.getElementById('addHost1').checked;
-    const addHost2 = document.getElementById('addHost2').checked;
-    const addHost3 = document.getElementById('addHost3').checked;
-    const addHost4 = document.getElementById('addHost4').checked;
-    const addHost5 = document.getElementById('addHost5').checked;
+            const addIndex = document.getElementById('addIndex').checked;
+            const addHost1 = document.getElementById('addHost1').checked;
+            const addHost2 = document.getElementById('addHost2').checked;
+            const addHost3 = document.getElementById('addHost3').checked;
+            const addHost4 = document.getElementById('addHost4').checked;
+            const addHost5 = document.getElementById('addHost5').checked;
 
-    const lines = input.split('\n').filter(line => line.trim() !== ''); // Filter out empty lines
-    let modifiedLines = [];
-    let useAnd = false; // To keep track if "AND" should be used between lines
+            const lines = input.split('\n').filter(line => line.trim() !== ''); // Filter out empty lines
+            let modifiedLines = [];
+            let useAnd = false;
 
-    for (let i = 0; i < lines.length; i++) {
-        let line = lines[i].replace(/\s/g, ''); // Remove spaces from each line
-        let modifiedLine = line;
+            for (let i = 0; i < lines.length; i++) {
+                let line = lines[i].replace(/\s/g, ''); // Remove spaces from each line
+                let modifiedLine = line;
 
-        // Check if the line contains more than 30 digits
-        if (line.length > 30) {
-            let cleanedNumber = '';
-            // Remove '3' before every digit (hexadecimal removal)
-            for (let j = 0; j < line.length; j += 2) {
-                if (line[j] === '3') {
-                    cleanedNumber += line[j + 1];
+                // Check if the line contains more than 30 digits
+                if (line.length > 30) {
+                    let cleanedNumber = '';
+                    for (let j = 0; j < line.length; j += 2) {
+                        if (line[j] === '3') {
+                            cleanedNumber += line[j + 1];
+                        }
+                    }
+                    modifiedLines.push(cleanedNumber);
+                    continue; // Skip further processing for this line
                 }
-            }
-            modifiedLines.push(cleanedNumber); // Just push the cleaned number
-            continue; // Skip further processing for this line
-        }
 
-        // Check for 12-digit number
-        let match12 = line.match(/"(\d{12})"/) || line.match(/(\d{12})/);
-        if (match12) {
-            let originalNumber = match12[1];
-            let modifiedNumber = '';
-            for (let j = 0; j < originalNumber.length; j++) {
-                modifiedNumber += '3' + originalNumber[j];
-            }
-            if (line.includes(`"${originalNumber}"`)) {
-                modifiedLine = line.replace(`"${originalNumber}"`, `"${originalNumber}" OR "${modifiedNumber}"`);
-            } else {
-                modifiedLine = line.replace(originalNumber, `"${originalNumber}" OR "${modifiedNumber}"`);
-            }
-        }
+                // Check for 12-digit and 24-digit numbers
+                let match12 = line.match(/"(\d{12})"/) || line.match(/(\d{12})/);
+                let match24 = line.match(/"(\d{24})"/) || line.match(/(\d{24})/);
 
-        // Check for 24-digit number
-        let match24 = line.match(/"(\d{24})"/) || line.match(/(\d{24})/);
-        if (match24) {
-            let originalNumber = match24[1];
-            let cleanedNumber = '';
-
-            // Remove '3' before every digit (hexadecimal removal)
-            for (let j = 0; j < originalNumber.length; j += 2) {
-                if (originalNumber[j] === '3') {
-                    cleanedNumber += originalNumber[j + 1];
+                if (match12) {
+                    let originalNumber = match12[1];
+                    let modifiedNumber = '';
+                    for (let j = 0; j < originalNumber.length; j++) {
+                        modifiedNumber += '3' + originalNumber[j];
+                    }
+                    modifiedLine = line.replace(originalNumber, `"${originalNumber}" OR "${modifiedNumber}"`);
                 }
+
+                if (match24) {
+                    let originalNumber = match24[1];
+                    let cleanedNumber = '';
+                    for (let j = 0; j < originalNumber.length; j += 2) {
+                        if (originalNumber[j] === '3') {
+                            cleanedNumber += originalNumber[j + 1];
+                        }
+                    }
+                    modifiedLine = line.replace(originalNumber, `"${cleanedNumber}"`);
+                }
+
+                if (line.trim().endsWith(" AND")) {
+                    useAnd = true;
+                    modifiedLine = modifiedLine.replace(" AND", "");
+                }
+
+                modifiedLines.push(modifiedLine);
             }
 
-            // Replace in the line if applicable
-            if (line.includes(`"${originalNumber}"`)) {
-                modifiedLine = line.replace(`"${originalNumber}"`, `"${cleanedNumber}"`);
-            } else {
-                modifiedLine = line.replace(originalNumber, `"${cleanedNumber}"`);
+            let output = modifiedLines.join(useAnd ? ' AND ' : ' OR ');
+
+            if (addIndex) {
+                let hosts = '';
+                if (addHost1) hosts += ' host = a4pvap068';
+                if (addHost2) hosts += ' host = a5pvap039';
+                if (addHost3) hosts += ' host = a5pvap040';
+                if (addHost4) hosts += ' host = a4pvap1003';
+                if (addHost5) hosts += ' host = a4pvap1004';
+                output = `index = "application_omnipay" ${hosts} ${output} | reverse`;
             }
+
+            document.getElementById('outputNumbers').value = output; // Update output
         }
-
-        // Check if the current line contains "AND" after a number
-        if (line.trim().endsWith(" AND")) {
-            useAnd = true; // Set flag to use "AND" for the next line
-            modifiedLine = modifiedLine.replace(" AND", ""); // Remove the "AND" from the line
-        }
-
-        modifiedLines.push(modifiedLine);
-    }
-
-    // Construct the output with the correct separators
-    let output = "";
-    for (let i = 0; i < modifiedLines.length; i++) {
-        output += modifiedLines[i];
-        if (i < modifiedLines.length - 1) {
-            output += useAnd ? ' AND ' : ' OR ';
-            useAnd = false; // Reset the flag after using "AND"
-        }
-    }
-
-    // Add index and host options if checkboxes are checked
-    if (addIndex) {
-        let hosts = '';
-        if (addHost1) hosts += ' host = a4pvap068';
-        if (addHost2) hosts += ' host = a5pvap039';
-        if (addHost3) hosts += ' host = a5pvap040';
-        if (addHost4) hosts += ' host = a4pvap1003';
-        if (addHost5) hosts += ' host = a4pvap1004';
-        output = `index = "application_omnipay" ${hosts} ${output} | reverse`;
-    }
-
-    document.getElementById('outputNumbers').value = output;
-}
 
         function updateLineNumbers() {
-            const input = document.getElementById('inputNumbers');
-            const lineNumbers = document.getElementById('lineNumbers');
-            const lines = input.value.split('\n').filter(line => line.trim() !== ''); // Exclude empty lines
-            const totalLines = lines.length;
-
-            // Generate line numbers
-            lineNumbers.innerHTML = Array(totalLines).fill(0).map((_, i) => i + 1).join('<br>');
-
-            // Update total line count status
+            const totalLines = inputEditor.getModel().getLineCount(); // Get total lines from Monaco Editor
             document.getElementById('lineStatus').textContent = `Total Lines: ${totalLines}`;
         }
 
         function removeEmptyLines() {
-            const input = document.getElementById('inputNumbers');
-            const nonEmptyLines = input.value.split('\n').filter(line => line.trim() !== ''); // Remove empty lines
-            input.value = nonEmptyLines.join('\n');
-            updateLineNumbers(); // Update line numbers after removing empty lines
-            modifyNumbers(); // Update Splunk search after removing empty lines
+            const input = inputEditor.getValue();
+            const nonEmptyLines = input.split('\n').filter(line => line.trim() !== '');
+            inputEditor.setValue(nonEmptyLines.join('\n'));
+            updateLineNumbers();
+            modifyNumbers();
         }
 
         function copyToClipboard() {

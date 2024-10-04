@@ -12,3 +12,4 @@ def SplunkRRN(request):
 
 def json2yaml(request):
     return render(request, 'first_page/json2yaml.html')
+
