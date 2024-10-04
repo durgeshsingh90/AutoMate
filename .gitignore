@@ -1,2 +1,3 @@
 AutoMate/logs/*.log
 AutoMate/db.sqlite3
+AutoMate/sender/static/sender/testcases/*
