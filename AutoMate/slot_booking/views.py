@@ -209,12 +209,12 @@ def get_bookings(request):
 
     events = []
     
-    # Load the servers with color coding
+    # Load the servers with color coding and server names
     servers = {}
     if CONFIG_DIR.joinpath('servers.json').exists():
         with open(CONFIG_DIR.joinpath('servers.json'), 'r') as servers_file:
             servers_list = json.load(servers_file)
-            servers = {server['hostname']: server['color'] for server in servers_list}
+            servers = {server['hostname']: server for server in servers_list}
 
     # Map repeat_days (e.g., "Tuesday") to crontab day of week numbers
     day_map = {
@@ -224,15 +224,17 @@ def get_bookings(request):
 
     for booking in bookings:
         try:
+            # Retrieve the server information
+            server_info = servers.get(booking['server'], {'color': '#000000', 'server_name': booking['server']})
+            server_color = server_info.get('color', '#000000')  # Default to black if no color is found
+            server_name = server_info.get('server_name', booking['server'])
+
             # Handle open slot where start_date and end_date are empty strings
             if booking['start_date'] == "" and booking['end_date'] == "":
                 # Open slot booking logic (based on repeat_days)
                 repeat_days = booking.get('repeat_days', [])
                 time_slots = ', '.join(booking['time_slots']) if isinstance(booking['time_slots'], list) else booking['time_slots']
                 scheme_types = ', '.join(booking['scheme_types']) if isinstance(booking['scheme_types'], list) else booking['scheme_types']
-
-                # Retrieve the color based on the server hostname
-                server_color = servers.get(booking['server'], '#000000')  # Default to black if no color is found
 
                 # For each month, generate events for the specified repeat days
                 for month in range(1, 13):  # Loop through all months
@@ -248,7 +250,7 @@ def get_bookings(request):
                         if date.weekday() in [day_map[day] for day in repeat_days]:
                             events.append({
                                 'id': booking['booking_id'],
-                                'title': f"Open Slot - {time_slots} - {scheme_types}",
+                                'title': f"Open Slot - {time_slots} - {server_name} - {scheme_types}",  # Include server_name
                                 'start': date.strftime('%Y-%m-%d'),  # Use the date for the event
                                 'end': None,  # No end date for each event
                                 'color': server_color,  # Assign color based on the server
@@ -258,6 +260,7 @@ def get_bookings(request):
                                     'project_name': booking['project_name'],
                                     'owner': booking['owner'],
                                     'server': booking['server'],
+                                    'server_name': server_name,  # Include server name in extended properties
                                     'scheme_types': scheme_types,
                                     'timeslot': time_slots,
                                     'start_date': 'Open',  # Represent as open
@@ -272,14 +275,12 @@ def get_bookings(request):
                 start_date = datetime.strptime(booking['start_date'], '%d/%m/%Y')
                 end_date = datetime.strptime(booking['end_date'], '%d/%m/%Y')
 
-                server_color = servers.get(booking['server'], '#000000')  # Default to black if no color is found
-
                 time_slots = ', '.join(booking['time_slots']) if isinstance(booking['time_slots'], list) else booking['time_slots']
                 scheme_types = ', '.join(booking['scheme_types']) if isinstance(booking['scheme_types'], list) else booking['scheme_types']
 
                 events.append({
                     'id': booking['booking_id'],
-                    'title': f"{time_slots} - {scheme_types}",
+                    'title': f"{time_slots} - {server_name} - {scheme_types}",  # Include server_name
                     'start': start_date.strftime('%Y-%m-%d'),
                     'end': end_date.strftime('%Y-%m-%d'),
                     'color': server_color,  # Assign color based on the server
@@ -290,6 +291,7 @@ def get_bookings(request):
                         'psp_name': booking.get('psp_name', 'N/A'),  # Include PSP name if available
                         'owner': booking['owner'],
                         'server': booking['server'],
+                        'server_name': server_name,  # Include server name in extended properties
                         'scheme_types': scheme_types,
                         'timeslot': time_slots,
                         'start_date': booking['start_date'],

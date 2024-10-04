@@ -34,6 +34,13 @@ button#jumpToDate {
 /* Optionally, remove underlines from titles or text */
 .fc-event-title {
     text-decoration: none !important; /* Ensures no underline for event titles */
+    white-space: normal !important;  /* Allow the title to wrap */
+    word-wrap: break-word;           /* Break long words if needed */
+}
+/* Optional: Add some padding to the event for better readability */
+.fc-daygrid-event {
+    padding: 5px;                    /* Add padding inside the event box */
+    font-size: 12px;                 /* Adjust font size if necessary */
 }
 
 /* General rule for calendar text */

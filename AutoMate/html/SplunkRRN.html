@@ -129,6 +129,7 @@
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js" integrity="sha512-EkNKj8EZ5ddm9fyR0qJ4ufyjzC1MQcvBQFjUtA33sShb3y8uEr3d3wGp/Jmg3KoUti/2WkO+gjO2F9Y1slCOqg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
     <script>
         document.addEventListener('DOMContentLoaded', (event) => {
@@ -156,23 +157,22 @@
     let modifiedLines = [];
     let useAnd = false; // To keep track if "AND" should be used between lines
 
-    let fullInputText = lines.join('').replace(/\s/g, ''); // Combine all lines into one string, removing spaces
-    if (fullInputText.length > 30) {
-        // If the total length of the numbers is more than 30, just remove the "3" before every digit
-        let cleanedNumber = '';
-        for (let i = 0; i < fullInputText.length; i += 2) {
-            if (fullInputText[i] === '3') {
-                cleanedNumber += fullInputText[i + 1];
-            }
-        }
-        // Output the cleaned number directly without any AND/OR logic
-        document.getElementById('outputNumbers').value = cleanedNumber;
-        return; // Skip further processing
-    }
-
     for (let i = 0; i < lines.length; i++) {
-        let line = lines[i];
+        let line = lines[i].replace(/\s/g, ''); // Remove spaces from each line
         let modifiedLine = line;
+
+        // Check if the line contains more than 30 digits
+        if (line.length > 30) {
+            let cleanedNumber = '';
+            // Remove '3' before every digit (hexadecimal removal)
+            for (let j = 0; j < line.length; j += 2) {
+                if (line[j] === '3') {
+                    cleanedNumber += line[j + 1];
+                }
+            }
+            modifiedLines.push(cleanedNumber); // Just push the cleaned number
+            continue; // Skip further processing for this line
+        }
 
         // Check for 12-digit number
         let match12 = line.match(/"(\d{12})"/) || line.match(/(\d{12})/);
