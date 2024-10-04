@@ -3,59 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hexadecimal Converter</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Browse JSON Test Cases</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .file-content {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            height: 300px;
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <h1 class="mt-5 text-center">Hexadecimal Converter</h1>
-        <div class="row">
-            <div class="col-md-6">
-                <label for="inputData" class="form-label">Input Data (JSON format)</label>
-                <textarea class="form-control" id="inputData" rows="15" placeholder='Paste your JSON data here'></textarea>
-            </div>
-            <div class="col-md-6">
-                <label for="outputHex" class="form-label">Hexadecimal Output</label>
-                <textarea class="form-control" id="outputHex" rows="15" readonly placeholder="Hexadecimal message will appear here"></textarea>
+    <div class="container mt-5">
+        <h2 class="text-center">Browse JSON Test Cases</h2>
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <ul id="fileList" class="list-group mb-3">
+                    <!-- Files will be populated here by JavaScript -->
+                </ul>
+                <div id="fileContent" class="file-content">
+                    <p>Select a JSON file to view its content here.</p>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        // Function to convert string to hex
-        function stringToHex(str) {
-            return Array.from(str).map(c => c.charCodeAt(0).toString(16).padStart(2, '0')).join('');
-        }
+        // Fetch JSON files and display in the file list
+        function fetchJsonFiles() {
+            fetch('/get-json-files')
+            .then(response => response.json())
+            .then(files => {
+                const fileList = document.getElementById('fileList');
+                fileList.innerHTML = ''; // Clear the list
 
-        // Function to process object and convert values to hex
-        function convertToHex(obj) {
-            let hexString = '';
-
-            for (let key in obj) {
-                if (typeof obj[key] === 'object') {
-                    hexString += convertToHex(obj[key]);
+                if (files.length > 0) {
+                    files.forEach(file => {
+                        const listItem = document.createElement('li');
+                        listItem.className = 'list-group-item';
+                        listItem.textContent = file;
+                        listItem.addEventListener('click', () => fetchFileContent(file));
+                        fileList.appendChild(listItem);
+                    });
                 } else {
-                    hexString += stringToHex(obj[key]);
+                    const listItem = document.createElement('li');
+                    listItem.className = 'list-group-item';
+                    listItem.textContent = 'No JSON files found';
+                    fileList.appendChild(listItem);
                 }
-            }
-
-            return hexString;
+            });
         }
 
-        // Function to handle real-time conversion
-        function handleRealTimeConversion() {
-            const inputData = document.getElementById('inputData').value;
-            try {
-                const jsonData = JSON.parse(inputData); // Parse input JSON data
-                const hexResult = convertToHex(jsonData); // Convert to hex
-                document.getElementById('outputHex').value = hexResult; // Display the result
-            } catch (error) {
-                document.getElementById('outputHex').value = 'Invalid JSON format. Please check your input.';
-            }
+        // Fetch and display the content of the selected file
+        function fetchFileContent(filename) {
+            fetch(`/get-json-content/${filename}`)
+            .then(response => response.text())
+            .then(content => {
+                const fileContentDiv = document.getElementById('fileContent');
+                try {
+                    const jsonContent = JSON.parse(content);
+                    fileContentDiv.textContent = JSON.stringify(jsonContent, null, 2);
+                } catch (error) {
+                    fileContentDiv.textContent = "Error parsing JSON file: " + error.message;
+                }
+            });
         }
 
-        // Real-time conversion on input
-        document.getElementById('inputData').addEventListener('input', handleRealTimeConversion);
+        // Automatically fetch and display files when the page loads
+        window.onload = function() {
+            fetchJsonFiles();
+        };
     </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

@@ -1,144 +1,220 @@
-// Load JSON definitions on page load
-let fieldDefinitions = {};
+let currentFile = '';
 
-window.onload = function() {
-    fetch('/get-field-definitions/')
+// Function to load all JSON files dynamically (including folder structure)
+function loadJsonFiles() {
+    fetch('/sender/get-json-files/')
     .then(response => response.json())
-    .then(data => {
-        fieldDefinitions = data.fields; // Access the 'fields' object
-        console.log('Field definitions loaded:', fieldDefinitions);
+    .then(folderStructure => {
+        const fileListDiv = document.getElementById('fileList');
+        fileListDiv.innerHTML = ''; // Clear the list
+
+        // Utility function to create valid IDs from folder and file names
+        function sanitizeId(name) {
+            // Replace non-alphanumeric characters with underscores
+            let sanitized = name.replace(/[^a-zA-Z0-9-_]/g, '_');
+
+            // If the name starts with a number, prepend an underscore to make it a valid HTML ID
+            if (/^\d/.test(sanitized)) {
+                sanitized = '_' + sanitized;
+            }
+
+            return sanitized;
+        }
+
+        // Recursive function to create folder tree structure
+// Recursive function to create folder tree structure
+// Recursive function to create folder tree structure
+function createFolderTree(folder, parentElement, parentId, currentPath = '', level = 0) {
+    Object.keys(folder).forEach((key) => {
+        const sanitizedId = sanitizeId(parentId + key);  // Valid HTML ID
+        const newPath = currentPath ? `${currentPath}/${key}` : key;  // Keep the folder structure for file loading
+
+        const indent = '&nbsp;'.repeat(level * 4);
+
+        if (folder[key] === null) {
+            // It's a file, create a draggable file link with indentation
+            const listItem = document.createElement('div');
+            listItem.className = 'list-group-item';
+            listItem.innerHTML = `${indent}📄 ${key}`;
+            makeFileDraggable(listItem, newPath);  // Make file draggable
+            parentElement.appendChild(listItem);
+        } else {
+            // It's a folder, create a droppable folder with indentation
+            const folderItem = document.createElement('div');
+            folderItem.className = 'folder-item';
+            folderItem.innerHTML = `
+                <div data-bs-toggle="collapse" href="#${sanitizedId}" style="cursor: pointer;">
+                    ${indent}📁 <strong>${key}</strong>
+                </div>
+                <div id="${sanitizedId}" class="collapse"></div>
+            `;
+            makeFolderDroppable(folderItem, newPath);  // Make folder droppable
+            parentElement.appendChild(folderItem);
+
+            // Recursively create the folder structure
+            createFolderTree(folder[key], folderItem.querySelector(`#${sanitizedId}`), sanitizedId + '-', newPath, level + 1);
+        }
+    });
+}
+
+
+
+        createFolderTree(folderStructure, fileListDiv, '');
     })
     .catch(error => {
-        console.error('Error loading field definitions:', error);
+        alert('Error loading files: ' + error.message);
     });
-};
+}
 
-function validateBitmaps() {
-    const inputMessage = document.getElementById("inputMessage").value;
-    const validationResult = document.getElementById("validationResult");
+// Load JSON for editing
+// Load JSON for editing
+function loadFile(filename, fullPath) {
+    // Construct the file path from the actual folder structure, without sanitizing
+    const filePath = `/static/sender/testcases/${fullPath}`;
+    console.log('Fetching file from:', filePath);  // Log the file path to debug
 
-    // Parse the input message as JSON
-    let inputObj;
+    fetch(filePath)
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();  // Expect the response to be JSON
+    })
+    .then(content => {
+        currentFile = filename;
+        const editor = document.getElementById('jsonEditor');
+        editor.value = JSON.stringify(content, null, 2); // Format JSON for easy editing
+        editor.disabled = false;
+        document.getElementById('saveBtn').disabled = false; // Enable save button
+    })
+    .catch(error => {
+        console.error('Error loading file:', error);  // Log the error for debugging
+        alert('Error loading file: ' + error.message);
+    });
+}
+
+
+
+// Save edited JSON file back to the server
+document.getElementById('saveBtn').addEventListener('click', function() {
+    const editor = document.getElementById('jsonEditor');
+    let updatedContent;
+
     try {
-        inputObj = JSON.parse(inputMessage);
-    } catch (e) {
-        validationResult.innerHTML = "<span class='error'>Invalid JSON format!</span>";
+        updatedContent = JSON.parse(editor.value); // Validate JSON format
+    } catch (error) {
+        alert('Invalid JSON format: ' + error.message);
         return;
     }
 
-    let errors = [];
+    // Send the updated JSON back to the server
+    fetch(`/sender/save-json/${currentFile}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken'),  // Django's CSRF protection
+        },
+        body: JSON.stringify(updatedContent)
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert(data.message);
+    })
+    .catch(error => {
+        alert('Error saving file: ' + error.message);
+    });
+});
 
-    // Loop through the input bitmaps and validate against JSON definitions
-    for (const fieldKey in inputObj) {
-        if (fieldKey === "mti") {
-            continue; // Skip MTI as it's not part of the fields definitions
+// CSRF token function (for Django)
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '='))
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
         }
+    }
+    return cookieValue;
+}
 
-        let fieldNumber = fieldKey.replace("BM", "").padStart(3, '0'); // Normalize field number
-        let fieldValue = inputObj[fieldKey];
+// Automatically load JSON files when the page loads
+window.onload = function() {
+    loadJsonFiles();
+};
 
-        if (!fieldDefinitions[fieldNumber]) {
-            errors.push(`Field ${fieldNumber} is not defined in the field definitions.`);
-            continue;
-        }
-
-        let fieldDef = fieldDefinitions[fieldNumber];
-        let expectedLength = fieldDef.length || fieldDef.max_length;
-
-        if (fieldNumber === "055") {
-            // Handle DE055 with subfields
-            errors.push(...validateDE055(fieldValue, fieldDef.subfields));
-        } else if (typeof fieldValue === "object") {
-            // Handle composite fields like BM060
-            errors.push(...validateCompositeField(fieldValue, fieldNumber, fieldDef));
-        } else {
-            // Validate field length
-            if (expectedLength && fieldValue.toString().length > expectedLength) {
-                errors.push(`Field ${fieldNumber} (${fieldDef.name}) exceeds the maximum length of ${expectedLength}.`);
+// Handle new folder creation
+document.getElementById('newFolderBtn').addEventListener('click', function() {
+    const folderName = prompt('Enter new folder name:');
+    if (folderName) {
+        // Send the new folder name to the back-end to create the folder
+        fetch('/sender/create-folder/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken'),  // CSRF token for Django
+            },
+            body: JSON.stringify({ folderName })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Folder created successfully!');
+                loadJsonFiles();  // Reload the file explorer to show the new folder
+            } else {
+                alert('Error creating folder: ' + data.message);
             }
-        }
+        })
+        .catch(error => {
+            alert('Error: ' + error.message);
+        });
     }
+});
 
-    // Show validation result
-    if (errors.length > 0) {
-        validationResult.innerHTML = "<span class='error'>" + errors.join('<br>') + "</span>";
-    } else {
-        validationResult.innerHTML = "<span>Validation passed!</span>";
-    }
+// Add draggable attribute to files and handle drag events
+function makeFileDraggable(fileElement, filePath) {
+    fileElement.setAttribute('draggable', true);
+    fileElement.addEventListener('dragstart', (event) => {
+        event.dataTransfer.setData('filePath', filePath);  // Store the file path in the drag event
+    });
 }
 
-function validateDE055(fieldValue, subfields) {
-    let errors = [];
-    // Assuming fieldValue is a hex string representing TLV data
-    // Implement TLV parsing logic here
-    // For illustration purposes, let's assume fieldValue is an object
-    let de055Fields;
-    try {
-        // Convert fieldValue from hex string to object if necessary
-        de055Fields = parseTLV(fieldValue); // You need to implement parseTLV
-    } catch (e) {
-        errors.push("Invalid DE055 format.");
-        return errors;
-    }
+// Make folders droppable to accept files
+function makeFolderDroppable(folderElement, folderPath) {
+    folderElement.addEventListener('dragover', (event) => {
+        event.preventDefault();  // Allow dropping
+    });
 
-    for (const tag in de055Fields) {
-        if (!subfields[tag]) {
-            errors.push(`Subfield ${tag} is not defined in DE055 subfields.`);
-            continue;
+    folderElement.addEventListener('drop', (event) => {
+        event.preventDefault();
+        const draggedFilePath = event.dataTransfer.getData('filePath');  // Get the dragged file path
+        if (draggedFilePath) {
+            moveFile(draggedFilePath, folderPath);  // Move the file to the new folder
         }
-        let expectedLength = subfields[tag].max_length;
-        let value = de055Fields[tag];
-
-        if (value.length > expectedLength * 2) { // Multiply by 2 if value is in hex
-            errors.push(`Subfield ${tag} (${subfields[tag].name}) exceeds maximum length of ${expectedLength}.`);
-        }
-    }
-
-    return errors;
+    });
 }
 
-function validateCompositeField(fieldValue, fieldNumber, fieldDef) {
-    let errors = [];
-    // Implement validation logic for composite fields
-    for (const subfield in fieldValue) {
-        // You can define subfield validations here
-        // For now, we can just check that the subfields exist
-        if (!fieldDef.subfields || !fieldDef.subfields[subfield]) {
-            errors.push(`Subfield ${subfield} in Field ${fieldNumber} is not defined.`);
+// Function to move the file to a new folder
+function moveFile(filePath, targetFolderPath) {
+    fetch('/sender/move-file/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken'),
+        },
+        body: JSON.stringify({ filePath, targetFolderPath })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('File moved successfully!');
+            loadJsonFiles();  // Reload the file explorer
+        } else {
+            alert('Error moving file: ' + data.message);
         }
-    }
-    return errors;
-}
-
-function parseTLV(hexString) {
-    // Implement TLV parsing logic here
-    // This function should return an object with tag-value pairs
-    // For example: { "9F1A": "1234", "5F2A": "5678" }
-    let result = {};
-    let index = 0;
-
-    while (index < hexString.length) {
-        // Read tag
-        let tag = hexString.substr(index, 2);
-        index += 2;
-
-        // Check for multi-byte tag
-        if ((parseInt(tag, 16) & 0x1F) === 0x1F) {
-            tag += hexString.substr(index, 2);
-            index += 2;
-        }
-
-        // Read length
-        let lengthHex = hexString.substr(index, 2);
-        index += 2;
-        let length = parseInt(lengthHex, 16);
-
-        // Read value
-        let value = hexString.substr(index, length * 2);
-        index += length * 2;
-
-        result[tag] = value;
-    }
-
-    return result;
+    })
+    .catch(error => {
+        alert('Error: ' + error.message);
+    });
 }

@@ -1,51 +1,37 @@
-* {
-    box-sizing: border-box;
-}
 body, html {
-    margin: 0;
-    padding: 0;
     height: 100%;
-    font-family: Arial, sans-serif;
+    margin: 0;
 }
-.container {
-    display: flex;
-    height: 100vh;
+
+.container-fluid {
+    height: 100%;
 }
-.explorer {
-    width: 20%;
-    background-color: #f4f4f4;
-    padding: 20px;
-    border-right: 2px solid #ccc;
+
+.row {
+    height: 100%;
 }
-.middle-box {
-    width: 60%;
-    padding: 20px;
+
+.file-explorer {
+    height: 100%;
+    overflow-y: auto;
+    border-right: 1px solid #ddd;
+    padding: 10px;
+    background-color: #f8f9fa;
 }
-.right-box {
-    width: 20%;
-    padding: 20px;
-    background-color: #f4f4f4;
-    border-left: 2px solid #ccc;
+
+.file-content {
+    background-color: #f8f9fa;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    height: 500px;
 }
+
 textarea {
     width: 100%;
-    height: 100%;
+    height: 500px;
     padding: 10px;
-    border: 1px solid #ccc;
-    font-size: 16px;
-    resize: none;
-}
-button {
-    margin-top: 10px;
-    padding: 10px;
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    cursor: pointer;
-}
-button:hover {
-    background-color: #45a049;
-}
-.error {
-    color: red;
+    border-radius: 5px;
 }

@@ -1,0 +1,14 @@
+[
+    {
+        "client_name": "TrusTPayments",
+        "ClientID": "49"
+    },
+    {
+        "client_name": "Sumup",
+        "ClientID": "20"
+    },
+    {
+        "client_name": "PXP",
+        "ClientID": "8"
+    }
+]
