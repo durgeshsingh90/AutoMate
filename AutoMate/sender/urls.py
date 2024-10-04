@@ -4,10 +4,7 @@ from . import views
 app_name = 'sender'
 
 urlpatterns = [
-    path('', views.home, name='home'),
-    path('server-config/', views.server_config, name='server_config'),
-    path('send-transaction/<int:server_id>/', views.send_transaction, name='send_transaction'),
-    path('yaml-schema-config/', views.yaml_schema_config, name='yaml_schema_config'),
-    path('get-field-definitions/', views.get_field_definitions, name='get_field_definitions'),
-
+    path('', views.home, name='home'),  # Home page to display Monaco editor
+    path('save_test_case/', views.save_test_case, name='save_test_case'),  # URL for saving test case
+    # path('edit_test_case/<str:test_case_name>/', views.edit_test_case, name='edit_test_case'),  # Edit test case
 ]

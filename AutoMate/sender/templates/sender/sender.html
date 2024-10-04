@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Monaco Editor with Schemes</title>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #controls {
+      padding: 10px;
+      background-color: #f4f4f4;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    #editor {
+      flex-grow: 1;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <!-- Control Section -->
+  <div id="controls">
+    <label for="testCaseName">Test Case Name:</label>
+    <input type="text" id="testCaseName" placeholder="Enter test case name">
+
+    <label for="testType">Select Test Type:</label>
+    <select id="testType">
+      {% for scheme in schemes %}
+        <option value="{{ scheme }}">{{ scheme }}</option>
+      {% endfor %}
+    </select>
+
+    <button id="saveButton">Save</button>
+  </div>
+
+  <!-- Monaco Editor Section -->
+  <div id="editor"></div>
+
+  <!-- Monaco Editor CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.0/min/vs/loader.min.js"></script>
+
+  <script>
+    // Initialize Monaco editor
+    let editor;
+    require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.0/min/vs' } });
+    require(['vs/editor/editor.main'], function() {
+      editor = monaco.editor.create(document.getElementById('editor'), {
+        value: '', // Start with an empty editor
+        language: 'json', // Set to JSON mode
+        theme: 'vs-dark', // Dark theme
+        automaticLayout: true, // Auto resize based on container
+      });
+    });
+
+    // Save button functionality
+    document.getElementById('saveButton').addEventListener('click', function() {
+      const testCaseName = document.getElementById('testCaseName').value;
+      const testType = document.getElementById('testType').value;
+      const editorContent = editor.getValue(); // Get the editor's content (JSON)
+
+      if (testCaseName.trim() === '') {
+        alert('Please enter a test case name.');
+        return;
+      }
+
+      // Prepare the data to send to the server
+      const data = {
+        testCaseName: testCaseName,
+        testType: testType,
+        content: editorContent
+      };
+
+      // Send data to Django backend using fetch API
+      fetch('/sender/save_test_case/', {  // Use the correct path
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify(data)
+    })
+    
+    .then(response => response.json())
+    .then(result => {
+        console.log(result);  // Log the server response
+        if (result.status === 'success') {
+            alert('Test case saved successfully!');
+        } else {
+            alert(`Error: ${result.message}`);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to save the test case.');
+    });
+    
+
+    });
+
+    // Function to get CSRF token for Django
+    function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].trim();
+          if (cookie.substring(0, name.length + 1) === (name + '=')) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
+        }
+      }
+      return cookieValue;
+    }
+  </script>
+</body>
+</html>
