@@ -35,5 +35,6 @@ urlpatterns = [
     path('splunkparser/', include('splunkparser.urls')),  # Include the URLs from the splunkparser app
     path('binblock/', include('binblock.urls')),
     path('slot_booking/', include('slot_booking.urls')),
+    path('html2emvco/', include('html2emvco.urls')),
 
 ]

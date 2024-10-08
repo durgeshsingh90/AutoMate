@@ -111,3 +111,30 @@ def move_file(request):
                 return JsonResponse({'success': False, 'message': 'File does not exist'}, status=404)
         except Exception as e:
             return JsonResponse({'success': False, 'message': str(e)}, status=500)
+@csrf_exempt
+def move_item(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            item_path = os.path.join(TEST_CASES_DIR, data.get('path'))
+            target_folder_path = os.path.join(TEST_CASES_DIR, data.get('targetFolderPath'))
+            item_type = data.get('itemType')
+
+            # Ensure the target folder exists
+            if not os.path.exists(target_folder_path):
+                return JsonResponse({'success': False, 'message': 'Target folder does not exist'}, status=400)
+
+            # Move the file or folder
+            if os.path.exists(item_path):
+                new_path = os.path.join(target_folder_path, os.path.basename(item_path))
+                if item_type == 'folder':
+                    # Move the folder (along with its contents)
+                    os.rename(item_path, new_path)
+                else:
+                    # Move the file
+                    os.rename(item_path, new_path)
+                return JsonResponse({'success': True})
+            else:
+                return JsonResponse({'success': False, 'message': f'{item_type.capitalize()} does not exist'}, status=404)
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': str(e)}, status=500)

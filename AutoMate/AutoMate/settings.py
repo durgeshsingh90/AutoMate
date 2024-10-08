@@ -50,7 +50,8 @@ INSTALLED_APPS = [
     'binblocking',
     'splunkparser',
     'binblock',
-    'slot_booking'
+    'slot_booking',
+    'html2emvco'
 ]
 
 # Logging configuration
@@ -178,11 +179,13 @@ STATICFILES_DIRS = [
     BASE_DIR / "splunkparser/static",
     BASE_DIR / "binblock/static",
     BASE_DIR / "slot_booking/static",
-
-
-
+    BASE_DIR / "html2emvco/static",
     # Add other app static directories as needed
 ]
+
+# Add a location for media uploads
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field

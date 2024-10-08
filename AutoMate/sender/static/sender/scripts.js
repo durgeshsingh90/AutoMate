@@ -21,25 +21,24 @@ function loadJsonFiles() {
             return sanitized;
         }
 
-        // Recursive function to create folder tree structure
-// Recursive function to create folder tree structure
 // Recursive function to create folder tree structure
 function createFolderTree(folder, parentElement, parentId, currentPath = '', level = 0) {
     Object.keys(folder).forEach((key) => {
         const sanitizedId = sanitizeId(parentId + key);  // Valid HTML ID
         const newPath = currentPath ? `${currentPath}/${key}` : key;  // Keep the folder structure for file loading
 
-        const indent = '&nbsp;'.repeat(level * 4);
+        const indent = '&nbsp;'.repeat(level * 4);  // Indent the file or folder
 
         if (folder[key] === null) {
-            // It's a file, create a draggable file link with indentation
+            // It's a file, create a clickable file link with indentation
             const listItem = document.createElement('div');
             listItem.className = 'list-group-item';
             listItem.innerHTML = `${indent}📄 ${key}`;
-            makeFileDraggable(listItem, newPath);  // Make file draggable
+            listItem.style.cursor = 'pointer';
+            listItem.onclick = () => loadFile(key, newPath);  // Pass the correct full path
             parentElement.appendChild(listItem);
         } else {
-            // It's a folder, create a droppable folder with indentation
+            // It's a folder, create a folder item with collapse behavior
             const folderItem = document.createElement('div');
             folderItem.className = 'folder-item';
             folderItem.innerHTML = `
@@ -48,14 +47,15 @@ function createFolderTree(folder, parentElement, parentId, currentPath = '', lev
                 </div>
                 <div id="${sanitizedId}" class="collapse"></div>
             `;
-            makeFolderDroppable(folderItem, newPath);  // Make folder droppable
             parentElement.appendChild(folderItem);
 
-            // Recursively create the folder structure
+            // Recursively create the folder structure inside the collapsible div
             createFolderTree(folder[key], folderItem.querySelector(`#${sanitizedId}`), sanitizedId + '-', newPath, level + 1);
         }
     });
 }
+
+
 
 
 
@@ -67,25 +67,25 @@ function createFolderTree(folder, parentElement, parentId, currentPath = '', lev
 }
 
 // Load JSON for editing
-// Load JSON for editing
 function loadFile(filename, fullPath) {
-    // Construct the file path from the actual folder structure, without sanitizing
     const filePath = `/static/sender/testcases/${fullPath}`;
-    console.log('Fetching file from:', filePath);  // Log the file path to debug
+    console.log('Fetching file from:', filePath);  // Debug the file path
 
     fetch(filePath)
     .then(response => {
+        console.log('Response status:', response.status);  // Check the response status
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         return response.json();  // Expect the response to be JSON
     })
     .then(content => {
+        console.log('File content loaded:', content);  // Log the file content
         currentFile = filename;
         const editor = document.getElementById('jsonEditor');
-        editor.value = JSON.stringify(content, null, 2); // Format JSON for easy editing
+        editor.value = JSON.stringify(content, null, 2);  // Format JSON for easy editing
         editor.disabled = false;
-        document.getElementById('saveBtn').disabled = false; // Enable save button
+        document.getElementById('saveBtn').disabled = false;  // Enable save button
     })
     .catch(error => {
         console.error('Error loading file:', error);  // Log the error for debugging
@@ -212,6 +212,62 @@ function moveFile(filePath, targetFolderPath) {
             loadJsonFiles();  // Reload the file explorer
         } else {
             alert('Error moving file: ' + data.message);
+        }
+    })
+    .catch(error => {
+        alert('Error: ' + error.message);
+    });
+}
+
+// Add draggable attribute to files and handle drag events
+function makeDraggable(element, path) {
+    element.setAttribute('draggable', true);
+    element.addEventListener('dragstart', (event) => {
+        event.dataTransfer.setData('path', path);  // Store the file or folder path in the drag event
+        event.dataTransfer.setData('type', element.getAttribute('data-type'));  // Store the type (file/folder)
+    });
+}
+
+// Make folders droppable to accept files or folders
+function makeDroppable(folderElement, folderPath) {
+    folderElement.addEventListener('dragover', (event) => {
+        event.preventDefault();  // Allow dropping
+    });
+
+    folderElement.addEventListener('drop', (event) => {
+        event.preventDefault();
+        const draggedPath = event.dataTransfer.getData('path');  // Get the dragged file or folder path
+        const draggedType = event.dataTransfer.getData('type');  // Get the type (file or folder)
+
+        if (draggedPath) {
+            // Avoid moving a folder into itself or its own subfolders
+            if (folderPath.startsWith(draggedPath)) {
+                alert('Cannot move a folder into itself or its own subfolders.');
+                return;
+            }
+
+            moveItem(draggedPath, folderPath, draggedType);  // Move the file or folder to the new location
+        }
+    });
+}
+
+// Function to move the file or folder to a new location
+function moveItem(path, targetFolderPath, itemType) {
+    fetch('/sender/move-item/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken'),
+        },
+        body: JSON.stringify({ path, targetFolderPath, itemType })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(`${itemType} moved successfully!`);
+            loadJsonFiles();  // Reload the file explorer
+        } else {
+            alert('Error moving item: ' + data.message);
         }
     })
     .catch(error => {

@@ -3,82 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Browse JSON Test Cases</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        .file-content {
-            background-color: #f8f9fa;
-            padding: 20px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            overflow-x: auto;
-            white-space: pre-wrap;
-            height: 300px;
-        }
-    </style>
+    <title>File Explorer</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.12/themes/default/style.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.12/jstree.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/monaco-editor/min/vs/loader.js"></script>
 </head>
 <body>
-    <div class="container mt-5">
-        <h2 class="text-center">Browse JSON Test Cases</h2>
-        <div class="row justify-content-center">
-            <div class="col-md-8">
-                <ul id="fileList" class="list-group mb-3">
-                    <!-- Files will be populated here by JavaScript -->
-                </ul>
-                <div id="fileContent" class="file-content">
-                    <p>Select a JSON file to view its content here.</p>
-                </div>
-            </div>
-        </div>
-    </div>
+    <div id="file-explorer"></div>
+    <div id="editor" style="height:400px; width:100%;"></div>
 
     <script>
-        // Fetch JSON files and display in the file list
-        function fetchJsonFiles() {
-            fetch('/get-json-files')
-            .then(response => response.json())
-            .then(files => {
-                const fileList = document.getElementById('fileList');
-                fileList.innerHTML = ''; // Clear the list
+        // Initialize jsTree for file explorer
+        $('#file-explorer').jstree({
+            'core': {
+                'data': [
+                    { "id": "1", "parent": "#", "text": "Root Folder" },
+                    { "id": "2", "parent": "1", "text": "File 1.txt" },
+                    { "id": "3", "parent": "1", "text": "File 2.txt" }
+                ]
+            }
+        });
 
-                if (files.length > 0) {
-                    files.forEach(file => {
-                        const listItem = document.createElement('li');
-                        listItem.className = 'list-group-item';
-                        listItem.textContent = file;
-                        listItem.addEventListener('click', () => fetchFileContent(file));
-                        fileList.appendChild(listItem);
+        // On file select, load content into Monaco Editor
+        $('#file-explorer').on("select_node.jstree", function (e, data) {
+            if (data.node.text.includes('.txt')) {
+                // Load file content (this will be done via AJAX)
+                var content = "// This is the content of " + data.node.text;
+                require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor/min/vs' }});
+                require(['vs/editor/editor.main'], function () {
+                    monaco.editor.create(document.getElementById('editor'), {
+                        value: content,
+                        language: 'javascript'
                     });
-                } else {
-                    const listItem = document.createElement('li');
-                    listItem.className = 'list-group-item';
-                    listItem.textContent = 'No JSON files found';
-                    fileList.appendChild(listItem);
-                }
-            });
-        }
-
-        // Fetch and display the content of the selected file
-        function fetchFileContent(filename) {
-            fetch(`/get-json-content/${filename}`)
-            .then(response => response.text())
-            .then(content => {
-                const fileContentDiv = document.getElementById('fileContent');
-                try {
-                    const jsonContent = JSON.parse(content);
-                    fileContentDiv.textContent = JSON.stringify(jsonContent, null, 2);
-                } catch (error) {
-                    fileContentDiv.textContent = "Error parsing JSON file: " + error.message;
-                }
-            });
-        }
-
-        // Automatically fetch and display files when the page loads
-        window.onload = function() {
-            fetchJsonFiles();
-        };
+                });
+            }
+        });
     </script>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
