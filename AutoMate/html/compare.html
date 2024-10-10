@@ -3,29 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monaco Diff Editor with Persistence and Language Detection</title>
+    <title>Real-time Comparison</title>
     <link rel="stylesheet" href="https://unpkg.com/monaco-editor/min/vs/editor/editor.main.css">
-    <link rel="stylesheet" href="https://unpkg.com/monaco-editor/min/vs/editor/editor.main.nls.css">
     <style>
-        body {
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
+        /* Initial styles for light mode */
+        body.light-mode {
+            background-color: #f5f5f5;
+            color: #333;
+            font-family: Arial, sans-serif;
+        }
+
+        body.dark-mode {
             background-color: #121212;
             color: #e0e0e0;
-            font-family: Arial, sans-serif;
         }
 
         h1 {
             text-align: center;
         }
 
+        /* Responsive editor container */
         #editorContainer {
-            flex-grow: 1;
+            height: calc(100vh - 120px);
+            width: 100%;
+            border: 1px solid #ccc;
+            margin-top: 20px;
             display: flex;
-            height: calc(100vh - 120px); /* Deduct space for header and status bar */
+        }
+
+        /* Each editor should fill 50% of the screen */
+        .editor {
+            width: 50%;
+            height: 100%;
         }
 
         #statusBar {
@@ -34,10 +43,20 @@
             padding: 5px 10px;
             font-family: monospace;
             font-size: 12px;
+        }
+
+        /* Dark mode for status bar */
+        body.dark-mode #statusBar {
             background-color: #2c2c2c;
             color: #ffffff;
         }
 
+        body.light-mode #statusBar {
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        /* Toggle button */
         #darkModeToggle {
             position: absolute;
             top: 20px;
@@ -59,24 +78,37 @@
 </head>
 <body class="light-mode">
 
-    <h1>Monaco Diff Editor with Persistence and Language Detection</h1>
+    <h1>Real-time Comparison</h1>
     <button id="darkModeToggle">Dark Mode</button>
-    <div id="editorContainer"></div>
+    <div id="editorContainer">
+        <div id="editorOriginal" class="editor"></div>
+        <div id="editorModified" class="editor"></div>
+    </div>
     <div id="statusBar">
+        <span id="language">Language: JavaScript</span>
+        <span id="tagsCount">Tags/Keys: 0</span>
         <span id="lnCl">Ln 1, Col 1</span>
-        <span id="spaces">Spaces: 0</span>
-        <span id="sel">Sel: 0</span>
-        <span id="length">Length: 0</span>
-        <span id="lines">Lines: 0</span>
-        <span id="language">Language: plaintext</span>
-        <span id="tags">Tags/Keys: 0</span>
     </div>
 
     <script src="https://unpkg.com/monaco-editor/min/vs/loader.js"></script>
     <script>
+        // Track if dark mode is active
         let isDarkMode = false;
 
-        // Function to toggle dark/light mode
+        // Store text to avoid clearing on reload
+        function saveEditorContent() {
+            localStorage.setItem('originalContent', originalEditor.getValue());
+            localStorage.setItem('modifiedContent', modifiedEditor.getValue());
+        }
+
+        function loadEditorContent() {
+            return {
+                original: localStorage.getItem('originalContent') || '',
+                modified: localStorage.getItem('modifiedContent') || ''
+            };
+        }
+
+        // Function to switch between dark and light modes
         function toggleDarkMode() {
             const body = document.body;
             const darkModeToggle = document.getElementById('darkModeToggle');
@@ -85,180 +117,70 @@
                 body.classList.remove('dark-mode');
                 body.classList.add('light-mode');
                 darkModeToggle.textContent = 'Dark Mode';
-                isDarkMode = false;
                 monaco.editor.setTheme('vs');
             } else {
                 body.classList.remove('light-mode');
                 body.classList.add('dark-mode');
                 darkModeToggle.textContent = 'Light Mode';
-                isDarkMode = true;
                 monaco.editor.setTheme('vs-dark');
             }
+            isDarkMode = !isDarkMode;
             localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
         }
 
-        // Load the content of the editor from localStorage
-        function loadEditorContent(key) {
-            return localStorage.getItem(key) || '';
-        }
-
-        // Save the content of the editor to localStorage
-        function saveEditorContent(key, content) {
-            localStorage.setItem(key, content);
-        }
-
-        // Function to auto-detect the language
-        function detectLanguage(content) {
-            if (content.trim().startsWith('<')) {
-                return 'xml';
-            } else if (content.trim().startsWith('{') || content.trim().startsWith('[')) {
-                return 'json';
-            } else if (content.trim().startsWith('---') || content.includes(': ')) {
-                return 'yaml';
-            } else if (content.includes('function') || content.includes('console.log')) {
-                return 'javascript';
-            } else if (content.includes('def ') || content.includes('print(')) {
-                return 'python';
-            } else {
-                return 'plaintext'; // Default to plaintext
-            }
-        }
-
-        // Function to count the number of tags/keys in XML, JSON, or YAML
-        function countTags(content, language) {
-            if (language === 'json' || language === 'yaml') {
-                try {
-                    const parsed = JSON.parse(content);
-                    return Object.keys(parsed).length;
-                } catch (e) {
-                    return 0;
-                }
-            } else if (language === 'xml') {
-                const parser = new DOMParser();
-                const xmlDoc = parser.parseFromString(content, 'text/xml');
-                return xmlDoc.getElementsByTagName('*').length;
-            }
-            return 0; // For other languages, no tags/keys
-        }
-
-        // Load theme from localStorage
+        // Load theme from localStorage if available
         function loadThemeFromLocalStorage() {
             const savedTheme = localStorage.getItem('theme');
             if (savedTheme === 'dark') {
-                isDarkMode = true;
-                document.body.classList.remove('light-mode');
-                document.body.classList.add('dark-mode');
-                document.getElementById('darkModeToggle').textContent = 'Light Mode';
-                monaco.editor.setTheme('vs-dark');
-            } else {
-                isDarkMode = false;
-                document.body.classList.remove('dark-mode');
-                document.body.classList.add('light-mode');
-                document.getElementById('darkModeToggle').textContent = 'Dark Mode';
-                monaco.editor.setTheme('vs');
+                toggleDarkMode();
             }
         }
 
         require.config({ paths: { 'vs': 'https://unpkg.com/monaco-editor/min/vs' } });
         require(['vs/editor/editor.main'], function() {
-            const container = document.getElementById('editorContainer');
-
-            // Create a diff editor with advanced settings
-            const diffEditor = monaco.editor.createDiffEditor(container, {
-                enableSplitView: true,
-                readOnly: false,
-                renderSideBySide: true,
-                ignoreTrimWhitespace: false,
-                originalEditable: true,
-                wordWrap: "on",
-                lineNumbers: "on",
-                renderIndicators: true,
-                renderMinimap: true
+            const editorContent = loadEditorContent();
+            const originalEditor = monaco.editor.create(document.getElementById('editorOriginal'), {
+                value: editorContent.original,
+                language: 'javascript',
+                automaticLayout: true
             });
 
-            // Load content from localStorage for both editors
-            const originalCode = loadEditorContent('originalContent');
-            const modifiedCode = loadEditorContent('modifiedContent');
-
-            // Detect the language of the code
-            const originalLang = detectLanguage(originalCode);
-            const modifiedLang = detectLanguage(modifiedCode);
-
-            const originalModel = monaco.editor.createModel(originalCode, originalLang);
-            const modifiedModel = monaco.editor.createModel(modifiedCode, modifiedLang);
-
-            diffEditor.setModel({
-                original: originalModel,
-                modified: modifiedModel
+            const modifiedEditor = monaco.editor.create(document.getElementById('editorModified'), {
+                value: editorContent.modified,
+                language: 'javascript',
+                automaticLayout: true
             });
 
             // Status bar elements
             const lnCl = document.getElementById('lnCl');
-            const spaces = document.getElementById('spaces');
-            const sel = document.getElementById('sel');
-            const length = document.getElementById('length');
-            const lines = document.getElementById('lines');
-            const languageEl = document.getElementById('language');
-            const tagsEl = document.getElementById('tags');
+            const languageDisplay = document.getElementById('language');
+            const tagsCount = document.getElementById('tagsCount');
 
-            // Function to update status bar
             function updateStatusBar(editor) {
                 const position = editor.getPosition();
-                const selection = editor.getSelection();
-                const model = editor.getModel();
-                const content = model.getValue();
-
-                // Update Line, Column
                 lnCl.textContent = `Ln ${position.lineNumber}, Col ${position.column}`;
 
-                // Update Spaces in current line
-                const lineContent = model.getLineContent(position.lineNumber);
-                const spaceCount = (lineContent.match(/ /g) || []).length;
-                spaces.textContent = `Spaces: ${spaceCount}`;
+                const language = editor.getModel().getModeId();
+                languageDisplay.textContent = `Language: ${language}`;
 
-                // Update Selected Text and Length
-                const selectedText = editor.getModel().getValueInRange(selection);
-                sel.textContent = `Sel: ${selectedText.length}`;
-                length.textContent = `Length: ${selectedText.length}`;
-
-                // Update Number of Lines
-                lines.textContent = `Lines: ${model.getLineCount()}`;
-
-                // Update Language
-                const language = detectLanguage(content);
-                languageEl.textContent = `Language: ${language}`;
-
-                // Update Tag/Key Count
-                const tagCount = countTags(content, language);
-                tagsEl.textContent = `Tags/Keys: ${tagCount}`;
+                const text = editor.getValue();
+                const tagMatches = text.match(/<[^>]+>|{[^}]+}|\[[^\]]+\]/g);
+                tagsCount.textContent = `Tags/Keys: ${tagMatches ? tagMatches.length : 0}`;
             }
 
-            // Hook into both original and modified editors to track changes and update status bar
-            [diffEditor.getOriginalEditor(), diffEditor.getModifiedEditor()].forEach(editor => {
+            [originalEditor, modifiedEditor].forEach(editor => {
                 editor.onDidChangeCursorPosition(() => updateStatusBar(editor));
-                editor.onDidChangeCursorSelection(() => updateStatusBar(editor));
-                editor.getModel().onDidChangeContent(() => {
-                    const content = editor.getModel().getValue();
-                    const key = editor === diffEditor.getOriginalEditor() ? 'originalContent' : 'modifiedContent';
-                    saveEditorContent(key, content);  // Save content to localStorage
+                editor.onDidChangeModelContent(() => {
+                    updateStatusBar(editor);
+                    saveEditorContent();
                 });
-
-                // Initial status bar update
                 updateStatusBar(editor);
             });
 
-            // Load theme from localStorage
             loadThemeFromLocalStorage();
         });
 
-        // Event listener for the dark mode toggle
         document.getElementById('darkModeToggle').addEventListener('click', toggleDarkMode);
-
-        // Make the editor container fill the available space
-        window.addEventListener('resize', () => {
-            const editorContainer = document.getElementById('editorContainer');
-            editorContainer.style.height = `calc(100vh - 120px)`;
-        });
     </script>
 </body>
 </html>
