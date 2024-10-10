@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Large File Handling with Prettier</title>
+    <title>Large File Handling with Clear and Copy Values Fix</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <style>
@@ -84,7 +84,7 @@
         <!-- Header with buttons -->
         <div class="row">
             <div class="col-12 d-flex justify-content-between align-items-center">
-                <h1 id="page-title">Large File Handling with Prettier</h1>
+                <h1 id="page-title">Large File Handling with Clear and Copy Values Fix</h1>
                 <div>
                     <button id="fullscreenButton" class="btn btn-warning">Full Screen</button>
                     <button id="prettierButton" class="btn btn-success">Prettier</button>
@@ -260,6 +260,109 @@
             }
         }
 
+        // Clear Values button functionality for XML, JSON, and YAML
+        document.getElementById('clearTagValuesButton').addEventListener('click', function() {
+            const content = editor.getValue();
+            const language = editor.getModel().getLanguageId();
+
+            let clearedContent;
+            if (language === 'xml' || language === 'html') {
+                clearedContent = content.replace(/>(.*?)</g, '><');
+            } else if (language === 'json') {
+                let jsonObject = JSON.parse(content);
+                clearedContent = clearJsonValues(jsonObject);
+                clearedContent = JSON.stringify(clearedContent, null, 4);
+            } else if (language === 'yaml' || language === 'yml') {
+                let yamlObject = jsyaml.load(content);
+                clearedContent = clearJsonValues(yamlObject);
+                clearedContent = jsyaml.dump(clearedContent, { indent: 2 });
+            } else {
+                alert("Clear values feature is only available for XML, HTML, JSON, and YAML.");
+                return;
+            }
+
+            editor.setValue(clearedContent);
+            localStorage.setItem('editorContent', clearedContent);
+            updateTagOrKeyCount(clearedContent);
+        });
+
+        // Function to clear values in JSON and YAML
+        function clearJsonValues(obj) {
+            let clearedObj = {};
+            if (typeof obj === 'object' && obj !== null) {
+                for (let key in obj) {
+                    if (typeof obj[key] === 'object') {
+                        clearedObj[key] = clearJsonValues(obj[key]);
+                    } else {
+                        clearedObj[key] = "";  // Clear value
+                    }
+                }
+            }
+            return clearedObj;
+        }
+
+        // Copy Values button functionality for XML, JSON, and YAML
+        document.getElementById('copyValuesButton').addEventListener('click', function() {
+            const content = editor.getValue();
+            const language = editor.getModel().getLanguageId();
+
+            let values = '';
+
+            if (language === 'xml' || language === 'html') {
+                values = extractXmlValues(content);
+            } else if (language === 'json') {
+                let jsonObject = JSON.parse(content);
+                values = extractJsonValues(jsonObject);
+            } else if (language === 'yaml' || language === 'yml') {
+                let yamlObject = jsyaml.load(content);
+                values = extractJsonValues(yamlObject);
+            } else {
+                alert("Copy values feature is only available for XML, HTML, JSON, and YAML.");
+                return;
+            }
+
+            navigator.clipboard.writeText(values).then(() => {
+                const copyButton = document.getElementById('copyValuesButton');
+                copyButton.textContent = 'Copied!';
+                copyButton.classList.add('btn-copied');
+
+                setTimeout(() => {
+                    copyButton.textContent = 'Copy Values';
+                    copyButton.classList.remove('btn-copied');
+                }, 1000);
+            }, () => {
+                alert("Failed to copy values to clipboard.");
+            });
+        });
+
+        // Extract values from JSON/YAML object
+        function extractJsonValues(obj) {
+            let values = '';
+            if (typeof obj === 'object' && obj !== null) {
+                for (let key in obj) {
+                    if (typeof obj[key] === 'object') {
+                        values += extractJsonValues(obj[key]) + '\n';
+                    } else {
+                        values += obj[key] + '\n';
+                    }
+                }
+            }
+            return values.trim();
+        }
+
+        // Extract values from XML/HTML tags
+        function extractXmlValues(content) {
+            const valueRegex = />(.*?)</g;
+            let values = '';
+            let match;
+            while ((match = valueRegex.exec(content)) !== null) {
+                if (match[1].trim()) {
+                    values += match[1].trim() + '\n';
+                }
+            }
+            return values.trim();
+        }
+
         // Prettier button functionality
         document.getElementById('prettierButton').addEventListener('click', function() {
             const model = editor.getModel();
@@ -290,41 +393,6 @@
             }
         });
 
-        // Function to update the number of tags or keys (XML/HTML/JSON/YAML)
-        function updateTagOrKeyCount(content) {
-            const language = editor.getModel().getLanguageId();
-            let count = 0;
-
-            if (language === 'xml' || language === 'html') {
-                const tagRegex = /<[^>]+>/g;
-                const tagMatches = content.match(tagRegex);
-                count = tagMatches ? tagMatches.length : 0;
-            } else if (language === 'json' || language === 'yaml' || language === 'yml') {
-                const keyRegex = /"([^"]+)"(?=\s*:)/g;
-                const keyMatches = content.match(keyRegex);
-                count = keyMatches ? keyMatches.length : 0;
-            }
-
-            document.getElementById('tagCount').textContent = `Tags/Keys: ${count}`;
-        }
-
-        // Update status bar
-        function updateStatusBar() {
-            const model = editor.getModel();
-            const language = model.getLanguageId();
-            const position = editor.getPosition();
-            const selection = editor.getSelection();
-            const selectionLength = editor.getModel().getValueInRange(selection).length;
-
-            document.getElementById('lnCol').textContent = `Ln ${position.lineNumber}, Col ${position.column}`;
-            document.getElementById('spaces').textContent = `Spaces: 2`;
-            document.getElementById('utf').textContent = `UTF-8`;
-            document.getElementById('language').textContent = `Language: ${language}`;
-            document.getElementById('length').textContent = `Length: ${editor.getValue().length}`;
-            document.getElementById('lines').textContent = `Lines: ${model.getLineCount()}`;
-            document.getElementById('selection').textContent = `Sel: ${selectionLength}`;
-        }
-
         // XML/HTML formatter function
         function formatXml(xml) {
             let formatted = '';
@@ -349,6 +417,23 @@
             return formatted.trim();
         }
 
+        // Update status bar
+        function updateStatusBar() {
+            const model = editor.getModel();
+            const language = model.getLanguageId();
+            const position = editor.getPosition();
+            const selection = editor.getSelection();
+            const selectionLength = editor.getModel().getValueInRange(selection).length;
+
+            document.getElementById('lnCol').textContent = `Ln ${position.lineNumber}, Col ${position.column}`;
+            document.getElementById('spaces').textContent = `Spaces: 2`;
+            document.getElementById('utf').textContent = `UTF-8`;
+            document.getElementById('language').textContent = `Language: ${language}`;
+            document.getElementById('length').textContent = `Length: ${editor.getValue().length}`;
+            document.getElementById('lines').textContent = `Lines: ${model.getLineCount()}`;
+            document.getElementById('selection').textContent = `Sel: ${selectionLength}`;
+        }
+
         // Highlight error in editor
         function highlightError(errorMessage) {
             const errorMatch = errorMessage.match(/line (\d+)/);
@@ -362,6 +447,32 @@
             } else {
                 alert(`Error: ${errorMessage}`);
             }
+        }
+
+        // New function to update the occurrence of the selected tag/key
+        function updateTagOrKeyOccurrence(content) {
+            const selection = editor.getModel().getValueInRange(editor.getSelection());
+            const language = editor.getModel().getLanguageId();
+
+            let occurrenceCount = 0;
+
+            if (language === 'xml' || language === 'html') {
+                const tagMatch = selection.match(/^<\/?([a-zA-Z0-9_-]+)>?$/);
+                if (tagMatch && tagMatch[1]) {
+                    const tagName = tagMatch[1];
+                    const tagRegex = new RegExp(`<${tagName}\\b[^>]*>`, 'g');
+                    occurrenceCount = (content.match(tagRegex) || []).length;
+                }
+            } else if (language === 'json' || language === 'yaml' || language === 'yml') {
+                const keyMatch = selection.match(/"([^"]+)"\s*:/);
+                if (keyMatch && keyMatch[1]) {
+                    const keyName = keyMatch[1];
+                    const keyRegex = new RegExp(`"${keyName}"\\s*:`, 'g');
+                    occurrenceCount = (content.match(keyRegex) || []).length;
+                }
+            }
+
+            document.getElementById('tagOccurrence').textContent = `Occurrences: ${occurrenceCount}`;
         }
     </script>
 </body>
