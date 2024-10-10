@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced File Reader</title>
+    <title>Advanced File Reader with Undo/Redo for Clear Values</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
 
@@ -63,16 +63,23 @@
         .error-line {
             background-color: #ffdddd !important;
         }
+
+        .btn-copied {
+            background-color: green;
+            color: white;
+        }
     </style>
 </head>
 <body>
     <div class="container mt-3">
         <!-- Header with buttons -->
         <div class="d-flex justify-content-between align-items-center">
-            <h1 id="page-title">Advanced File Reader</h1>
+            <h1 id="page-title">Advanced File Reader with Undo/Redo for Clear Values</h1>
             <div>
                 <button id="fullscreenButton" class="btn btn-warning">Full Screen</button>
                 <button id="prettierButton" class="btn btn-success">Prettier</button>
+                <button id="clearTagValuesButton" class="btn btn-danger">Clear Values</button>
+                <button id="copyValuesButton" class="btn btn-info">Copy Values</button>
                 <button id="toggleDarkMode" class="btn btn-primary">Enable Dark Mode</button>
             </div>
         </div>
@@ -87,12 +94,14 @@
         <!-- Status Bar -->
         <div id="statusBar">
             <span id="lnCol" class="status-item">Ln 1, Col 1</span>
-            <span id="spaces" class="status-item">Spaces: 4</span>
+            <span id="spaces" class="status-item">Spaces: 2</span>
             <span id="utf" class="status-item">UTF-8</span>
             <span id="language" class="status-item">Language: plaintext</span>
             <span id="length" class="status-item">Length: 0</span>
             <span id="lines" class="status-item">Lines: 0</span>
             <span id="selection" class="status-item">Sel: 0</span>
+            <span id="tagCount" class="status-item">Tags/Keys: 0</span>
+            <span id="tagOccurrence" class="status-item">Occurrences: 0</span>
         </div>
     </div>
 
@@ -109,25 +118,59 @@
         require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.33.0/min/vs' }});
         require(['vs/editor/editor.main'], function() {
             const savedContent = localStorage.getItem('editorContent') || `# Load a Python, JSON, YAML, XML, or HTML file using the input above`;
+            const savedLanguage = localStorage.getItem('editorLanguage') || 'plaintext';
+            
             editor = monaco.editor.create(document.getElementById('editor'), {
                 value: savedContent,
-                language: 'plaintext',
+                language: savedLanguage,  // Language restored from localStorage
                 theme: 'vs-light',
                 folding: true,
                 automaticLayout: true,
                 scrollBeyondLastLine: false,
-                lineNumbers: 'on'
+                lineNumbers: 'on',
+                tabSize: 2 // Set tab size to 2 spaces as per your preference
             });
+
+            // Restore file name in the file input
+            const savedFileName = localStorage.getItem('editorFileName');
+            if (savedFileName) {
+                document.getElementById('fileInput').setAttribute('data-file-name', savedFileName);
+                document.getElementById('fileInput').classList.add('file-loaded');
+            }
 
             // Save editor content on change
             editor.onDidChangeModelContent(() => {
                 localStorage.setItem('editorContent', editor.getValue());
                 updateStatusBar();
+                updateTagOrKeyCount(editor.getValue());
             });
 
             // Update status bar on editor events
             editor.onDidChangeCursorPosition(updateStatusBar);
             editor.onDidChangeModelContent(updateStatusBar);
+            editor.onDidChangeCursorSelection(() => updateTagOrKeyOccurrence(editor.getValue()));  // Update occurrence when selection changes
+
+            // Update the tag/key count in the status bar if XML, JSON, or YAML is detected
+            updateTagOrKeyCount(editor.getValue());
+
+            // Add keyboard shortcuts for undo and redo
+            window.addEventListener('keydown', function (e) {
+                // Detect if it's a Ctrl or Cmd key combination
+                const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+                const ctrlOrCmd = isMac ? e.metaKey : e.ctrlKey;
+
+                // Ctrl + Z or Cmd + Z for undo
+                if (ctrlOrCmd && e.key === 'z' && !e.shiftKey) {
+                    e.preventDefault();
+                    editor.trigger('source', 'undo');  // Trigger undo
+                }
+
+                // Ctrl + Y or Cmd + Shift + Z for redo
+                if ((ctrlOrCmd && e.key === 'y') || (ctrlOrCmd && e.shiftKey && e.key === 'Z')) {
+                    e.preventDefault();
+                    editor.trigger('source', 'redo');  // Trigger redo
+                }
+            });
         });
 
         // Dark mode toggle
@@ -158,14 +201,23 @@
         // File upload logic
         document.getElementById('fileInput').addEventListener('change', function(event) {
             const file = event.target.files[0];
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const content = e.target.result;
-                const language = determineLanguage(file.name);
-                monaco.editor.setModelLanguage(editor.getModel(), language);
-                editor.setValue(content);
-            };
-            reader.readAsText(file);
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const content = e.target.result;
+                    const language = determineLanguage(file.name);
+                    monaco.editor.setModelLanguage(editor.getModel(), language);
+                    editor.setValue(content);
+                    // Save the content and file name to localStorage
+                    localStorage.setItem('editorContent', content);
+                    localStorage.setItem('editorFileName', file.name);
+                    localStorage.setItem('editorLanguage', language);
+
+                    // Update the tag/key count if it's XML, JSON, or YAML
+                    updateTagOrKeyCount(content);
+                };
+                reader.readAsText(file);
+            }
         });
 
         // Determine language by file extension
@@ -188,7 +240,7 @@
             }
         }
 
-        // Prettier functionality with improved XML formatting
+        // Prettier functionality with improved XML/JSON/YAML formatting
         document.getElementById('prettierButton').addEventListener('click', function() {
             const model = editor.getModel();  // Correctly get the model
             const language = model.getLanguageId();  // Use getLanguageId() to get the language
@@ -198,19 +250,127 @@
                 if (language === 'json') {
                     content = JSON.stringify(JSON.parse(content), null, 4);
                 } else if (language === 'yaml' || language === 'yml') {
-                    content = jsyaml.dump(jsyaml.load(content), { indent: 4 });
+                    content = jsyaml.dump(jsyaml.load(content), { indent: 2 });  // 2 spaces for YAML
                 } else if (language === 'python') {
-                    content = js_beautify(content, { indent_size: 4 });
+                    content = js_beautify(content, { indent_size: 2 });  // 2 spaces for Python
                 } else if (language === 'xml' || language === 'html') {
                     content = formatXml(content);  // Improved XML formatting function
                 } else {
                     throw new Error("Prettier is only available for JSON, YAML, Python, XML, and HTML");
                 }
                 editor.setValue(content);
+                localStorage.setItem('editorContent', content); // Save formatted content
+
+                // Update the tag/key count if it's XML/JSON/YAML
+                updateTagOrKeyCount(content);
             } catch (err) {
                 highlightError(err.message);
             }
         });
+
+        // Clear Values button functionality for XML, JSON, and YAML
+        document.getElementById('clearTagValuesButton').addEventListener('click', function() {
+            const content = editor.getValue();
+            const language = editor.getModel().getLanguageId();
+
+            let clearedContent;
+            if (language === 'xml' || language === 'html') {
+                clearedContent = content.replace(/>(.*?)</g, '><');  // Clear inner content between tags
+            } else if (language === 'json') {
+                let jsonObject = JSON.parse(content);
+                clearedContent = clearJsonValues(jsonObject);
+                clearedContent = JSON.stringify(clearedContent, null, 4);
+            } else if (language === 'yaml' || language === 'yml') {
+                let yamlObject = jsyaml.load(content);
+                clearedContent = clearJsonValues(yamlObject);  // Treat YAML the same as JSON structure
+                clearedContent = jsyaml.dump(clearedContent, { indent: 2 });
+            } else {
+                alert("Clear values feature is only available for XML, HTML, JSON, and YAML.");
+                return;
+            }
+
+            // Push undo stop to ensure the clear values action is treated as an undoable operation
+            editor.pushUndoStop();
+
+            // Register the clear values operation in Monaco's undo stack
+            editor.executeEdits('clear-values', [
+                {
+                    range: editor.getModel().getFullModelRange(),
+                    text: clearedContent
+                }
+            ]);
+
+            // Push another undo stop to finish the clear values operation
+            editor.pushUndoStop();
+
+            editor.setValue(clearedContent);
+            localStorage.setItem('editorContent', clearedContent);  // Save cleared content to localStorage
+            updateTagOrKeyCount(clearedContent);  // Update tag/key count
+        });
+
+        // Copy Values button functionality for XML, JSON, and YAML
+        document.getElementById('copyValuesButton').addEventListener('click', function() {
+            const content = editor.getValue();
+            const language = editor.getModel().getLanguageId();
+
+            let values = '';
+
+            if (language === 'xml' || language === 'html') {
+                values = extractXmlValues(content);  // Extract values from XML/HTML tags
+            } else if (language === 'json') {
+                let jsonObject = JSON.parse(content);
+                values = extractJsonValues(jsonObject);  // Extract values from JSON
+            } else if (language === 'yaml' || language === 'yml') {
+                let yamlObject = jsyaml.load(content);
+                values = extractJsonValues(yamlObject);  // Extract values from YAML (same as JSON structure)
+            } else {
+                alert("Copy values feature is only available for XML, HTML, JSON, and YAML.");
+                return;
+            }
+
+            // Copy the extracted values to the clipboard
+            navigator.clipboard.writeText(values).then(() => {
+                // Change button text and color to show "Copied!" for 1 second
+                const copyButton = document.getElementById('copyValuesButton');
+                copyButton.textContent = 'Copied!';
+                copyButton.classList.add('btn-copied');
+
+                setTimeout(() => {
+                    copyButton.textContent = 'Copy Values';  // Revert text
+                    copyButton.classList.remove('btn-copied');  // Revert color
+                }, 1000);  // 1 second delay
+            }, () => {
+                alert("Failed to copy values to clipboard.");
+            });
+        });
+
+        // Extract values from a JSON object (used for both JSON and YAML)
+        function extractJsonValues(obj) {
+            let values = '';
+            if (typeof obj === 'object' && obj !== null) {
+                for (let key in obj) {
+                    if (typeof obj[key] === 'object') {
+                        values += extractJsonValues(obj[key]) + '\n';  // Recursive call for nested objects
+                    } else {
+                        values += obj[key] + '\n';  // Collect values for keys
+                    }
+                }
+            }
+            return values.trim();  // Trim trailing newline
+        }
+
+        // Extract values from XML/HTML tags
+        function extractXmlValues(content) {
+            const valueRegex = />(.*?)</g;
+            let values = '';
+            let match;
+            while ((match = valueRegex.exec(content)) !== null) {
+                if (match[1].trim()) {  // Only extract non-empty values
+                    values += match[1].trim() + '\n';
+                }
+            }
+            return values.trim();  // Trim trailing newline
+        }
 
         // Improved custom XML formatter function
         function formatXml(xml) {
@@ -260,17 +420,62 @@
         // Update status bar
         function updateStatusBar() {
             const model = editor.getModel();
-            const language = model.getLanguageId();  // Correctly get the language
+            const language = model.getLanguageId();
             const position = editor.getPosition();
             const selection = editor.getSelection();
+            const selectionLength = editor.getModel().getValueInRange(selection).length;
 
             document.getElementById('lnCol').textContent = `Ln ${position.lineNumber}, Col ${position.column}`;
-            document.getElementById('spaces').textContent = `Spaces: 4`;
+            document.getElementById('spaces').textContent = `Spaces: 2`;
             document.getElementById('utf').textContent = `UTF-8`;
-            document.getElementById('language').textContent = `Language: ${language}`;  // Correctly set language
+            document.getElementById('language').textContent = `Language: ${language}`;
             document.getElementById('length').textContent = `Length: ${editor.getValue().length}`;
             document.getElementById('lines').textContent = `Lines: ${model.getLineCount()}`;
-            document.getElementById('selection').textContent = `Sel: ${selection.endColumn - selection.startColumn}`;
+            document.getElementById('selection').textContent = `Sel: ${selectionLength}`;
+        }
+
+        // Function to update the number of tags or keys (XML/HTML/JSON/YAML)
+        function updateTagOrKeyCount(content) {
+            const language = editor.getModel().getLanguageId();
+            let count = 0;
+
+            if (language === 'xml' || language === 'html') {
+                const tagRegex = /<[^>]+>/g;
+                const tagMatches = content.match(tagRegex);
+                count = tagMatches ? tagMatches.length : 0;
+            } else if (language === 'json' || language === 'yaml' || language === 'yml') {
+                const keyRegex = /"([^"]+)"(?=\s*:)/g;
+                const keyMatches = content.match(keyRegex);
+                count = keyMatches ? keyMatches.length : 0;
+            }
+
+            document.getElementById('tagCount').textContent = `Tags/Keys: ${count}`;
+        }
+
+        // New function to update the occurrence of the selected tag/key
+        function updateTagOrKeyOccurrence(content) {
+            const selection = editor.getModel().getValueInRange(editor.getSelection());
+            const language = editor.getModel().getLanguageId();
+
+            let occurrenceCount = 0;
+
+            if (language === 'xml' || language === 'html') {
+                const tagMatch = selection.match(/^<\/?([a-zA-Z0-9_-]+)>?$/);
+                if (tagMatch && tagMatch[1]) {
+                    const tagName = tagMatch[1];
+                    const tagRegex = new RegExp(`<${tagName}\\b[^>]*>`, 'g');
+                    occurrenceCount = (content.match(tagRegex) || []).length;
+                }
+            } else if (language === 'json' || language === 'yaml' || language === 'yml') {
+                const keyMatch = selection.match(/"([^"]+)"\s*:/);
+                if (keyMatch && keyMatch[1]) {
+                    const keyName = keyMatch[1];
+                    const keyRegex = new RegExp(`"${keyName}"\\s*:`, 'g');
+                    occurrenceCount = (content.match(keyRegex) || []).length;
+                }
+            }
+
+            document.getElementById('tagOccurrence').textContent = `Occurrences: ${occurrenceCount}`;
         }
     </script>
 </body>
