@@ -70,11 +70,11 @@
                 </div>
                 <div class="form-check">
                     <input type="checkbox" id="addHost4" class="form-check-input" onchange="modifyNumbers()">
-                    <label for="addHost4" class="form-check-label">Add "host = a4pvap1003"</label>
+                    <label for="addHost4" class="form-check-label">Add "host = A5CVAP1003"</label>
                 </div>
                 <div class="form-check">
                     <input type="checkbox" id="addHost5" class="form-check-input" onchange="modifyNumbers()">
-                    <label for="addHost5" class="form-check-label">Add "host = a4pvap1004"</label>
+                    <label for="addHost5" class="form-check-label">Add "host = A5CVAP1004"</label>
                 </div>
 
                 <div id="lineStatus" class="line-status mt-2">Total Lines: 1</div>
@@ -199,8 +199,8 @@
                 if (addHost1) hosts += ' host = a4pvap068';
                 if (addHost2) hosts += ' host = a5pvap039';
                 if (addHost3) hosts += ' host = a5pvap040';
-                if (addHost4) hosts += ' host = a4pvap1003';
-                if (addHost5) hosts += ' host = a4pvap1004';
+                if (addHost4) hosts += ' host = A5CVAP1003';
+                if (addHost5) hosts += ' host = A5CVAP1004';
                 output = `index = "application_omnipay" ${hosts} ${output} | reverse`;
             }
 
