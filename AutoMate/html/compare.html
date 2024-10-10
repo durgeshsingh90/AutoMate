@@ -6,7 +6,6 @@
     <title>Real-time Comparison</title>
     <link rel="stylesheet" href="https://unpkg.com/monaco-editor/min/vs/editor/editor.main.css">
     <style>
-        /* Initial styles for light mode */
         body.light-mode {
             background-color: #f5f5f5;
             color: #333;
@@ -22,18 +21,15 @@
             text-align: center;
         }
 
-        /* Responsive editor container */
         #editorContainer {
-            height: calc(100vh - 120px);
-            width: 100%;
+            height: calc(100vh - 100px); /* Fill the available screen height */
+            display: flex;
             border: 1px solid #ccc;
             margin-top: 20px;
-            display: flex;
         }
 
-        /* Each editor should fill 50% of the screen */
         .editor {
-            width: 50%;
+            width: 50%; /* Ensure both editors fill half of the container */
             height: 100%;
         }
 
@@ -43,12 +39,9 @@
             padding: 5px 10px;
             font-family: monospace;
             font-size: 12px;
-        }
-
-        /* Dark mode for status bar */
-        body.dark-mode #statusBar {
             background-color: #2c2c2c;
             color: #ffffff;
+            border-top: 1px solid #444;
         }
 
         body.light-mode #statusBar {
@@ -56,7 +49,11 @@
             color: #333;
         }
 
-        /* Toggle button */
+        body.dark-mode #statusBar {
+            background-color: #2c2c2c;
+            color: #ffffff;
+        }
+
         #darkModeToggle {
             position: absolute;
             top: 20px;
@@ -67,7 +64,6 @@
             color: #fff;
             border: none;
             border-radius: 5px;
-            font-size: 14px;
         }
 
         body.light-mode #darkModeToggle {
@@ -85,17 +81,15 @@
         <div id="editorModified" class="editor"></div>
     </div>
     <div id="statusBar">
-        <span id="language">Language: JavaScript</span>
+        <span id="language">Language: Unknown</span>
         <span id="tagsCount">Tags/Keys: 0</span>
         <span id="lnCl">Ln 1, Col 1</span>
     </div>
 
     <script src="https://unpkg.com/monaco-editor/min/vs/loader.js"></script>
     <script>
-        // Track if dark mode is active
         let isDarkMode = false;
 
-        // Store text to avoid clearing on reload
         function saveEditorContent() {
             localStorage.setItem('originalContent', originalEditor.getValue());
             localStorage.setItem('modifiedContent', modifiedEditor.getValue());
@@ -108,11 +102,9 @@
             };
         }
 
-        // Function to switch between dark and light modes
         function toggleDarkMode() {
             const body = document.body;
             const darkModeToggle = document.getElementById('darkModeToggle');
-
             if (isDarkMode) {
                 body.classList.remove('dark-mode');
                 body.classList.add('light-mode');
@@ -128,7 +120,6 @@
             localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
         }
 
-        // Load theme from localStorage if available
         function loadThemeFromLocalStorage() {
             const savedTheme = localStorage.getItem('theme');
             if (savedTheme === 'dark') {
@@ -136,22 +127,46 @@
             }
         }
 
+        function detectLanguage(editor) {
+            const languageMap = {
+                'xml': 'xml',
+                'html': 'html',
+                'javascript': 'javascript',
+                'json': 'json',
+                'yaml': 'yaml',
+                'plaintext': 'plaintext'
+            };
+            return editor.getModel().getLanguageId();
+        }
+
+        function countTags(text, language) {
+            if (language === 'html' || language === 'xml') {
+                const tagMatches = text.match(/<\/?[a-zA-Z]+>/g);
+                return tagMatches ? tagMatches.length : 0;
+            }
+            if (language === 'json' || language === 'yaml') {
+                const keyMatches = text.match(/"[^"]+":/g);
+                return keyMatches ? keyMatches.length : 0;
+            }
+            return 0;
+        }
+
         require.config({ paths: { 'vs': 'https://unpkg.com/monaco-editor/min/vs' } });
-        require(['vs/editor/editor.main'], function() {
+        require(['vs/editor/editor.main'], function () {
             const editorContent = loadEditorContent();
-            const originalEditor = monaco.editor.create(document.getElementById('editorOriginal'), {
+
+            window.originalEditor = monaco.editor.create(document.getElementById('editorOriginal'), {
                 value: editorContent.original,
-                language: 'javascript',
+                language: 'plaintext',
                 automaticLayout: true
             });
 
-            const modifiedEditor = monaco.editor.create(document.getElementById('editorModified'), {
+            window.modifiedEditor = monaco.editor.create(document.getElementById('editorModified'), {
                 value: editorContent.modified,
-                language: 'javascript',
+                language: 'plaintext',
                 automaticLayout: true
             });
 
-            // Status bar elements
             const lnCl = document.getElementById('lnCl');
             const languageDisplay = document.getElementById('language');
             const tagsCount = document.getElementById('tagsCount');
@@ -160,12 +175,12 @@
                 const position = editor.getPosition();
                 lnCl.textContent = `Ln ${position.lineNumber}, Col ${position.column}`;
 
-                const language = editor.getModel().getModeId();
+                const language = detectLanguage(editor);
                 languageDisplay.textContent = `Language: ${language}`;
 
                 const text = editor.getValue();
-                const tagMatches = text.match(/<[^>]+>|{[^}]+}|\[[^\]]+\]/g);
-                tagsCount.textContent = `Tags/Keys: ${tagMatches ? tagMatches.length : 0}`;
+                const totalTags = countTags(text, language);
+                tagsCount.textContent = `Tags/Keys: ${totalTags}`;
             }
 
             [originalEditor, modifiedEditor].forEach(editor => {
