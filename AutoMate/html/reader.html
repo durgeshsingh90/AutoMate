@@ -3,18 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced File Reader with Undo/Redo for Clear Values</title>
+    <title>Responsive File Reader with Undo/Redo for Clear Values</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <style>
+        /* Style for the Monaco Editor container */
         #editor {
             width: 100%;
-            height: 65vh;
+            height: 65vh; /* Initial height */
             border: 1px solid #ccc;
             margin-bottom: 0;
         }
 
+        /* Status bar styling */
         #statusBar {
             display: flex;
             justify-content: space-between;
@@ -24,6 +26,7 @@
             border-top: 1px solid #ccc;
         }
 
+        /* Fullscreen adjustments */
         .fullscreen #editor {
             height: calc(100vh - 25px);
         }
@@ -40,6 +43,7 @@
             margin: 0 5px;
         }
 
+        /* Dark mode styling */
         .dark-mode {
             background-color: #121212;
             color: #ffffff;
@@ -68,40 +72,71 @@
             background-color: green;
             color: white;
         }
+
+        /* Responsive height adjustments for smaller screens */
+        @media (max-width: 768px) {
+            #editor {
+                height: 45vh;
+            }
+        }
+
+        /* Responsive height adjustments for medium screens */
+        @media (min-width: 768px) and (max-width: 992px) {
+            #editor {
+                height: 55vh;
+            }
+        }
+
+        /* Responsive layout for very large screens */
+        @media (min-width: 1200px) {
+            #editor {
+                height: 80vh;
+            }
+        }
     </style>
 </head>
 <body>
-    <div class="container mt-3">
+    <div class="container-fluid mt-3">
         <!-- Header with buttons -->
-        <div class="d-flex justify-content-between align-items-center">
-            <h1 id="page-title">Advanced File Reader with Undo/Redo for Clear Values</h1>
-            <div>
-                <button id="fullscreenButton" class="btn btn-warning">Full Screen</button>
-                <button id="prettierButton" class="btn btn-success">Prettier</button>
-                <button id="clearTagValuesButton" class="btn btn-danger">Clear Values</button>
-                <button id="copyValuesButton" class="btn btn-info">Copy Values</button>
-                <button id="toggleDarkMode" class="btn btn-primary">Enable Dark Mode</button>
+        <div class="row">
+            <div class="col-12 d-flex justify-content-between align-items-center">
+                <h1 id="page-title">Responsive File Reader with Undo/Redo for Clear Values</h1>
+                <div>
+                    <button id="fullscreenButton" class="btn btn-warning">Full Screen</button>
+                    <button id="prettierButton" class="btn btn-success">Prettier</button>
+                    <button id="clearTagValuesButton" class="btn btn-danger">Clear Values</button>
+                    <button id="copyValuesButton" class="btn btn-info">Copy Values</button>
+                    <button id="toggleDarkMode" class="btn btn-primary">Enable Dark Mode</button>
+                </div>
             </div>
         </div>
 
         <!-- File input -->
-        <input type="file" id="fileInput" class="form-control mt-3" accept=".xml,.html,.py,.json,.yaml,.yml">
-        <small class="text-muted">Select a Python, JSON, YAML, XML, or HTML file to load</small>
+        <div class="row mt-3">
+            <div class="col-12">
+                <input type="file" id="fileInput" class="form-control" accept=".xml,.html,.py,.json,.yaml,.yml">
+                <small class="text-muted">Select a Python, JSON, YAML, XML, or HTML file to load</small>
+            </div>
+        </div>
 
         <!-- Monaco Editor Container -->
-        <div id="editor" class="mt-3"></div>
+        <div class="row mt-3">
+            <div class="col-12">
+                <div id="editor"></div>
+            </div>
+        </div>
 
         <!-- Status Bar -->
-        <div id="statusBar">
-            <span id="lnCol" class="status-item">Ln 1, Col 1</span>
-            <span id="spaces" class="status-item">Spaces: 2</span>
-            <span id="utf" class="status-item">UTF-8</span>
-            <span id="language" class="status-item">Language: plaintext</span>
-            <span id="length" class="status-item">Length: 0</span>
-            <span id="lines" class="status-item">Lines: 0</span>
-            <span id="selection" class="status-item">Sel: 0</span>
-            <span id="tagCount" class="status-item">Tags/Keys: 0</span>
-            <span id="tagOccurrence" class="status-item">Occurrences: 0</span>
+        <div id="statusBar" class="row mt-1">
+            <span id="lnCol" class="status-item col">Ln 1, Col 1</span>
+            <span id="spaces" class="status-item col">Spaces: 2</span>
+            <span id="utf" class="status-item col">UTF-8</span>
+            <span id="language" class="status-item col">Language: plaintext</span>
+            <span id="length" class="status-item col">Length: 0</span>
+            <span id="lines" class="status-item col">Lines: 0</span>
+            <span id="selection" class="status-item col">Sel: 0</span>
+            <span id="tagCount" class="status-item col">Tags/Keys: 0</span>
+            <span id="tagOccurrence" class="status-item col">Occurrences: 0</span>
         </div>
     </div>
 
@@ -155,20 +190,19 @@
 
             // Add keyboard shortcuts for undo and redo
             window.addEventListener('keydown', function (e) {
-                // Detect if it's a Ctrl or Cmd key combination
                 const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
                 const ctrlOrCmd = isMac ? e.metaKey : e.ctrlKey;
 
                 // Ctrl + Z or Cmd + Z for undo
                 if (ctrlOrCmd && e.key === 'z' && !e.shiftKey) {
                     e.preventDefault();
-                    editor.trigger('source', 'undo');  // Trigger undo
+                    editor.trigger('source', 'undo');
                 }
 
                 // Ctrl + Y or Cmd + Shift + Z for redo
                 if ((ctrlOrCmd && e.key === 'y') || (ctrlOrCmd && e.shiftKey && e.key === 'Z')) {
                     e.preventDefault();
-                    editor.trigger('source', 'redo');  // Trigger redo
+                    editor.trigger('source', 'redo');
                 }
             });
         });
@@ -188,7 +222,9 @@
 
         // Full-screen toggle logic using the Fullscreen API
         document.getElementById('fullscreenButton').addEventListener('click', function() {
-            const editorContainer = document.getElementById('editor').parentElement;
+            const editorContainer = document.getElementById('editor').
+
+parentElement;
             if (!document.fullscreenElement) {
                 editorContainer.requestFullscreen();
                 this.textContent = 'Exit Full Screen';
@@ -208,12 +244,10 @@
                     const language = determineLanguage(file.name);
                     monaco.editor.setModelLanguage(editor.getModel(), language);
                     editor.setValue(content);
-                    // Save the content and file name to localStorage
                     localStorage.setItem('editorContent', content);
                     localStorage.setItem('editorFileName', file.name);
                     localStorage.setItem('editorLanguage', language);
 
-                    // Update the tag/key count if it's XML, JSON, or YAML
                     updateTagOrKeyCount(content);
                 };
                 reader.readAsText(file);
@@ -237,183 +271,6 @@
                     return 'yaml';
                 default:
                     return 'plaintext';
-            }
-        }
-
-        // Prettier functionality with improved XML/JSON/YAML formatting
-        document.getElementById('prettierButton').addEventListener('click', function() {
-            const model = editor.getModel();  // Correctly get the model
-            const language = model.getLanguageId();  // Use getLanguageId() to get the language
-            let content = editor.getValue();
-
-            try {
-                if (language === 'json') {
-                    content = JSON.stringify(JSON.parse(content), null, 4);
-                } else if (language === 'yaml' || language === 'yml') {
-                    content = jsyaml.dump(jsyaml.load(content), { indent: 2 });  // 2 spaces for YAML
-                } else if (language === 'python') {
-                    content = js_beautify(content, { indent_size: 2 });  // 2 spaces for Python
-                } else if (language === 'xml' || language === 'html') {
-                    content = formatXml(content);  // Improved XML formatting function
-                } else {
-                    throw new Error("Prettier is only available for JSON, YAML, Python, XML, and HTML");
-                }
-                editor.setValue(content);
-                localStorage.setItem('editorContent', content); // Save formatted content
-
-                // Update the tag/key count if it's XML/JSON/YAML
-                updateTagOrKeyCount(content);
-            } catch (err) {
-                highlightError(err.message);
-            }
-        });
-
-        // Clear Values button functionality for XML, JSON, and YAML
-        document.getElementById('clearTagValuesButton').addEventListener('click', function() {
-            const content = editor.getValue();
-            const language = editor.getModel().getLanguageId();
-
-            let clearedContent;
-            if (language === 'xml' || language === 'html') {
-                clearedContent = content.replace(/>(.*?)</g, '><');  // Clear inner content between tags
-            } else if (language === 'json') {
-                let jsonObject = JSON.parse(content);
-                clearedContent = clearJsonValues(jsonObject);
-                clearedContent = JSON.stringify(clearedContent, null, 4);
-            } else if (language === 'yaml' || language === 'yml') {
-                let yamlObject = jsyaml.load(content);
-                clearedContent = clearJsonValues(yamlObject);  // Treat YAML the same as JSON structure
-                clearedContent = jsyaml.dump(clearedContent, { indent: 2 });
-            } else {
-                alert("Clear values feature is only available for XML, HTML, JSON, and YAML.");
-                return;
-            }
-
-            // Push undo stop to ensure the clear values action is treated as an undoable operation
-            editor.pushUndoStop();
-
-            // Register the clear values operation in Monaco's undo stack
-            editor.executeEdits('clear-values', [
-                {
-                    range: editor.getModel().getFullModelRange(),
-                    text: clearedContent
-                }
-            ]);
-
-            // Push another undo stop to finish the clear values operation
-            editor.pushUndoStop();
-
-            editor.setValue(clearedContent);
-            localStorage.setItem('editorContent', clearedContent);  // Save cleared content to localStorage
-            updateTagOrKeyCount(clearedContent);  // Update tag/key count
-        });
-
-        // Copy Values button functionality for XML, JSON, and YAML
-        document.getElementById('copyValuesButton').addEventListener('click', function() {
-            const content = editor.getValue();
-            const language = editor.getModel().getLanguageId();
-
-            let values = '';
-
-            if (language === 'xml' || language === 'html') {
-                values = extractXmlValues(content);  // Extract values from XML/HTML tags
-            } else if (language === 'json') {
-                let jsonObject = JSON.parse(content);
-                values = extractJsonValues(jsonObject);  // Extract values from JSON
-            } else if (language === 'yaml' || language === 'yml') {
-                let yamlObject = jsyaml.load(content);
-                values = extractJsonValues(yamlObject);  // Extract values from YAML (same as JSON structure)
-            } else {
-                alert("Copy values feature is only available for XML, HTML, JSON, and YAML.");
-                return;
-            }
-
-            // Copy the extracted values to the clipboard
-            navigator.clipboard.writeText(values).then(() => {
-                // Change button text and color to show "Copied!" for 1 second
-                const copyButton = document.getElementById('copyValuesButton');
-                copyButton.textContent = 'Copied!';
-                copyButton.classList.add('btn-copied');
-
-                setTimeout(() => {
-                    copyButton.textContent = 'Copy Values';  // Revert text
-                    copyButton.classList.remove('btn-copied');  // Revert color
-                }, 1000);  // 1 second delay
-            }, () => {
-                alert("Failed to copy values to clipboard.");
-            });
-        });
-
-        // Extract values from a JSON object (used for both JSON and YAML)
-        function extractJsonValues(obj) {
-            let values = '';
-            if (typeof obj === 'object' && obj !== null) {
-                for (let key in obj) {
-                    if (typeof obj[key] === 'object') {
-                        values += extractJsonValues(obj[key]) + '\n';  // Recursive call for nested objects
-                    } else {
-                        values += obj[key] + '\n';  // Collect values for keys
-                    }
-                }
-            }
-            return values.trim();  // Trim trailing newline
-        }
-
-        // Extract values from XML/HTML tags
-        function extractXmlValues(content) {
-            const valueRegex = />(.*?)</g;
-            let values = '';
-            let match;
-            while ((match = valueRegex.exec(content)) !== null) {
-                if (match[1].trim()) {  // Only extract non-empty values
-                    values += match[1].trim() + '\n';
-                }
-            }
-            return values.trim();  // Trim trailing newline
-        }
-
-        // Improved custom XML formatter function
-        function formatXml(xml) {
-            let formatted = '';
-            const reg = /(>)(<)(\/*)/g;
-            xml = xml.replace(reg, '$1\r\n$2$3');
-
-            // Split inline tags like <tag>...</tag><tag>...</tag> onto separate lines
-            xml = xml.replace(/>\s*</g, '>\n<');
-
-            let pad = 0;
-            xml.split('\n').forEach(function(node) {
-                let indent = 0;
-                if (node.match(/.+<\/\w[^>]*>$/)) {
-                    indent = 0;
-                } else if (node.match(/^<\/\w/)) {
-                    if (pad !== 0) {
-                        pad -= 1;
-                    }
-                } else if (node.match(/^<\w([^>]*[^\/])?>.*$/)) {
-                    indent = 1;
-                } else {
-                    indent = 0;
-                }
-                const padding = new Array(pad + 1).join('  ');
-                formatted += padding + node + '\n';
-                pad += indent;
-            });
-            return formatted.trim();  // Remove trailing newline
-        }
-
-        // Highlight error in editor
-        function highlightError(errorMessage) {
-            const errorMatch = errorMessage.match(/line (\d+)/);
-            if (errorMatch && errorMatch[1]) {
-                const lineNumber = parseInt(errorMatch[1], 10);
-                editor.deltaDecorations([], [{
-                    range: new monaco.Range(lineNumber, 1, lineNumber, 1),
-                    options: { isWholeLine: true, className: 'error-line' }
-                }]);
-                alert(`Error on line ${lineNumber}: ${errorMessage}`);
-            } else {
-                alert(`Error: ${errorMessage}`);
             }
         }
 
