@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced File Reader with Full-Screen and Status Bar</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        #editor {
+            width: 100%;
+            height: 65vh; /* Reduce height to make room for status bar */
+            border: 1px solid #ccc;
+            margin-bottom: 0; /* Remove margin to attach status bar */
+        }
+
+        #statusBar {
+            display: flex;
+            justify-content: space-between;
+            background-color: #f1f1f1;
+            padding: 4px 10px; /* Smaller height */
+            font-size: 12px; /* Make font smaller */
+            border-top: 1px solid #ccc;
+        }
+
+        /* Full-screen editor and status bar */
+        .fullscreen #editor {
+            height: calc(100vh - 25px); /* Full-screen height minus status bar */
+        }
+
+        .fullscreen #statusBar {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            z-index: 9999;
+            background-color: #f1f1f1;
+        }
+
+        .status-item {
+            margin: 0 5px;
+        }
+
+        /* Dark mode styles */
+        .dark-mode {
+            background-color: #121212;
+            color: #ffffff;
+        }
+
+        .dark-mode .btn {
+            background-color: #1f1f1f;
+            color: #ffffff;
+        }
+
+        .dark-mode #editor {
+            border-color: #333;
+        }
+
+        .dark-mode #statusBar {
+            background-color: #333;
+            color: #fff;
+            border-top-color: #444;
+        }
+
+        .dark-mode input[type="file"] {
+            background-color: #333;
+            color: #fff;
+            border: 1px solid #444;
+        }
+
+        .dark-mode input[type="file"]::-webkit-file-upload-button {
+            background-color: #444;
+            color: #fff;
+        }
+
+        .dark-mode input[type="file"]::-ms-browse {
+            background-color: #444;
+            color: #fff;
+        }
+
+        .dark-mode input[type="file"]::file-selector-button {
+            background-color: #444;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-3">
+        <!-- Flex container to align title, dark mode, full screen, and Prettier buttons on the same line -->
+        <div class="d-flex justify-content-between align-items-center">
+            <h1 id="page-title">Advanced File Reader</h1>
+            <div>
+                <button id="fullscreenButton" class="btn btn-warning">Full Screen</button>
+                <button id="prettierButton" class="btn btn-success">Prettier</button>
+                <button id="toggleDarkMode" class="btn btn-primary">Enable Dark Mode</button>
+            </div>
+        </div>
+
+        <!-- File input to load large files -->
+        <input type="file" id="fileInput" class="form-control mt-3" accept=".xml,.html,.py,.json,.yaml,.yml">
+        <small class="text-muted">Select a Python, JSON, YAML, XML, or HTML file to load</small>
+
+        <!-- Container for Monaco Editor -->
+        <div id="editor" class="mt-3"></div>
+
+        <!-- Status Bar (attached to the editor) -->
+        <div id="statusBar">
+            <span id="lnCol" class="status-item">Ln 1, Col 1</span>
+            <span id="spaces" class="status-item">Spaces: 4</span>
+            <span id="utf" class="status-item">UTF-8</span>
+            <span id="language" class="status-item">Language: plaintext</span>
+            <span id="length" class="status-item">Length: 0</span>
+            <span id="lines" class="status-item">Lines: 0</span>
+            <span id="selection" class="status-item">Sel: 0</span>
+        </div>
+    </div>
+
+    <!-- Monaco Editor loader -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.33.0/min/vs/loader.min.js"></script>
+    <!-- Include js-beautify for Python formatting -->
+    <script src="https://cdn.jsdelivr.net/npm/js-beautify@1.14.0/js/lib/beautify.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/js-beautify@1.14.0/js/lib/beautify-html.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/js-beautify@1.14.0/js/lib/beautify-css.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/js-beautify@1.14.0/js/lib/beautify-python.js"></script>
+    <!-- Include js-yaml for YAML formatting -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
+    <!-- Bootstrap JS and Popper.js for responsive Bootstrap components -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        let isDarkMode = false;  // Keep track of current mode
+        let editor;  // Declare editor variable globally to allow theme switching
+
+        // Load Monaco Editor
+        require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.33.0/min/vs' }});
+        require(['vs/editor/editor.main'], function() {
+            // Load content from localStorage if available
+            const storedContent = localStorage.getItem('editorContent') || `# Load a Python, JSON, YAML, XML, or HTML file using the input above`;
+
+            // Initialize Monaco editor with persisted content
+            editor = monaco.editor.create(document.getElementById('editor'), {
+                value: storedContent,
+                language: 'plaintext',  // Default to plaintext, language will be switched dynamically
+                theme: 'vs-light',  // Start with light theme
+                folding: true,      // Enable folding (collapsing tags/code blocks)
+                automaticLayout: true,
+                scrollBeyondLastLine: false,
+                lineNumbers: 'on'
+            });
+
+            // Save editor content on change
+            editor.onDidChangeModelContent(() => {
+                localStorage.setItem('editorContent', editor.getValue());
+                updateStatusBar();
+            });
+
+            // Update status bar on cursor movement or content change
+            editor.onDidChangeCursorPosition(updateStatusBar);
+        });
+
+        // Dark mode toggle logic
+        document.getElementById('toggleDarkMode').addEventListener('click', function() {
+            if (!isDarkMode) {
+                document.body.classList.add('dark-mode');
+                editor.updateOptions({ theme: 'vs-dark' });
+                this.textContent = 'Disable Dark Mode';
+                isDarkMode = true;
+            } else {
+                document.body.classList.remove('dark-mode');
+                editor.updateOptions({ theme: 'vs-light' });
+                this.textContent = 'Enable Dark Mode';
+                isDarkMode = false;
+            }
+        });
+
+        // Prettier button logic
+        document.getElementById('prettierButton').addEventListener('click', function() {
+            const language = monaco.editor.getModelLanguage(editor.getModel());
+            let formattedContent = editor.getValue();
+            try {
+                if (language === 'json') {
+                    formattedContent = JSON.stringify(JSON.parse(formattedContent), null, 4);
+                } else if (language === 'xml' || language === 'html') {
+                    formattedContent = vkbeautify.xml(formattedContent, 4);
+                } else if (language === 'python') {
+                    formattedContent = js_beautify(formattedContent, { indent_size: 4 });
+                } else if (language === 'yaml') {
+                    formattedContent = jsyaml.dump(jsyaml.load(formattedContent), { indent: 4 });
+                } else {
+                    alert('Prettier is only available for JSON, XML, HTML, Python, and YAML.');
+                    return;
+                }
+                editor.setValue(formattedContent);
+            } catch (e) {
+                alert('Error formatting content.');
+            }
+        });
+
+        // Full-screen toggle logic using the Fullscreen API
+        document.getElementById('fullscreenButton').addEventListener('click', function() {
+            const editorContainer = document.getElementById('editor').parentElement;
+            if (!document.fullscreenElement) {
+                editorContainer.requestFullscreen().catch(err => {
+                    alert(`Error attempting to enable full-screen mode: ${err.message}`);
+                });
+                this.textContent = 'Exit Full Screen';
+            } else {
+                document.exitFullscreen();
+                this.textContent = 'Full Screen';
+            }
+        });
+
+        // Function to update the status bar
+        function updateStatusBar() {
+            const position = editor.getPosition();
+            const model = editor.getModel();
+            const selection = editor.getSelection();
+
+            const lnCol = `Ln ${position.lineNumber}, Col ${position.column}`;
+            const spaces = `Spaces: 4`;
+            const utf = `UTF-8`;
+            const language = `Language: ${monaco.editor.getModelLanguage(editor.getModel())}`;
+            const length = `Length: ${editor.getValue().length}`;
+            const lines = `Lines: ${model.getLineCount()}`;
+            const selLength = selection.endColumn - selection.startColumn;
+            const selectionText = `Sel: ${selLength}`;
+
+            document.getElementById('lnCol').textContent = lnCol;
+            document.getElementById('spaces').textContent = spaces;
+            document.getElementById('utf').textContent = utf;
+            document.getElementById('language').textContent = language;
+            document.getElementById('length').textContent = length;
+            document.getElementById('lines').textContent = lines;
+            document.getElementById('selection').textContent = selectionText;
+        }
+    </script>
+</body>
+</html>
