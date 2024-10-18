@@ -3,7 +3,7 @@ import xml.etree.ElementTree as ET
 import xml.dom.minidom
 
 # Configurable lists for tool comment level, search symbols, and DEs to skip
-tool_comment_level_de = ["MTI", "DE.004", "DE.007", "DE.012", "DE.024", "DE.026", "DE.035", "DE.049", "DE.092"]
+tool_comment_level_de = ["MTI","DE.003.SE", "DE.004", "DE.007", "DE.012","DE.022.SE", "DE.024", "DE.026", "DE.035", "DE.049", "DE.092"]
 search_symbol_de = ["DE.002", "DE.003", "DE.011", "DE.037", "DE.041", "DE.042"]
 skip_de = ["BM1", "BM2", "Byte"]
 
@@ -49,12 +49,13 @@ def add_field_to_list(field_list, field_data, is_subfield=False):
         tag_value = field_id.split(".TAG.")[1]
         ET.SubElement(field, 'EMVData', Tag=tag_value, Name=field_data['friendly_name'], Format='TLV')
 
-    cleaned_binary = format_binary(field_data['binary'])
-    cleaned_viewable = field_data['viewable'].replace(' ', '').replace('-', '')
-
     if "DE.055.TAG." in field_id:
-        cleaned_viewable = cleaned_viewable[9:]  # Remove the tag and length from the viewable part
-        
+        cleaned_binary = format_binary(field_data['binary'])
+        cleaned_viewable = cleaned_binary[9:].replace(" ", "")  # Remove the tag and length from the viewable part
+    else:
+        cleaned_binary = format_binary(field_data['binary'])
+        cleaned_viewable = field_data['viewable'].replace(' ', '').replace('-', '')
+
     ET.SubElement(field, 'FieldBinary').text = cleaned_binary
     ET.SubElement(field, 'FieldViewable').text = cleaned_viewable
     
@@ -109,7 +110,7 @@ def convert_html_to_xml_with_field_list(html_table):
         elif field_id.startswith('EMVTAG'):
             tag_value = field_id.split('-')[-1]
             field_data_id = f"NET.{mti_value}.DE.055.TAG.{tag_value}"
-            is_subfield = True  # EMV tags within DE.055 are subfields
+            is_subfield = False
         else:
             field_data_id = field_id
             is_subfield = False
@@ -125,23 +126,9 @@ def convert_html_to_xml_with_field_list(html_table):
         }
         
         if is_subfield:
-            if any(de in parent_field_id for de in ["DE.055"]):
-                if "NET.{0}.DE.055".format(mti_value) not in primary_field_mapping:
-                    primary_field_mapping["NET.{0}.DE.055".format(mti_value)] = add_field_to_list(root, {
-                        'field_id': f"NET.{mti_value}.DE.055",
-                        'friendly_name': "ICC data",
-                        'type': "B...256",
-                        'binary': "",
-                        'viewable': "",
-                        'comment': 'Default',
-                        'mti_value': mti_value
-                    })
-                primary_field = primary_field_mapping["NET.{0}.DE.055".format(mti_value)]
-            else:
-                if parent_field_id not in primary_field_mapping:
-                    primary_field_mapping[parent_field_id] = current_parent_field
-                primary_field = primary_field_mapping[parent_field_id]
-
+            if parent_field_id not in primary_field_mapping:
+                primary_field_mapping[parent_field_id] = current_parent_field
+            primary_field = primary_field_mapping[parent_field_id]
             if primary_field is not None:
                 parent_field_list = primary_field.find('FieldList')
                 add_field_to_list(parent_field_list, field_data, is_subfield=True)
