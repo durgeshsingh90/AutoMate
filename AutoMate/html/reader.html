@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced File Reader with Undo/Redo for Clear Values</title>
-    <!-- Bootstrap CSS -->
+    <title>Large File Handling with Clear and Copy Values Fix</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <style>
@@ -25,7 +24,7 @@
         }
 
         .fullscreen #editor {
-            height: calc(100vh - 25px);
+            height: calc(100vh - 30px);
         }
 
         .fullscreen #statusBar {
@@ -60,59 +59,84 @@
             border-top-color: #444;
         }
 
-        .error-line {
-            background-color: #ffdddd !important;
+        /* Responsive height adjustments */
+        @media (max-width: 768px) {
+            #editor {
+                height: 45vh;
+            }
         }
 
-        .btn-copied {
-            background-color: green;
-            color: white;
+        @media (min-width: 768px) and (max-width: 992px) {
+            #editor {
+                height: 55vh;
+            }
+        }
+
+        @media (min-width: 1200px) {
+            #editor {
+                height: 80vh;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container mt-3">
+    <div class="container-fluid mt-3">
         <!-- Header with buttons -->
-        <div class="d-flex justify-content-between align-items-center">
-            <h1 id="page-title">Advanced File Reader with Undo/Redo for Clear Values</h1>
-            <div>
-                <button id="fullscreenButton" class="btn btn-warning">Full Screen</button>
-                <button id="prettierButton" class="btn btn-success">Prettier</button>
-                <button id="clearTagValuesButton" class="btn btn-danger">Clear Values</button>
-                <button id="copyValuesButton" class="btn btn-info">Copy Values</button>
-                <button id="toggleDarkMode" class="btn btn-primary">Enable Dark Mode</button>
+        <div class="row">
+            <div class="col-12 d-flex justify-content-between align-items-center">
+                <h1 id="page-title">Large File Handling with Clear and Copy Values Fix</h1>
+                <div>
+                    <button id="fullscreenButton" class="btn btn-warning">Full Screen</button>
+                    <button id="prettierButton" class="btn btn-success">Prettier</button>
+                    <button id="clearTagValuesButton" class="btn btn-danger">Clear Values</button>
+                    <button id="copyValuesButton" class="btn btn-info">Copy Values</button>
+                    <button id="toggleDarkMode" class="btn btn-primary">Enable Dark Mode</button>
+                </div>
             </div>
         </div>
 
         <!-- File input -->
-        <input type="file" id="fileInput" class="form-control mt-3" accept=".xml,.html,.py,.json,.yaml,.yml">
-        <small class="text-muted">Select a Python, JSON, YAML, XML, or HTML file to load</small>
+        <div class="row mt-3">
+            <div class="col-12">
+                <input type="file" id="fileInput" class="form-control" accept=".xml,.html,.py,.json,.yaml,.yml">
+                <small class="text-muted">Select a Python, JSON, YAML, XML, or HTML file to load</small>
+            </div>
+        </div>
 
         <!-- Monaco Editor Container -->
-        <div id="editor" class="mt-3"></div>
+        <div class="row mt-3">
+            <div class="col-12">
+                <div id="editor"></div>
+            </div>
+        </div>
 
         <!-- Status Bar -->
-        <div id="statusBar">
-            <span id="lnCol" class="status-item">Ln 1, Col 1</span>
-            <span id="spaces" class="status-item">Spaces: 2</span>
-            <span id="utf" class="status-item">UTF-8</span>
-            <span id="language" class="status-item">Language: plaintext</span>
-            <span id="length" class="status-item">Length: 0</span>
-            <span id="lines" class="status-item">Lines: 0</span>
-            <span id="selection" class="status-item">Sel: 0</span>
-            <span id="tagCount" class="status-item">Tags/Keys: 0</span>
-            <span id="tagOccurrence" class="status-item">Occurrences: 0</span>
+        <div id="statusBar" class="row mt-1">
+            <span id="lnCol" class="status-item col">Ln 1, Col 1</span>
+            <span id="spaces" class="status-item col">Spaces: 2</span>
+            <span id="utf" class="status-item col">UTF-8</span>
+            <span id="language" class="status-item col">Language: plaintext</span>
+            <span id="length" class="status-item col">Length: 0</span>
+            <span id="lines" class="status-item col">Lines: 0</span>
+            <span id="selection" class="status-item col">Sel: 0</span>
+            <span id="tagCount" class="status-item col">Tags/Keys: 0</span>
+            <span id="tagOccurrence" class="status-item col">Occurrences: 0</span>
         </div>
     </div>
 
     <!-- Monaco Editor loader -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.33.0/min/vs/loader.min.js"></script>
     
+    <!-- Load libraries for formatting -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.0/beautify.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
+
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
         let editor;
+        const MAX_LOCAL_STORAGE_SIZE = 5000000;  // Roughly 5MB (browser-dependent)
 
         // Load Monaco Editor
         require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.33.0/min/vs' }});
@@ -128,7 +152,7 @@
                 automaticLayout: true,
                 scrollBeyondLastLine: false,
                 lineNumbers: 'on',
-                tabSize: 2 // Set tab size to 2 spaces as per your preference
+                tabSize: 2
             });
 
             // Restore file name in the file input
@@ -138,53 +162,57 @@
                 document.getElementById('fileInput').classList.add('file-loaded');
             }
 
-            // Save editor content on change
+            // Save editor content on change (check file size before saving)
             editor.onDidChangeModelContent(() => {
-                localStorage.setItem('editorContent', editor.getValue());
+                const content = editor.getValue();
+                const length = content.length;
+
+                // Only save to localStorage if the file is within the limit
+                if (length < MAX_LOCAL_STORAGE_SIZE) {
+                    localStorage.setItem('editorContent', content);
+                    localStorage.setItem('editorLanguage', editor.getModel().getLanguageId());
+                } else {
+                    console.warn('File too large to store in localStorage');
+                }
+
                 updateStatusBar();
-                updateTagOrKeyCount(editor.getValue());
+                updateTagOrKeyCount(content);
             });
 
             // Update status bar on editor events
             editor.onDidChangeCursorPosition(updateStatusBar);
             editor.onDidChangeModelContent(updateStatusBar);
-            editor.onDidChangeCursorSelection(() => updateTagOrKeyOccurrence(editor.getValue()));  // Update occurrence when selection changes
+            editor.onDidChangeCursorSelection(() => updateTagOrKeyOccurrence(editor.getValue()));
 
             // Update the tag/key count in the status bar if XML, JSON, or YAML is detected
             updateTagOrKeyCount(editor.getValue());
 
-            // Add keyboard shortcuts for undo and redo
-            window.addEventListener('keydown', function (e) {
-                // Detect if it's a Ctrl or Cmd key combination
-                const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
-                const ctrlOrCmd = isMac ? e.metaKey : e.ctrlKey;
-
-                // Ctrl + Z or Cmd + Z for undo
-                if (ctrlOrCmd && e.key === 'z' && !e.shiftKey) {
-                    e.preventDefault();
-                    editor.trigger('source', 'undo');  // Trigger undo
-                }
-
-                // Ctrl + Y or Cmd + Shift + Z for redo
-                if ((ctrlOrCmd && e.key === 'y') || (ctrlOrCmd && e.shiftKey && e.key === 'Z')) {
-                    e.preventDefault();
-                    editor.trigger('source', 'redo');  // Trigger redo
-                }
-            });
+            // Load dark mode preference from localStorage or system settings
+            const darkModePreference = localStorage.getItem('darkMode') || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            applyDarkMode(darkModePreference === 'dark');
         });
 
-        // Dark mode toggle
+        // Dark mode toggle and persistence
         document.getElementById('toggleDarkMode').addEventListener('click', function() {
-            if (document.body.classList.contains('dark-mode')) {
-                document.body.classList.remove('dark-mode');
-                editor.updateOptions({ theme: 'vs-light' });
-                this.textContent = 'Enable Dark Mode';
-            } else {
+            const isDarkMode = document.body.classList.contains('dark-mode');
+            const newMode = isDarkMode ? 'light' : 'dark';
+            applyDarkMode(newMode === 'dark');
+
+            // Save the new dark mode preference to localStorage
+            localStorage.setItem('darkMode', newMode);
+        });
+
+        function applyDarkMode(isDarkMode) {
+            if (isDarkMode) {
                 document.body.classList.add('dark-mode');
                 editor.updateOptions({ theme: 'vs-dark' });
-                this.textContent = 'Disable Dark Mode';
+                document.getElementById('toggleDarkMode').textContent = 'Disable Dark Mode';
+            } else {
+                document.body.classList.remove('dark-mode');
+                editor.updateOptions({ theme: 'vs-light' });
+                document.getElementById('toggleDarkMode').textContent = 'Enable Dark Mode';
             }
-        });
+        }
 
         // Full-screen toggle logic using the Fullscreen API
         document.getElementById('fullscreenButton').addEventListener('click', function() {
@@ -193,8 +221,9 @@
                 editorContainer.requestFullscreen();
                 this.textContent = 'Exit Full Screen';
             } else {
-                document.exitFullscreen();
-                this.textContent = 'Full Screen';
+                document.exitFullscreen().then(() => {
+                    this.textContent = 'Full Screen';
+                });
             }
         });
 
@@ -208,12 +237,9 @@
                     const language = determineLanguage(file.name);
                     monaco.editor.setModelLanguage(editor.getModel(), language);
                     editor.setValue(content);
-                    // Save the content and file name to localStorage
-                    localStorage.setItem('editorContent', content);
                     localStorage.setItem('editorFileName', file.name);
                     localStorage.setItem('editorLanguage', language);
 
-                    // Update the tag/key count if it's XML, JSON, or YAML
                     updateTagOrKeyCount(content);
                 };
                 reader.readAsText(file);
@@ -224,49 +250,15 @@
         function determineLanguage(filename) {
             const ext = filename.split('.').pop().toLowerCase();
             switch (ext) {
-                case 'xml':
-                    return 'xml';
-                case 'html':
-                    return 'html';
-                case 'py':
-                    return 'python';
-                case 'json':
-                    return 'json';
+                case 'xml': return 'xml';
+                case 'html': return 'html';
+                case 'py': return 'python';
+                case 'json': return 'json';
                 case 'yaml':
-                case 'yml':
-                    return 'yaml';
-                default:
-                    return 'plaintext';
+                case 'yml': return 'yaml';
+                default: return 'plaintext';
             }
         }
-
-        // Prettier functionality with improved XML/JSON/YAML formatting
-        document.getElementById('prettierButton').addEventListener('click', function() {
-            const model = editor.getModel();  // Correctly get the model
-            const language = model.getLanguageId();  // Use getLanguageId() to get the language
-            let content = editor.getValue();
-
-            try {
-                if (language === 'json') {
-                    content = JSON.stringify(JSON.parse(content), null, 4);
-                } else if (language === 'yaml' || language === 'yml') {
-                    content = jsyaml.dump(jsyaml.load(content), { indent: 2 });  // 2 spaces for YAML
-                } else if (language === 'python') {
-                    content = js_beautify(content, { indent_size: 2 });  // 2 spaces for Python
-                } else if (language === 'xml' || language === 'html') {
-                    content = formatXml(content);  // Improved XML formatting function
-                } else {
-                    throw new Error("Prettier is only available for JSON, YAML, Python, XML, and HTML");
-                }
-                editor.setValue(content);
-                localStorage.setItem('editorContent', content); // Save formatted content
-
-                // Update the tag/key count if it's XML/JSON/YAML
-                updateTagOrKeyCount(content);
-            } catch (err) {
-                highlightError(err.message);
-            }
-        });
 
         // Clear Values button functionality for XML, JSON, and YAML
         document.getElementById('clearTagValuesButton').addEventListener('click', function() {
@@ -275,38 +267,39 @@
 
             let clearedContent;
             if (language === 'xml' || language === 'html') {
-                clearedContent = content.replace(/>(.*?)</g, '><');  // Clear inner content between tags
+                clearedContent = content.replace(/>(.*?)</g, '><');
             } else if (language === 'json') {
                 let jsonObject = JSON.parse(content);
                 clearedContent = clearJsonValues(jsonObject);
                 clearedContent = JSON.stringify(clearedContent, null, 4);
             } else if (language === 'yaml' || language === 'yml') {
                 let yamlObject = jsyaml.load(content);
-                clearedContent = clearJsonValues(yamlObject);  // Treat YAML the same as JSON structure
+                clearedContent = clearJsonValues(yamlObject);
                 clearedContent = jsyaml.dump(clearedContent, { indent: 2 });
             } else {
                 alert("Clear values feature is only available for XML, HTML, JSON, and YAML.");
                 return;
             }
 
-            // Push undo stop to ensure the clear values action is treated as an undoable operation
-            editor.pushUndoStop();
-
-            // Register the clear values operation in Monaco's undo stack
-            editor.executeEdits('clear-values', [
-                {
-                    range: editor.getModel().getFullModelRange(),
-                    text: clearedContent
-                }
-            ]);
-
-            // Push another undo stop to finish the clear values operation
-            editor.pushUndoStop();
-
             editor.setValue(clearedContent);
-            localStorage.setItem('editorContent', clearedContent);  // Save cleared content to localStorage
-            updateTagOrKeyCount(clearedContent);  // Update tag/key count
+            localStorage.setItem('editorContent', clearedContent);
+            updateTagOrKeyCount(clearedContent);
         });
+
+        // Function to clear values in JSON and YAML
+        function clearJsonValues(obj) {
+            let clearedObj = {};
+            if (typeof obj === 'object' && obj !== null) {
+                for (let key in obj) {
+                    if (typeof obj[key] === 'object') {
+                        clearedObj[key] = clearJsonValues(obj[key]);
+                    } else {
+                        clearedObj[key] = "";  // Clear value
+                    }
+                }
+            }
+            return clearedObj;
+        }
 
         // Copy Values button functionality for XML, JSON, and YAML
         document.getElementById('copyValuesButton').addEventListener('click', function() {
@@ -316,47 +309,45 @@
             let values = '';
 
             if (language === 'xml' || language === 'html') {
-                values = extractXmlValues(content);  // Extract values from XML/HTML tags
+                values = extractXmlValues(content);
             } else if (language === 'json') {
                 let jsonObject = JSON.parse(content);
-                values = extractJsonValues(jsonObject);  // Extract values from JSON
+                values = extractJsonValues(jsonObject);
             } else if (language === 'yaml' || language === 'yml') {
                 let yamlObject = jsyaml.load(content);
-                values = extractJsonValues(yamlObject);  // Extract values from YAML (same as JSON structure)
+                values = extractJsonValues(yamlObject);
             } else {
                 alert("Copy values feature is only available for XML, HTML, JSON, and YAML.");
                 return;
             }
 
-            // Copy the extracted values to the clipboard
             navigator.clipboard.writeText(values).then(() => {
-                // Change button text and color to show "Copied!" for 1 second
                 const copyButton = document.getElementById('copyValuesButton');
                 copyButton.textContent = 'Copied!';
                 copyButton.classList.add('btn-copied');
 
                 setTimeout(() => {
-                    copyButton.textContent = 'Copy Values';  // Revert text
-                    copyButton.classList.remove('btn-copied');  // Revert color
-                }, 1000);  // 1 second delay
+                    copyButton.textContent = 'Copy Values';
+                    copyButton.classList.remove('btn-copied');
+                }, 1000);
             }, () => {
                 alert("Failed to copy values to clipboard.");
             });
         });
 
-        // Extract values from a JSON object (used for both JSON and YAML)
+        // Extract values from JSON/YAML object
         function extractJsonValues(obj) {
             let values = '';
             if (typeof obj === 'object' && obj !== null) {
                 for (let key in obj) {
                     if (typeof obj[key] === 'object') {
-                        values += extractJsonValues(obj[key]) + '\n';  // Recursive call for nested objects
+                        values += extractJsonValues(obj[key]) + '\n';
                     } else {
-                        values += obj[key] + '\n';  // Collect values for keys
+                        values += obj[key] + '\n';
                     }
                 }
             }
-            return values.trim();  // Trim trailing newline
+            return values.trim();
         }
 
         // Extract values from XML/HTML tags
@@ -365,20 +356,48 @@
             let values = '';
             let match;
             while ((match = valueRegex.exec(content)) !== null) {
-                if (match[1].trim()) {  // Only extract non-empty values
+                if (match[1].trim()) {
                     values += match[1].trim() + '\n';
                 }
             }
-            return values.trim();  // Trim trailing newline
+            return values.trim();
         }
 
-        // Improved custom XML formatter function
+        // Prettier button functionality
+        document.getElementById('prettierButton').addEventListener('click', function() {
+            const model = editor.getModel();
+            const language = model.getLanguageId();
+            let content = editor.getValue();
+
+            try {
+                if (language === 'json') {
+                    content = JSON.stringify(JSON.parse(content), null, 4);
+                } else if (language === 'yaml' || language === 'yml') {
+                    content = jsyaml.dump(jsyaml.load(content), { indent: 2 });
+                } else if (language === 'python') {
+                    content = js_beautify(content, { indent_size: 2 });
+                } else if (language === 'xml' || language === 'html') {
+                    content = formatXml(content);
+                } else {
+                    throw new Error("Prettier is only available for JSON, YAML, Python, XML, and HTML");
+                }
+                editor.setValue(content);
+                // Don't save formatted content to localStorage if it's too large
+                if (content.length < MAX_LOCAL_STORAGE_SIZE) {
+                    localStorage.setItem('editorContent', content);
+                }
+
+                updateTagOrKeyCount(content);
+            } catch (err) {
+                highlightError(err.message);
+            }
+        });
+
+        // XML/HTML formatter function
         function formatXml(xml) {
             let formatted = '';
             const reg = /(>)(<)(\/*)/g;
             xml = xml.replace(reg, '$1\r\n$2$3');
-
-            // Split inline tags like <tag>...</tag><tag>...</tag> onto separate lines
             xml = xml.replace(/>\s*</g, '>\n<');
 
             let pad = 0;
@@ -387,34 +406,15 @@
                 if (node.match(/.+<\/\w[^>]*>$/)) {
                     indent = 0;
                 } else if (node.match(/^<\/\w/)) {
-                    if (pad !== 0) {
-                        pad -= 1;
-                    }
+                    if (pad !== 0) pad -= 1;
                 } else if (node.match(/^<\w([^>]*[^\/])?>.*$/)) {
                     indent = 1;
-                } else {
-                    indent = 0;
                 }
                 const padding = new Array(pad + 1).join('  ');
                 formatted += padding + node + '\n';
                 pad += indent;
             });
-            return formatted.trim();  // Remove trailing newline
-        }
-
-        // Highlight error in editor
-        function highlightError(errorMessage) {
-            const errorMatch = errorMessage.match(/line (\d+)/);
-            if (errorMatch && errorMatch[1]) {
-                const lineNumber = parseInt(errorMatch[1], 10);
-                editor.deltaDecorations([], [{
-                    range: new monaco.Range(lineNumber, 1, lineNumber, 1),
-                    options: { isWholeLine: true, className: 'error-line' }
-                }]);
-                alert(`Error on line ${lineNumber}: ${errorMessage}`);
-            } else {
-                alert(`Error: ${errorMessage}`);
-            }
+            return formatted.trim();
         }
 
         // Update status bar
@@ -434,22 +434,19 @@
             document.getElementById('selection').textContent = `Sel: ${selectionLength}`;
         }
 
-        // Function to update the number of tags or keys (XML/HTML/JSON/YAML)
-        function updateTagOrKeyCount(content) {
-            const language = editor.getModel().getLanguageId();
-            let count = 0;
-
-            if (language === 'xml' || language === 'html') {
-                const tagRegex = /<[^>]+>/g;
-                const tagMatches = content.match(tagRegex);
-                count = tagMatches ? tagMatches.length : 0;
-            } else if (language === 'json' || language === 'yaml' || language === 'yml') {
-                const keyRegex = /"([^"]+)"(?=\s*:)/g;
-                const keyMatches = content.match(keyRegex);
-                count = keyMatches ? keyMatches.length : 0;
+        // Highlight error in editor
+        function highlightError(errorMessage) {
+            const errorMatch = errorMessage.match(/line (\d+)/);
+            if (errorMatch && errorMatch[1]) {
+                const lineNumber = parseInt(errorMatch[1], 10);
+                editor.deltaDecorations([], [{
+                    range: new monaco.Range(lineNumber, 1, lineNumber, 1),
+                    options: { isWholeLine: true, className: 'error-line' }
+                }]);
+                alert(`Error on line ${lineNumber}: ${errorMessage}`);
+            } else {
+                alert(`Error: ${errorMessage}`);
             }
-
-            document.getElementById('tagCount').textContent = `Tags/Keys: ${count}`;
         }
 
         // New function to update the occurrence of the selected tag/key
