@@ -31,6 +31,48 @@
             flex-direction: column;
         }
 
+        /* Header bar for text and dark mode toggle button */
+        #headerBar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 20px;
+            background-color: #333;
+            color: #fff;
+        }
+
+        #headerBarText {
+            font-size: 16px;
+            text-align: center;
+            flex-grow: 1; /* Make the text take the center space */
+        }
+
+        /* Empty spacer div to push the toggle button to the right */
+        .spacer {
+            flex-grow: 0;
+        }
+
+        /* Dark mode toggle button */
+        #darkModeToggle {
+            padding: 0px 0px;
+            cursor: pointer;
+            background-color: #444;
+            color: #fff;
+            border: none;
+            border-radius: 0px;
+            font-size: 14px;
+        }
+
+        body.light-mode #darkModeToggle {
+            background-color: #ddd;
+            color: #333;
+        }
+
+        body.light-mode #headerBar {
+            background-color: #ddd;
+            color: #333;
+        }
+
         /* Monaco editor should grow to fill available space */
         #editorContainer {
             flex-grow: 1;
@@ -61,29 +103,15 @@
             color: #333;
             border-top: 1px solid #ccc;
         }
-
-        /* Dark mode toggle button */
-        #darkModeToggle {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            padding: 10px 20px;
-            cursor: pointer;
-            background-color: #333;
-            color: #fff;
-            border: none;
-            border-radius: 5px;
-            font-size: 14px;
-        }
-
-        body.light-mode #darkModeToggle {
-            background-color: #ddd;
-            color: #333;
-        }
     </style>
 </head>
 <body class="light-mode">
-    <button id="darkModeToggle">Dark Mode</button>
+    <!-- Header Bar with centered text and Dark Mode Toggle Button -->
+    <div id="headerBar">
+        <div class="spacer"></div> <!-- Empty div to push the text to center -->
+        <span id="headerBarText">Comparison Editor</span>
+        <button id="darkModeToggle">Dark Mode</button>
+    </div>
 
     <!-- Editor Container Wrapper with flex layout -->
     <div id="editorContainerWrapper">
