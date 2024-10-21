@@ -3,24 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Real-time Comparison</title>
+    <title>Multi-Language Comparison Editor</title>
     <link rel="stylesheet" href="https://unpkg.com/monaco-editor/min/vs/editor/editor.main.css">
-    <link rel="stylesheet" href="https://unpkg.com/monaco-editor/min/vs/editor/editor.main.nls.css">
     <style>
-        /* Initial styles for light mode */
         body.light-mode {
             background-color: #f5f5f5;
             color: #333;
-            font-family: Arial, sans-serif;
         }
 
         body.dark-mode {
             background-color: #121212;
             color: #e0e0e0;
-        }
-
-        h1 {
-            text-align: center;
         }
 
         #editorContainer {
@@ -40,19 +33,6 @@
             border-top: 1px solid #444;
         }
 
-        /* Dark mode for status bar */
-        body.dark-mode #statusBar {
-            background-color: #2c2c2c;
-            color: #ffffff;
-        }
-
-        body.light-mode #statusBar {
-            background-color: #f5f5f5;
-            color: #333;
-            border-top: 1px solid #ccc;
-        }
-
-        /* Toggle button */
         #darkModeToggle {
             position: absolute;
             top: 20px;
@@ -73,11 +53,10 @@
     </style>
 </head>
 <body class="light-mode">
-
-    <h1>Real-time Comparison</h1>
     <button id="darkModeToggle">Dark Mode</button>
     <div id="editorContainer"></div>
     <div id="statusBar">
+        <span id="languages">Languages: Unknown | Unknown</span>
         <span id="lnCl">Ln 1, Col 1</span>
         <span id="spaces">Spaces: 0</span>
         <span id="sel">Sel: 0</span>
@@ -118,28 +97,46 @@
             localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
         }
 
-        // Load theme from localStorage if available
-        function loadThemeFromLocalStorage() {
-            const savedTheme = localStorage.getItem('theme');
-            if (savedTheme === 'dark') {
-                isDarkMode = true;
-                document.body.classList.remove('light-mode');
-                document.body.classList.add('dark-mode');
-                document.getElementById('darkModeToggle').textContent = 'Light Mode';
-            } else {
-                isDarkMode = false;
-                document.body.classList.remove('dark-mode');
-                document.body.classList.add('light-mode');
-                document.getElementById('darkModeToggle').textContent = 'Dark Mode';
-            }
+        // Save the content of the editors to localStorage
+        function saveEditorContent(originalModel, modifiedModel) {
+            localStorage.setItem('originalContent', originalModel.getValue());
+            localStorage.setItem('modifiedContent', modifiedModel.getValue());
+        }
 
-            // Set Monaco editor theme based on saved theme
-            monaco.editor.setTheme(isDarkMode ? 'vs-dark' : 'vs');
+        // Load content from localStorage if available
+        function loadEditorContent() {
+            const originalContent = localStorage.getItem('originalContent') || 'Your original code or content goes here...';
+            const modifiedContent = localStorage.getItem('modifiedContent') || 'Your modified code or content goes here...';
+            return { originalContent, modifiedContent };
+        }
+
+        // Language detection function
+        function detectLanguage(model) {
+            const languageId = monaco.editor.getModelLanguage(model);
+            const languageMap = {
+                'plaintext': 'Plain Text',
+                'javascript': 'JavaScript',
+                'typescript': 'TypeScript',
+                'json': 'JSON',
+                'xml': 'XML',
+                'yaml': 'YAML',
+                'html': 'HTML',
+                'css': 'CSS',
+                'python': 'Python',
+                'java': 'Java',
+                'csharp': 'C#',
+                'cpp': 'C++',
+                // Add other languages here as needed
+            };
+            return languageMap[languageId] || languageId;
         }
 
         require.config({ paths: { 'vs': 'https://unpkg.com/monaco-editor/min/vs' } });
         require(['vs/editor/editor.main'], function() {
             const container = document.getElementById('editorContainer');
+
+            // Load saved content from localStorage
+            const { originalContent, modifiedContent } = loadEditorContent();
 
             // Create a diff editor with advanced settings
             const diffEditor = monaco.editor.createDiffEditor(container, {
@@ -155,27 +152,8 @@
                 renderMinimap: true
             });
 
-            const originalCode = [
-                '// Original code',
-                'function helloWorld() {',
-                '    console.log("Hello from the left!");',
-                '}',
-                'helloWorld();',
-                '/* Original comments and code block */'
-            ].join('\n');
-
-            const modifiedCode = [
-                '// Modified code',
-                'function helloWorld() {',
-                '    console.log("Hello from the right!");',
-                '    alert("This is an alert!");',
-                '}',
-                'helloWorld();',
-                '/* Modified comments and code block */'
-            ].join('\n');
-
-            const originalModel = monaco.editor.createModel(originalCode, 'javascript');
-            const modifiedModel = monaco.editor.createModel(modifiedCode, 'javascript');
+            const originalModel = monaco.editor.createModel(originalContent, 'plaintext');
+            const modifiedModel = monaco.editor.createModel(modifiedContent, 'plaintext');
 
             diffEditor.setModel({
                 original: originalModel,
@@ -183,6 +161,7 @@
             });
 
             // Status bar elements
+            const languagesElement = document.getElementById('languages');
             const lnCl = document.getElementById('lnCl');
             const spaces = document.getElementById('spaces');
             const sel = document.getElementById('sel');
@@ -198,7 +177,7 @@
                 // Update Line, Column
                 lnCl.textContent = `Ln ${position.lineNumber}, Col ${position.column}`;
 
-                // Update Spaces in current line (count spaces in line content)
+                // Update Spaces in current line
                 const lineContent = model.getLineContent(position.lineNumber);
                 const spaceCount = (lineContent.match(/ /g) || []).length;
                 spaces.textContent = `Spaces: ${spaceCount}`;
@@ -214,6 +193,25 @@
                 lines.textContent = `Lines: ${model.getLineCount()}`;
             }
 
+            // Function to update languages in the status bar
+            function updateLanguages() {
+                const originalLanguage = detectLanguage(originalModel);
+                const modifiedLanguage = detectLanguage(modifiedModel);
+
+                // Update languages in the format "Languages: original | modified"
+                languagesElement.textContent = `Languages: ${originalLanguage} | ${modifiedLanguage}`;
+            }
+
+            // Save editor content on change
+            originalModel.onDidChangeContent(() => {
+                updateLanguages();
+                saveEditorContent(originalModel, modifiedModel);
+            });
+            modifiedModel.onDidChangeContent(() => {
+                updateLanguages();
+                saveEditorContent(originalModel, modifiedModel);
+            });
+
             // Hook into both original and modified editors to track changes
             [diffEditor.getOriginalEditor(), diffEditor.getModifiedEditor()].forEach(editor => {
                 editor.onDidChangeCursorPosition(() => updateStatusBar(editor));
@@ -223,12 +221,12 @@
                 updateStatusBar(editor);
             });
 
-            // Load theme from localStorage
-            loadThemeFromLocalStorage();
-        });
+            // Initially detect and update the languages
+            updateLanguages();
 
-        // Event listener for the dark mode toggle
-        document.getElementById('darkModeToggle').addEventListener('click', toggleDarkMode);
+            // Event listener for the dark mode toggle
+            document.getElementById('darkModeToggle').addEventListener('click', toggleDarkMode);
+        });
     </script>
 </body>
 </html>
