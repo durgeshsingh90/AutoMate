@@ -175,6 +175,9 @@ def format_viewable_field_for_de055(viewable_string):
     """Format FieldViewable for NET.1100.DE.055 specifically."""
     return re.sub(r'[^a-zA-Z0-9]', '', viewable_string)
 
+# Add this import for parsing date strings
+from dateutil import parser
+
 def convert_html_to_xml_with_field_list(html_table):
     soup = BeautifulSoup(html_table, 'html.parser')
     rows = soup.find_all('tr')
@@ -184,6 +187,7 @@ def convert_html_to_xml_with_field_list(html_table):
 
     index = 0
     raw_data_index = -1
+    de007_date_time = ""  # Initialize a variable to hold the DE007 date-time
 
     while index < len(rows):
         row = rows[index]
@@ -248,15 +252,48 @@ def convert_html_to_xml_with_field_list(html_table):
             raw_data.text = formatted_raw_data
             root.append(raw_data)  # Insert RawData immediately after OnlineMessage element
             
-            # Add MessageInfo element
+            # Add MessageInfo element with the extracted DE007 date-time
             message_info = ET.Element('MessageInfo')
             date_time_element = ET.SubElement(message_info, 'Date-Time')
-            date_time_element.text = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z'
+            date_time_element.text = de007_date_time if de007_date_time else datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z'
             root.append(message_info)
 
             raw_data_index = index
             if 'FieldList' not in locals():
                 field_list = ET.SubElement(root, 'FieldList')
+            index += 1
+            continue
+
+        # Handle DE007 separately to extract the date-time value
+        if field_id == "DE007":
+            field_viewable = tds[6].get_text(strip=True)
+            if len(field_viewable) == 10:
+                # Format the DE007 value into the correct ISO 8601 format with milliseconds and 'Z' timezone
+                de007_date_time = f"20{field_viewable[:2]}-{field_viewable[2:4]}-{field_viewable[4:6]}T{field_viewable[6:8]}:{field_viewable[8:10]}:00.000Z"
+            
+            # Continue normal process for DE007 conversion
+            friendly_name = tds[1].get_text(strip=True)
+            field_type = tds[2].get_text(strip=True)
+            field_binary = tds[4].get_text(strip=True)
+            tool_comment = tds[7].get_text(strip=True) if tds[7].get_text(strip=True) else "Default"
+
+            field_data_id = f"NET.{mti_value}.DE.{field_id[2:]}"
+
+            field_data = {
+                'field_id': field_data_id,
+                'friendly_name': friendly_name,
+                'type': field_type,
+                'binary': field_binary,
+                'viewable': field_viewable,
+                'comment': tool_comment,
+                'mti_value': mti_value
+            }
+
+            if field_data_id not in parent_fields:
+                field_elt, field_list_elt = add_field_to_list(field_list, field_data)
+                if field_elt is not None and field_list_elt is not None:
+                    parent_fields[field_data_id] = field_list_elt
+
             index += 1
             continue
 
@@ -310,6 +347,8 @@ def convert_html_to_xml_with_field_list(html_table):
     no_decl_xml_str_pretty = dom.toprettyxml(indent="  ").split('\n', 1)[1]
     return no_decl_xml_str_pretty
 
+# Rest of the code remains unchanged
+
 def read_file(file_name):
     try:
         with open(file_name, 'r', encoding='utf-8') as file:
@@ -327,9 +366,7 @@ def write_to_file(file_name, content):
     except Exception as e:
         print(f"Error writing to file {file_name}: {str(e)}")
 
-# Reading and converting the HTML input
 html_table = read_file('input.html')
 if html_table:
     xml_output = convert_html_to_xml_with_field_list(html_table)
-    # Writing the output to the XML file
     write_to_file('output.xml', xml_output)
