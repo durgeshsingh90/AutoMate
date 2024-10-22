@@ -3,6 +3,7 @@ from xml.etree.ElementTree import Element, SubElement
 from bs4 import BeautifulSoup
 import re
 import xml.dom.minidom
+from datetime import datetime
 
 # Configurable lists and mappings
 tool_comment_level_de = [
@@ -177,11 +178,23 @@ def format_viewable_field_for_de055(viewable_string):
 def convert_html_to_xml_with_field_list(html_table):
     soup = BeautifulSoup(html_table, 'html.parser')
     rows = soup.find_all('tr')
-    root = ET.Element('FieldList')
+    root = ET.Element('OnlineMessage', {'Class': 'REQUEST', 'Source': 'Standard', 'Destination': 'Default'})
+    raw_data = ET.Element('RawData')
+    root.append(raw_data)  # Insert RawData immediately after OnlineMessage element
+
+    # Add MessageInfo element
+    message_info = ET.Element('MessageInfo')
+    date_time_element = ET.SubElement(message_info, 'Date-Time')
+    date_time_element.text = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z'
+    root.append(message_info)
+
+    field_list = ET.SubElement(root, 'FieldList')
     mti_value = None
     parent_fields = {}
 
     index = 0
+    raw_data_index = -1
+
     while index < len(rows):
         row = rows[index]
         tds = row.find_all('td')
@@ -214,7 +227,7 @@ def convert_html_to_xml_with_field_list(html_table):
                 'mti_value': mti_value
             }
 
-            add_field_to_list(root, field_data)
+            add_field_to_list(field_list, field_data)
             index += 1
             continue
 
@@ -223,15 +236,15 @@ def convert_html_to_xml_with_field_list(html_table):
             continue
 
         if field_id == "DE055":
-            index = handle_de55_field(root, mti_value, rows, index)
+            index = handle_de55_field(field_list, mti_value, rows, index)
             continue
 
         # Detect and handle Raw data row separately
-        if 'Raw data' in field_id:
+        if 'Raw data' in field_id and raw_data_index == -1:  # Only handle the first occurrence of Raw data
             raw_data_field = tds[1].get_text()
             formatted_raw_data = format_raw_data(raw_data_field)
-            raw_data_elt = ET.SubElement(root, 'RawData')
-            raw_data_elt.text = formatted_raw_data
+            raw_data.text = formatted_raw_data
+            raw_data_index = index
             index += 1
             continue
 
@@ -270,11 +283,11 @@ def convert_html_to_xml_with_field_list(html_table):
             if parent_field_id in parent_fields:
                 add_field_to_list(parent_fields[parent_field_id], field_data, is_subfield=True)
             else:
-                parent_field_elt, parent_field_list_elt = add_field_to_list(root, field_data, is_subfield=True)
+                parent_field_elt, parent_field_list_elt = add_field_to_list(field_list, field_data, is_subfield=True)
                 parent_fields[parent_field_id] = parent_field_list_elt
         else:
             if field_data_id not in parent_fields:
-                field_elt, field_list_elt = add_field_to_list(root, field_data)
+                field_elt, field_list_elt = add_field_to_list(field_list, field_data)
                 if field_elt is not None and field_list_elt is not None:
                     parent_fields[field_data_id] = field_list_elt
 
