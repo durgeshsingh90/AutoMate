@@ -178,17 +178,7 @@ def format_viewable_field_for_de055(viewable_string):
 def convert_html_to_xml_with_field_list(html_table):
     soup = BeautifulSoup(html_table, 'html.parser')
     rows = soup.find_all('tr')
-    root = ET.Element('OnlineMessage', {'Class': 'REQUEST', 'Source': 'Standard', 'Destination': 'Default'})
-    raw_data = ET.Element('RawData')
-    root.append(raw_data)  # Insert RawData immediately after OnlineMessage element
-
-    # Add MessageInfo element
-    message_info = ET.Element('MessageInfo')
-    date_time_element = ET.SubElement(message_info, 'Date-Time')
-    date_time_element.text = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z'
-    root.append(message_info)
-
-    field_list = ET.SubElement(root, 'FieldList')
+    root = ET.Element('OnlineMessage', {'Source': 'Standard', 'Destination': 'Default'})  # Initialize without Class attribute
     mti_value = None
     parent_fields = {}
 
@@ -212,10 +202,14 @@ def convert_html_to_xml_with_field_list(html_table):
             friendly_name = tds[1].get_text(strip=True)
             field_type = tds[2].get_text(strip=True)
             field_binary = tds[4].get_text(strip=True)
-            field_viewable = tds[6].get_text()
+            field_viewable = tds[6].get_text().strip()
             tool_comment = tds[7].get_text(strip=True) if tds[7].get_text(strip=True) else "Default"
 
-            mti_value = field_viewable.strip()
+            mti_value = field_viewable
+
+            # Determine the MTI Class value based on the last two digits
+            mti_class_value = "REQUEST" if mti_value[-2:] == "00" else "RESPONSE"
+            root.set('Class', mti_class_value)  # Set the Class attribute once MTI is encountered
 
             field_data = {
                 'field_id': "MTI",
@@ -227,7 +221,12 @@ def convert_html_to_xml_with_field_list(html_table):
                 'mti_value': mti_value
             }
 
-            add_field_to_list(field_list, field_data)
+            if 'FieldList' in locals():
+                add_field_to_list(field_list, field_data)
+            else:
+                field_list = ET.SubElement(root, 'FieldList')
+                add_field_to_list(field_list, field_data)
+
             index += 1
             continue
 
@@ -243,8 +242,21 @@ def convert_html_to_xml_with_field_list(html_table):
         if 'Raw data' in field_id and raw_data_index == -1:  # Only handle the first occurrence of Raw data
             raw_data_field = tds[1].get_text()
             formatted_raw_data = format_raw_data(raw_data_field)
+            if root is None:
+                root = ET.Element('OnlineMessage', {'Class': 'UNKNOWN', 'Source': 'Standard', 'Destination': 'Default'})
+            raw_data = ET.Element('RawData')
             raw_data.text = formatted_raw_data
+            root.append(raw_data)  # Insert RawData immediately after OnlineMessage element
+            
+            # Add MessageInfo element
+            message_info = ET.Element('MessageInfo')
+            date_time_element = ET.SubElement(message_info, 'Date-Time')
+            date_time_element.text = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z'
+            root.append(message_info)
+
             raw_data_index = index
+            if 'FieldList' not in locals():
+                field_list = ET.SubElement(root, 'FieldList')
             index += 1
             continue
 
