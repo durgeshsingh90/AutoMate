@@ -178,106 +178,164 @@ def format_viewable_field_for_de055(viewable_string):
 # Add this import for parsing date strings
 from dateutil import parser
 
+import xml.etree.ElementTree as ET
+import xml.dom.minidom
+from datetime import datetime
+from bs4 import BeautifulSoup
+import re
+from xml.etree.ElementTree import SubElement
+
+import xml.etree.ElementTree as ET
+import xml.dom.minidom
+from bs4 import BeautifulSoup
+import re
+from datetime import datetime
+
+
+# Extend skip_de to include specific patterns
+skip_de.extend(["DE039MTI"])
+
 def convert_html_to_xml_with_field_list(html_table):
     soup = BeautifulSoup(html_table, 'html.parser')
-    rows = soup.find_all('tr')
-    root = ET.Element('OnlineMessage', {'Source': 'Standard', 'Destination': 'Default'})  # Initialize without Class attribute
-    mti_value = None
-    parent_fields = {}
+    tables = soup.find_all('table')
+    
+    print(f"Found {len(tables)} tables")  # Debug: Check number of tables found
 
-    index = 0
-    raw_data_index = -1
-    de007_date_time = ""  # Initialize a variable to hold the DE007 date-time
+    root = ET.Element('OnlineMessageList')
+    
+    for tbl_index, table in enumerate(tables):
+        print(f"Processing table {tbl_index + 1}")  # Debug: Processing table
+        rows = table.find_all('tr')
+        message_root = ET.Element('OnlineMessage', {'Source': 'Standard', 'Destination': 'Default'})  # Initialize without Class attribute
+        mti_value = None
+        parent_fields = {}
 
-    while index < len(rows):
-        row = rows[index]
-        tds = row.find_all('td')
-        if not tds:
-            index += 1
-            continue
+        index = 0
+        raw_data_index = -1
+        de007_date_time = ""  # Initialize a variable to hold the DE007 date-time
 
-        field_id = tds[0].get_text().replace("&nbsp;", "").strip()
+        while index < len(rows):
+            row = rows[index]
+            tds = row.find_all('td')
+            if not tds:
+                index += 1
+                continue
 
-        if field_id == "":
-            index += 1
-            continue
+            field_id = tds[0].get_text().replace("&nbsp;", "").strip()
 
-        if 'MTI' in field_id:
+            # Ignore special DE039MTIxxxx pattern
+            if any(field_id.startswith(de) for de in skip_de) or "DE039MTI" in field_id:
+                index += 1
+                continue
+
+            if field_id == "":
+                index += 1
+                continue
+
+            if 'MTI' in field_id:
+                friendly_name = tds[1].get_text(strip=True)
+                field_type = tds[2].get_text(strip=True)
+                field_binary = tds[4].get_text(strip=True)
+                field_viewable = tds[6].get_text().strip()
+                tool_comment = tds[7].get_text(strip=True) if tds[7].get_text(strip=True) else "Default"
+
+                mti_value = field_viewable
+                
+                print(f"Found MTI: {mti_value}")  # Debug: Found MTI
+
+                # Determine the MTI Class value based on the last two digits
+                mti_class_value = "REQUEST" if mti_value[-2:] == "00" else "RESPONSE"
+                message_root.set('Class', mti_class_value)  # Set the Class attribute once MTI is encountered
+
+                field_data = {
+                    'field_id': "MTI",
+                    'friendly_name': friendly_name,
+                    'type': field_type,
+                    'binary': field_binary,
+                    'viewable': field_viewable,
+                    'comment': tool_comment,
+                    'mti_value': mti_value
+                }
+
+                field_list = ET.SubElement(message_root, 'FieldList')
+                add_field_to_list(field_list, field_data)
+
+                index += 1
+                continue
+
+            if field_id == "DE055":
+                index = handle_de55_field(field_list, mti_value, rows, index)
+                continue
+
+            # Detect and handle Raw data row separately
+            if 'Raw data' in field_id and raw_data_index == -1:  # Only handle the first occurrence of Raw data
+                raw_data_field = tds[1].get_text()
+                formatted_raw_data = format_raw_data(raw_data_field)
+                raw_data = ET.Element('RawData')
+                raw_data.text = formatted_raw_data
+                message_root.append(raw_data)  # Insert RawData immediately after OnlineMessage element
+                
+                # Add MessageInfo element with the extracted DE007 date-time
+                message_info = ET.Element('MessageInfo')
+                date_time_element = ET.SubElement(message_info, 'Date-Time')
+                date_time_element.text = de007_date_time if de007_date_time else datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z'
+                message_root.append(message_info)
+
+                raw_data_index = index
+                index += 1
+                continue
+
+            # Handle DE007 separately to extract the date-time value
+            if field_id == "DE007":
+                field_viewable = tds[6].get_text(strip=True)
+                if len(field_viewable) == 10:
+                    # Format the DE007 value into the correct ISO 8601 format with milliseconds and 'Z' timezone
+                    de007_date_time = f"20{field_viewable[:2]}-{field_viewable[2:4]}-{field_viewable[4:6]}T{field_viewable[6:8]}:{field_viewable[8:10]}:00.000Z"
+                
+                # Continue normal process for DE007 conversion
+                friendly_name = tds[1].get_text(strip=True)
+                field_type = tds[2].get_text(strip=True)
+                field_binary = tds[4].get_text(strip=True)
+                tool_comment = tds[7].get_text(strip=True) if tds[7].get_text(strip=True) else "Default"
+
+                field_data_id = f"NET.{mti_value}.DE.{field_id[2:]}"
+
+                field_data = {
+                    'field_id': field_data_id,
+                    'friendly_name': friendly_name,
+                    'type': field_type,
+                    'binary': field_binary,
+                    'viewable': field_viewable,
+                    'comment': tool_comment,
+                    'mti_value': mti_value
+                }
+
+                if field_data_id not in parent_fields:
+                    field_elt, field_list_elt = add_field_to_list(field_list, field_data)
+                    if field_elt is not None and field_list_elt is not None:
+                        parent_fields[field_data_id] = field_list_elt
+
+                index += 1
+                continue
+
             friendly_name = tds[1].get_text(strip=True)
             field_type = tds[2].get_text(strip=True)
             field_binary = tds[4].get_text(strip=True)
-            field_viewable = tds[6].get_text().strip()
+            field_viewable = tds[6].get_text()
             tool_comment = tds[7].get_text(strip=True) if tds[7].get_text(strip=True) else "Default"
 
-            mti_value = field_viewable
-
-            # Determine the MTI Class value based on the last two digits
-            mti_class_value = "REQUEST" if mti_value[-2:] == "00" else "RESPONSE"
-            root.set('Class', mti_class_value)  # Set the Class attribute once MTI is encountered
-
-            field_data = {
-                'field_id': "MTI",
-                'friendly_name': friendly_name,
-                'type': field_type,
-                'binary': field_binary,
-                'viewable': field_viewable,
-                'comment': tool_comment,
-                'mti_value': mti_value
-            }
-
-            if 'FieldList' in locals():
-                add_field_to_list(field_list, field_data)
+            if 'S' in field_id and field_id.startswith('DE'):
+                parent_field_id = field_id.split('S')[0]
+                subfield_number = field_id.split('S')[-1]
+                subfield_number_padded = subfield_number.zfill(3)
+                field_data_id = f"NET.{mti_value}.DE.{parent_field_id[2:]}.SE.{subfield_number_padded}"
+            elif field_id.startswith('DE'):
+                field_data_id = f"NET.{mti_value}.DE.{field_id[2:]}"
+            elif field_id.startswith('EMVTAG'):
+                tag_value = field_id.split('-')[-1]
+                field_data_id = f"NET.{mti_value}.DE.055.TAG.{tag_value}"
             else:
-                field_list = ET.SubElement(root, 'FieldList')
-                add_field_to_list(field_list, field_data)
-
-            index += 1
-            continue
-
-        if any(field_id.startswith(de) for de in skip_de):
-            index += 1
-            continue
-
-        if field_id == "DE055":
-            index = handle_de55_field(field_list, mti_value, rows, index)
-            continue
-
-        # Detect and handle Raw data row separately
-        if 'Raw data' in field_id and raw_data_index == -1:  # Only handle the first occurrence of Raw data
-            raw_data_field = tds[1].get_text()
-            formatted_raw_data = format_raw_data(raw_data_field)
-            if root is None:
-                root = ET.Element('OnlineMessage', {'Class': 'UNKNOWN', 'Source': 'Standard', 'Destination': 'Default'})
-            raw_data = ET.Element('RawData')
-            raw_data.text = formatted_raw_data
-            root.append(raw_data)  # Insert RawData immediately after OnlineMessage element
-            
-            # Add MessageInfo element with the extracted DE007 date-time
-            message_info = ET.Element('MessageInfo')
-            date_time_element = ET.SubElement(message_info, 'Date-Time')
-            date_time_element.text = de007_date_time if de007_date_time else datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z'
-            root.append(message_info)
-
-            raw_data_index = index
-            if 'FieldList' not in locals():
-                field_list = ET.SubElement(root, 'FieldList')
-            index += 1
-            continue
-
-        # Handle DE007 separately to extract the date-time value
-        if field_id == "DE007":
-            field_viewable = tds[6].get_text(strip=True)
-            if len(field_viewable) == 10:
-                # Format the DE007 value into the correct ISO 8601 format with milliseconds and 'Z' timezone
-                de007_date_time = f"20{field_viewable[:2]}-{field_viewable[2:4]}-{field_viewable[4:6]}T{field_viewable[6:8]}:{field_viewable[8:10]}:00.000Z"
-            
-            # Continue normal process for DE007 conversion
-            friendly_name = tds[1].get_text(strip=True)
-            field_type = tds[2].get_text(strip=True)
-            field_binary = tds[4].get_text(strip=True)
-            tool_comment = tds[7].get_text(strip=True) if tds[7].get_text(strip=True) else "Default"
-
-            field_data_id = f"NET.{mti_value}.DE.{field_id[2:]}"
+                field_data_id = field_id
 
             field_data = {
                 'field_id': field_data_id,
@@ -289,65 +347,28 @@ def convert_html_to_xml_with_field_list(html_table):
                 'mti_value': mti_value
             }
 
-            if field_data_id not in parent_fields:
-                field_elt, field_list_elt = add_field_to_list(field_list, field_data)
-                if field_elt is not None and field_list_elt is not None:
-                    parent_fields[field_data_id] = field_list_elt
+            if ".SE." in field_data_id:
+                parent_field_id = field_data_id.rsplit(".SE.", 1)[0]
+                if parent_field_id in parent_fields:
+                    add_field_to_list(parent_fields[parent_field_id], field_data, is_subfield=True)
+                else:
+                    parent_field_elt, parent_field_list_elt = add_field_to_list(field_list, field_data, is_subfield=True)
+                    parent_fields[parent_field_id] = parent_field_list_elt
+            else:
+                if field_data_id not in parent_fields:
+                    field_elt, field_list_elt = add_field_to_list(field_list, field_data)
+                    if field_elt is not None and field_list_elt is not None:
+                        parent_fields[field_data_id] = field_list_elt
 
             index += 1
-            continue
 
-        # Handle other fields and subfields
-        friendly_name = tds[1].get_text(strip=True)
-        field_type = tds[2].get_text(strip=True)
-        field_binary = tds[4].get_text(strip=True)
-        field_viewable = tds[6].get_text()
-        tool_comment = tds[7].get_text(strip=True) if tds[7].get_text(strip=True) else "Default"
-
-        if 'S' in field_id and field_id.startswith('DE'):
-            parent_field_id = field_id.split('S')[0]
-            subfield_number = field_id.split('S')[-1]
-            subfield_number_padded = subfield_number.zfill(3)
-            field_data_id = f"NET.{mti_value}.DE.{parent_field_id[2:]}.SE.{subfield_number_padded}"
-        elif field_id.startswith('DE'):
-            field_data_id = f"NET.{mti_value}.DE.{field_id[2:]}"
-        elif field_id.startswith('EMVTAG'):
-            tag_value = field_id.split('-')[-1]
-            field_data_id = f"NET.{mti_value}.DE.055.TAG.{tag_value}"
-        else:
-            field_data_id = field_id
-
-        field_data = {
-            'field_id': field_data_id,
-            'friendly_name': friendly_name,
-            'type': field_type,
-            'binary': field_binary,
-            'viewable': field_viewable,
-            'comment': tool_comment,
-            'mti_value': mti_value
-        }
-
-        if ".SE." in field_data_id:
-            parent_field_id = field_data_id.rsplit(".SE.", 1)[0]
-            if parent_field_id in parent_fields:
-                add_field_to_list(parent_fields[parent_field_id], field_data, is_subfield=True)
-            else:
-                parent_field_elt, parent_field_list_elt = add_field_to_list(field_list, field_data, is_subfield=True)
-                parent_fields[parent_field_id] = parent_field_list_elt
-        else:
-            if field_data_id not in parent_fields:
-                field_elt, field_list_elt = add_field_to_list(field_list, field_data)
-                if field_elt is not None and field_list_elt is not None:
-                    parent_fields[field_data_id] = field_list_elt
-
-        index += 1
+        root.append(message_root)
 
     xml_str = ET.tostring(root, encoding='utf-8')
     dom = xml.dom.minidom.parseString(xml_str)
     no_decl_xml_str_pretty = dom.toprettyxml(indent="  ").split('\n', 1)[1]
     return no_decl_xml_str_pretty
 
-# Rest of the code remains unchanged
 
 def read_file(file_name):
     try:
