@@ -164,8 +164,8 @@ def format_binary_field(binary_string):
 
 def format_viewable_field(viewable_string, tag=None, extra_digits=0):
     cleaned_viewable = re.sub(r'[^a-zA-Z0-9]', '', viewable_string)
-    if tag == "9F02":
-        return cleaned_viewable.zfill(12)
+    # if tag == "9F02":
+    #     return cleaned_viewable.zfill(12)
     if tag:
         tag_length = len(tag) + extra_digits
         return cleaned_viewable[tag_length:]
@@ -387,7 +387,7 @@ def write_to_file(file_name, content):
     except Exception as e:
         print(f"Error writing to file {file_name}: {str(e)}")
 
-html_table = read_file('input.html')
+html_table = read_file('matching_blocks.html')
 if html_table:
     xml_output = convert_html_to_xml_with_field_list(html_table)
     write_to_file('output.xml', xml_output)
