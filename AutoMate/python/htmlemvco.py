@@ -1,11 +1,15 @@
-from xml.etree.ElementTree import Element, SubElement, tostring
 import xml.etree.ElementTree as ET
-import xml.dom.minidom
+from xml.etree.ElementTree import Element, SubElement
 from bs4 import BeautifulSoup
 import re
+import xml.dom.minidom
 
 # Configurable lists and mappings
-tool_comment_level_de = ["MTI", "DE.003.SE", "DE.004", "DE.007", "DE.012", "DE.022.SE", "DE.024", "DE.026", "DE.035", "DE.049", "DE.055.TAG.9F02", "DE.055.TAG.82", "DE.055.TAG.9F36", "DE.055.TAG.84", "DE.055.TAG.9F1E", "DE.055.TAG.9F09", "DE.055.TAG.9F1A", "DE.055.TAG.9A", "DE.055.TAG.9C", "DE.055.TAG.5F2A", "DE.055.TAG.9F37", "DE.092"]
+tool_comment_level_de = [
+    "MTI", "DE.003.SE", "DE.004", "DE.007", "DE.012", "DE.022.SE", "DE.024", "DE.026", "DE.035", "DE.049",
+    "DE.055.TAG.9F02", "DE.055.TAG.82", "DE.055.TAG.9F36", "DE.055.TAG.84", "DE.055.TAG.9F1E", "DE.055.TAG.9F09",
+    "DE.055.TAG.9F1A", "DE.055.TAG.9A", "DE.055.TAG.9C", "DE.055.TAG.5F2A", "DE.055.TAG.9F37", "DE.092"
+]
 search_symbol_de = ["DE.002", "DE.003", "DE.011", "DE.037", "DE.041", "DE.042"]
 skip_de = ["BM1", "BM2", "Byte"]
 
@@ -25,6 +29,22 @@ def format_binary(binary_str):
     cleaned_binary = binary_str.replace(' ', '').replace('-', '')
     return ' '.join(cleaned_binary[i:i+2] for i in range(0, len(cleaned_binary), 2))
 
+def add_tool_comment_level(field_id, field_elt):
+    """Add ToolCommentLevel based on the specified rules."""
+    for de in tool_comment_level_de:
+        # Case 1 and 3: All sub-elements for DE.003.SE and parent field
+        if de.endswith('.SE') and de in field_id:
+            ET.SubElement(field_elt, 'ToolCommentLevel').text = 'INFO'
+            break
+        # Case 2: Specific tags like DE.055.TAG.82
+        elif not de.endswith('.SE') and de in field_id:
+            ET.SubElement(field_elt, 'ToolCommentLevel').text = 'INFO'
+            break
+        # Case 3: Parent fields only
+        elif de in field_id and '.SE.' not in field_id and '.TAG.' not in field_id:
+            ET.SubElement(field_elt, 'ToolCommentLevel').text = 'INFO'
+            break
+
 def add_field_to_list(parent, field_data, is_subfield=False):
     """Add a field to the parent element."""
     field_id = field_data['field_id']
@@ -43,10 +63,14 @@ def add_field_to_list(parent, field_data, is_subfield=False):
                     ET.SubElement(field_elt, 'SearchSymbol', Name=search_symbol_name, Value=field_data['viewable'])
                     break
 
-    if field_id.startswith("NET.") and ".DE.055" in field_id:
-        # Specifically handle DE.055 fields
+    if field_id == "NET.1100.DE.055":
+        # Specific formatting for NET.1100.DE.055 field
         cleaned_binary = format_binary(field_data['binary'])
         cleaned_viewable = field_data['viewable'].replace(' ', '').replace('-', '')
+    elif field_id.startswith("NET.") and ".DE.055" in field_id:
+        # Specifically handle DE.055 fields
+        cleaned_binary = format_binary(field_data['binary'])
+        cleaned_viewable = format_viewable_field(field_data['viewable'], field_data['field_id'].split('.')[-1], 2)
     else:
         cleaned_binary = field_data['binary']
         cleaned_viewable = field_data['viewable']
@@ -54,10 +78,9 @@ def add_field_to_list(parent, field_data, is_subfield=False):
     ET.SubElement(field_elt, 'FieldType').text = field_data['type']
     ET.SubElement(field_elt, 'FieldBinary').text = cleaned_binary
     ET.SubElement(field_elt, 'FieldViewable').text = cleaned_viewable
-    ET.SubElement(field_elt, 'ToolComment').text = field_data['comment']
+    ET.SubElement(field_elt, 'ToolComment').text = field_data['comment'].strip('"')
 
-    if any(de in field_id for de in tool_comment_level_de) or ('.SE.' in field_id and 'DE.003.SE' in field_id):
-        ET.SubElement(field_elt, 'ToolCommentLevel').text = 'INFO'
+    add_tool_comment_level(field_id, field_elt)
 
     field_list_elt = ET.SubElement(field_elt, 'FieldList')
     parent.append(field_elt)
@@ -71,7 +94,7 @@ def handle_de55_field(root, mti_value, rows, index):
     friendly_name = tds[1].get_text(strip=True)
     field_type = tds[2].get_text(strip=True)
     field_binary = tds[4].get_text(strip=True)
-    field_viewable = format_viewable_field(tds[6].get_text(strip=True))  # Consolidate viewable field
+    field_viewable = tds[6].get_text(strip=True)  # Consolidate viewable field
     tool_comment = tds[7].get_text(strip=True) if tds[7].get_text(strip=True) else "Default"
 
     # Create the root element for DE055
@@ -79,46 +102,52 @@ def handle_de55_field(root, mti_value, rows, index):
     create_element(root_de55, "FriendlyName", friendly_name)
     create_element(root_de55, "FieldType", field_type)
     create_element(root_de55, "FieldBinary", field_binary)
-    create_element(root_de55, "FieldViewable", field_viewable)
+    create_element(root_de55, "FieldViewable", format_viewable_field_for_de055(field_viewable))
     create_element(root_de55, "ToolComment", tool_comment)
 
     # Create a FieldList element
     field_list_de55 = SubElement(root_de55, "FieldList")
 
     # Parse the remaining rows and create subfields
+    final_index = index
     for row in rows[index + 1:]:
+        final_index += 1
         tds = row.find_all('td')
-        cell1_text = tds[0].text.strip()
+        if not tds:
+            continue
 
+        cell1_text = tds[0].get_text(strip=True)
         if "EMVTAG" not in cell1_text:
             break
 
         tag = cell1_text.split('-')[-1]
-        field = SubElement(field_list_de55, "Field", {"ID": f"NET.{mti_value}.DE.055.TAG." + tag})
-        create_element(field, "FriendlyName", tds[1].text.strip())
-        create_element(field, "FieldType", tds[2].text.strip())
+        field_id = f"NET.{mti_value}.DE.055.TAG." + tag
+        field = SubElement(field_list_de55, "Field", {"ID": field_id})
+        create_element(field, "FriendlyName", tds[1].get_text(strip=True))
+        create_element(field, "FieldType", tds[2].get_text(strip=True))
 
         emv_data = SubElement(field, "EMVData", {
             "Tag": tag,
-            "Name": tds[1].text.strip(),
+            "Name": tds[1].get_text(strip=True),
             "Format": "TLV"
         })
 
-        binary_field = format_binary_field(tds[4].text.strip())
-        viewable_field = format_viewable_field(tds[6].text.strip(), tag_length=len(tag))
+        binary_field = format_binary_field(tds[4].get_text(strip=True))
+        viewable_field = format_viewable_field(tds[6].get_text(strip=True), tag, 2)
 
         create_element(field, "FieldBinary", binary_field)
         create_element(field, "FieldViewable", viewable_field)
 
         if len(tds) > 7:
-            create_element(field, "ToolComment", tds[7].text.strip())
+            create_element(field, "ToolComment", tds[7].get_text(strip=True).strip('"'))
         else:
             create_element(field, "ToolComment", "Default")
-        create_element(field, "ToolCommentLevel", "INFO")
+
+        add_tool_comment_level(field_id, field)
+
         create_element(field, "FieldList")
 
-    return index + 1  # Return the new index to continue parsing
-
+    return final_index  # Return the last processed index to continue parsing
 
 def create_element(parent, tag, text=None):
     element = SubElement(parent, tag)
@@ -133,10 +162,22 @@ def format_binary_field(binary_string):
     parts = [cleaned_binary[i:i+2] for i in range(0, len(cleaned_binary), 2)]
     return ' '.join(parts)
 
-def format_viewable_field(viewable_string, tag_length=4):
+def format_viewable_field(viewable_string, tag=None, extra_digits=0):
     # Remove special characters and convert to a single continuous string
     cleaned_viewable = re.sub(r'[^a-zA-Z0-9]', '', viewable_string)
+    
+    # Special handling for specific tags
+    if tag == "9F02":
+        return cleaned_viewable.zfill(12)  # Pad to 12 digits for NET.055.TAG.9F02
+
+    if tag:
+        tag_length = len(tag) + extra_digits
+        return cleaned_viewable[tag_length:]
     return cleaned_viewable
+
+def format_viewable_field_for_de055(viewable_string):
+    """Format FieldViewable for NET.1100.DE.055 specifically."""
+    return re.sub(r'[^a-zA-Z0-9]', '', viewable_string)
 
 def convert_html_to_xml_with_field_list(html_table):
     soup = BeautifulSoup(html_table, 'html.parser')
@@ -150,6 +191,7 @@ def convert_html_to_xml_with_field_list(html_table):
         row = rows[index]
         tds = row.find_all('td')
         if not tds:
+            index += 1
             continue
 
         field_id = tds[0].get_text().replace("&nbsp;", "").strip()
@@ -227,9 +269,11 @@ def convert_html_to_xml_with_field_list(html_table):
                 parent_field_elt, parent_field_list_elt = add_field_to_list(root, field_data, is_subfield=True)
                 parent_fields[parent_field_id] = parent_field_list_elt
         else:
-            field_elt, field_list_elt = add_field_to_list(root, field_data)
-            if field_elt is not None and field_list_elt is not None:
-                parent_fields[field_data_id] = field_list_elt
+            # Prevent duplicate fields by checking the parent_fields dict
+            if field_data_id not in parent_fields:
+                field_elt, field_list_elt = add_field_to_list(root, field_data)
+                if field_elt is not None and field_list_elt is not None:
+                    parent_fields[field_data_id] = field_list_elt
 
         index += 1
 
@@ -250,3 +294,5 @@ with open('output.xml', 'w', encoding='utf-8') as file:
     file.write(xml_output)
 
 print("XML output has been saved to 'output.xml'")
+
+
