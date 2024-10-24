@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Splunk RRN</title>
+    <title>Splunk RRN Search Builder</title>
     <!-- Bootstrap CSS CDN -->
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <style>
@@ -11,81 +12,147 @@
             background-color: #f8f9fa;
         }
 
-        .container {
-            max-width: 1200px;
-        }
-
-        .editor-header {
-            background-color: #007bff;
-            color: white;
-            padding: 10px;
-            font-weight: bold;
-            border-radius: 5px 5px 0 0;
-        }
-
-        /* Monaco Editor */
         #inputEditor {
             height: 300px;
             border: 1px solid #ced4da;
-            border-radius: 0 0 5px 5px;
+            border-radius: 0.25rem;
+            padding: 10px;
         }
 
         .output-section textarea {
-            height: 300px;
             resize: none;
-            border-radius: 5px;
+            width: 100%;
+            height: calc(100vh - 200px);
+            font-family: monospace;
+            background-color: #f8f9fa;
+            overflow-y: auto;
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 0.25rem;
         }
 
-        .btn-block {
+        .btn {
+            transition: background-color 0.3s ease;
+        }
+
+        .btn:hover {
+            background-color: #5a6268;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+
+        #statusBar {
+            height: 30px;
+            background-color: #e9ecef;
+            border-top: 1px solid #ced4da;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 10px;
+            font-size: 0.9rem;
+            color: #495057;
             margin-top: 10px;
+        }
+
+        @media (max-width: 768px) {
+            #inputEditor {
+                height: 200px;
+            }
+
+            .output-section textarea {
+                height: calc(100vh - 300px);
+            }
+
+            h2 {
+                font-size: 1.25rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            #inputEditor {
+                height: 150px;
+            }
+
+            .output-section textarea {
+                height: calc(100vh - 350px);
+            }
+
+            .output-section {
+                margin-top: 20px;
+            }
         }
     </style>
 </head>
-<body class="bg-light">
-    <div class="container bg-white p-4 rounded shadow mt-5">
-        <h2 class="text-center mb-4">Splunk RRN Search Builder</h2>
+
+<body>
+    <div class="container mt-3">
+        <h2 class="text-center mb-3">Splunk RRN Search Builder</h2>
         <div class="row">
             <!-- Input Section -->
-            <div class="col-md-6">
-                <div class="editor-header">Enter RRN numbers:</div>
+            <div class="col-md-6 mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <label class="font-weight-bold">Enter RRN numbers:</label>
+                    <button class="btn btn-sm btn-secondary" onclick="removeEmptyLines()">Remove Empty Lines</button>
+                </div>
                 <div id="inputEditor"></div>
-
-                <!-- Options Section -->
-                <div class="form-check mt-3">
-                    <input type="checkbox" id="addIndex" class="form-check-input" onchange="modifyNumbers()" checked>
-                    <label for="addIndex" class="form-check-label">Add "index = 'application_omnipay'"</label>
+                <div id="statusBar">
+                    <span id="lineInfo">Line: 1</span>
+                    <span id="textLength">Length: 0</span>
+                    <span id="selectedTextLength">Selected: 0</span>
                 </div>
 
-                <div class="form-check">
-                    <input type="checkbox" id="addHost1" class="form-check-input" onchange="modifyNumbers()">
-                    <label for="addHost1" class="form-check-label">Add "host = a4pvap068"</label>
-                </div>
-                <div class="form-check">
-                    <input type="checkbox" id="addHost2" class="form-check-input" onchange="modifyNumbers()">
-                    <label for="addHost2" class="form-check-label">Add "host = a5pvap039"</label>
-                </div>
-                <div class="form-check">
-                    <input type="checkbox" id="addHost3" class="form-check-input" onchange="modifyNumbers()">
-                    <label for="addHost3" class="form-check-label">Add "host = a5pvap040"</label>
-                </div>
-                <div class="form-check">
-                    <input type="checkbox" id="addHost4" class="form-check-input" onchange="modifyNumbers()">
-                    <label for="addHost4" class="form-check-label">Add "host = A5CVAP1003"</label>
-                </div>
-                <div class="form-check">
-                    <input type="checkbox" id="addHost5" class="form-check-input" onchange="modifyNumbers()">
-                    <label for="addHost5" class="form-check-label">Add "host = A5CVAP1004"</label>
-                </div>
+                <!-- Options Section with two columns -->
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <div class="custom-control custom-switch">
+                            <input type="checkbox" class="custom-control-input" id="addIndex" onchange="modifyNumbers()" checked>
+                            <label class="custom-control-label" for="addIndex">index = application_omnipay</label>
+                        </div>
 
-                <div id="lineStatus" class="line-status mt-2">Total Lines: 1</div>
-                <button class="btn btn-secondary btn-block" onclick="removeEmptyLines()">Remove Empty Lines</button>
+                        <div class="custom-control custom-switch">
+                            <input type="checkbox" class="custom-control-input" id="addHost1" onchange="modifyNumbers()">
+                            <label class="custom-control-label" for="addHost1">host = a4pvap068</label>
+                        </div>
+
+                        <div class="custom-control custom-switch">
+                            <input type="checkbox" class="custom-control-input" id="addHost2" onchange="modifyNumbers()">
+                            <label class="custom-control-label" for="addHost2">host = a5pvap039</label>
+                        </div>
+
+                        <div class="custom-control custom-switch">
+                            <input type="checkbox" class="custom-control-input" id="addHost3" onchange="modifyNumbers()">
+                            <label class="custom-control-label" for="addHost3">host = a5pvap040</label>
+                        </div>
+                    </div>
+
+                    <!-- New column for the last two host options -->
+                    <div class="col-md-6">
+                        <div class="custom-control custom-switch">
+                            <input type="checkbox" class="custom-control-input" id="addHost4" onchange="modifyNumbers()">
+                            <label class="custom-control-label" for="addHost4">host = A5CVAP1003</label>
+                        </div>
+
+                        <div class="custom-control custom-switch">
+                            <input type="checkbox" class="custom-control-input" id="addHost5" onchange="modifyNumbers()">
+                            <label class="custom-control-label" for="addHost5">host = A5CVAP1004</label>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Output Section -->
-            <div class="col-md-6 output-section">
-                <div class="editor-header">Splunk Search Output:</div>
-                <textarea id="outputNumbers" class="form-control" readonly></textarea>
-                <button id="copyButton" class="btn btn-primary btn-block" onclick="copyToClipboard()">Copy to Clipboard</button>
+            <div class="col-md-6">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <label class="font-weight-bold">Splunk Search Output:</label>
+                    <button id="copyButton" class="btn btn-sm btn-primary" onclick="copyToClipboard()">Copy to Clipboard</button>
+                </div>
+                <div class="output-section">
+                    <textarea id="outputNumbers" class="form-control" readonly></textarea>
+                </div>
             </div>
         </div>
     </div>
@@ -102,9 +169,8 @@
         let inputEditor;
 
         // Load Monaco Editor
-        require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.33.0/min/vs' }});
+        require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.33.0/min/vs' } });
         require(['vs/editor/editor.main'], function () {
-            // Initialize Monaco Editor for Input
             inputEditor = monaco.editor.create(document.getElementById('inputEditor'), {
                 value: '',
                 language: 'plaintext',
@@ -112,26 +178,44 @@
                 automaticLayout: true
             });
 
-            // Load input from local storage if available
             const savedInput = localStorage.getItem('inputNumbers');
             if (savedInput) {
                 inputEditor.setValue(savedInput);
                 modifyNumbers();
-                updateLineNumbers(); // Update line numbers on load
+                updateStatusBar();
             }
 
-            // Bind to input changes
+            // Bind to input changes to update status bar and modify numbers in real-time
             inputEditor.onDidChangeModelContent(() => {
-                modifyNumbers();
-                updateLineNumbers();
+                updateStatusBar();
+                modifyNumbers();  // Trigger output update in real-time
+            });
+
+            inputEditor.onDidChangeCursorPosition(() => {
+                updateStatusBar();
+            });
+
+            inputEditor.onDidChangeCursorSelection(() => {
+                updateStatusBar();
             });
         });
 
-        // Modify your existing functions to use Monaco Editor
+        function updateStatusBar() {
+            const model = inputEditor.getModel();
+            const currentPosition = inputEditor.getPosition();
+            const lineCount = model.getLineCount();
+            const textLength = model.getValueLength();
+            const selection = inputEditor.getSelection();
+            const selectedTextLength = model.getValueInRange(selection).length;
+
+            document.getElementById('lineInfo').textContent = `Line: ${currentPosition.lineNumber}`;
+            document.getElementById('textLength').textContent = `Length: ${textLength}`;
+            document.getElementById('selectedTextLength').textContent = `Selected: ${selectedTextLength}`;
+        }
 
         function modifyNumbers() {
-            const input = inputEditor.getValue(); // Get value from Monaco Editor
-            localStorage.setItem('inputNumbers', input); // Save input to local storage
+            const input = inputEditor.getValue();
+            localStorage.setItem('inputNumbers', input);
 
             const addIndex = document.getElementById('addIndex').checked;
             const addHost1 = document.getElementById('addHost1').checked;
@@ -140,15 +224,14 @@
             const addHost4 = document.getElementById('addHost4').checked;
             const addHost5 = document.getElementById('addHost5').checked;
 
-            const lines = input.split('\n').filter(line => line.trim() !== ''); // Filter out empty lines
+            const lines = input.split('\n').filter(line => line.trim() !== '');
             let modifiedLines = [];
             let useAnd = false;
 
             for (let i = 0; i < lines.length; i++) {
-                let line = lines[i].replace(/\s/g, ''); // Remove spaces from each line
+                let line = lines[i].replace(/\s/g, '');
                 let modifiedLine = line;
 
-                // Check if the line contains more than 30 digits
                 if (line.length > 30) {
                     let cleanedNumber = '';
                     for (let j = 0; j < line.length; j += 2) {
@@ -157,12 +240,11 @@
                         }
                     }
                     modifiedLines.push(cleanedNumber);
-                    continue; // Skip further processing for this line
+                    continue;
                 }
 
-                // Check for 12-digit and 24-digit numbers
-                let match12 = line.match(/"(\d{12})"/) || line.match(/(\d{12})/);
-                let match24 = line.match(/"(\d{24})"/) || line.match(/(\d{24})/);
+                let match12 = line.match(/(\d{12})/);
+                let match24 = line.match(/(\d{24})/);
 
                 if (match12) {
                     let originalNumber = match12[1];
@@ -170,7 +252,7 @@
                     for (let j = 0; j < originalNumber.length; j++) {
                         modifiedNumber += '3' + originalNumber[j];
                     }
-                    modifiedLine = line.replace(originalNumber, `"${originalNumber}" OR "${modifiedNumber}"`);
+                    modifiedLine = line.replace(originalNumber, `${originalNumber} OR ${modifiedNumber}`);
                 }
 
                 if (match24) {
@@ -181,7 +263,7 @@
                             cleanedNumber += originalNumber[j + 1];
                         }
                     }
-                    modifiedLine = line.replace(originalNumber, `"${cleanedNumber}"`);
+                    modifiedLine = line.replace(originalNumber, `${cleanedNumber}`);
                 }
 
                 if (line.trim().endsWith(" AND")) {
@@ -201,29 +283,24 @@
                 if (addHost3) hosts += ' host = a5pvap040';
                 if (addHost4) hosts += ' host = A5CVAP1003';
                 if (addHost5) hosts += ' host = A5CVAP1004';
-                output = `index = "application_omnipay" ${hosts} ${output} | reverse`;
+                output = `index = application_omnipay ${hosts} ${output} | reverse`;
             }
 
-            document.getElementById('outputNumbers').value = output; // Update output
-        }
-
-        function updateLineNumbers() {
-            const totalLines = inputEditor.getModel().getLineCount(); // Get total lines from Monaco Editor
-            document.getElementById('lineStatus').textContent = `Total Lines: ${totalLines}`;
+            document.getElementById('outputNumbers').value = output;
         }
 
         function removeEmptyLines() {
             const input = inputEditor.getValue();
             const nonEmptyLines = input.split('\n').filter(line => line.trim() !== '');
             inputEditor.setValue(nonEmptyLines.join('\n'));
-            updateLineNumbers();
             modifyNumbers();
+            updateStatusBar();
         }
 
         function copyToClipboard() {
             const output = document.getElementById('outputNumbers');
             output.select();
-            output.setSelectionRange(0, 99999); // For mobile devices
+            output.setSelectionRange(0, 99999);
 
             document.execCommand('copy');
 
@@ -235,4 +312,5 @@
         }
     </script>
 </body>
+
 </html>
