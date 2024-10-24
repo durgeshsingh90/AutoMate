@@ -1,0 +1,30 @@
+<?xml version="1.0" ?>
+<Field ID="NET.1100.DE.055">
+  <FriendlyName>Primary PIN block</FriendlyName>
+  <FieldType>B8</FieldType>
+  <FieldBinary>C6 84 6D 34 25 5F 5C 87</FieldBinary>
+  <FieldViewable>C6 84 6D 34 25 5F 5C 87</FieldViewable>
+  <ToolComment>Default</ToolComment>
+  <FieldList>
+    <Field ID="NET.1100.DE.055.TAG.9F02">
+      <FriendlyName>Amount (Authorized) Numeric</FriendlyName>
+      <FieldType>TLV</FieldType>
+      <EMVData Tag="9F02" Name="Amount (Authorized) Numeric" Format="TLV"/>
+      <FieldBinary>9F02-06-000000000300</FieldBinary>
+      <FieldViewable>9F02-06-000000000300</FieldViewable>
+      <ToolComment>Value of 300</ToolComment>
+      <ToolCommentLevel>INFO</ToolCommentLevel>
+      <FieldList/>
+    </Field>
+    <Field ID="NET.1100.DE.055.TAG.82">
+      <FriendlyName>Application Interchange Profile</FriendlyName>
+      <FieldType>TLV</FieldType>
+      <EMVData Tag="82" Name="Application Interchange Profile" Format="TLV"/>
+      <FieldBinary>82-02-1100</FieldBinary>
+      <FieldViewable>82-02-1100</FieldViewable>
+      <ToolComment/>
+      <ToolCommentLevel>INFO</ToolCommentLevel>
+      <FieldList/>
+    </Field>
+  </FieldList>
+</Field>
