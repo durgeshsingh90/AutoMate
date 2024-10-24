@@ -10,13 +10,33 @@
     <style>
         body {
             background-color: #f8f9fa;
+            transition: background-color 0.3s ease;
+        }
+
+        #editorContainer {
+            position: relative;
         }
 
         #inputEditor {
             height: 300px;
             border: 1px solid #ced4da;
-            border-radius: 0.25rem;
+            border-bottom: 0;
+            border-radius: 0.25rem 0.25rem 0 0;
             padding: 10px;
+        }
+
+        #statusBar {
+            height: 30px;
+            background-color: #e9ecef;
+            border: 1px solid #ced4da;
+            border-radius: 0 0 0.25rem 0.25rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 10px;
+            font-size: 0.9rem;
+            color: #495057;
+            margin: 0;
         }
 
         .output-section textarea {
@@ -45,17 +65,10 @@
             margin-bottom: 20px;
         }
 
-        #statusBar {
-            height: 30px;
-            background-color: #e9ecef;
-            border-top: 1px solid #ced4da;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 10px;
-            font-size: 0.9rem;
-            color: #495057;
-            margin-top: 10px;
+        #darkModeBtn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
         }
 
         @media (max-width: 768px) {
@@ -85,11 +98,33 @@
                 margin-top: 20px;
             }
         }
+
+        /* Dark Mode Styles */
+        body.dark-mode {
+            background-color: #2e2e2e;
+            color: #fff;
+        }
+
+        .output-section textarea.dark-mode {
+            background-color: #333;
+            color: #fff;
+        }
+
+        #statusBar.dark-mode {
+            background-color: #444;
+            color: #fff;
+        }
+
+        .btn-dark-mode {
+            background-color: #333;
+            color: #fff;
+        }
     </style>
 </head>
 
 <body>
     <div class="container mt-3">
+        <button id="darkModeBtn" class="btn btn-sm btn-dark" onclick="toggleDarkMode()">Enable Dark Mode</button>
         <h2 class="text-center mb-3">Splunk RRN Search Builder</h2>
         <div class="row">
             <!-- Input Section -->
@@ -98,11 +133,13 @@
                     <label class="font-weight-bold">Enter RRN numbers:</label>
                     <button class="btn btn-sm btn-secondary" onclick="removeEmptyLines()">Remove Empty Lines</button>
                 </div>
-                <div id="inputEditor"></div>
-                <div id="statusBar">
-                    <span id="lineInfo">Line: 1</span>
-                    <span id="textLength">Length: 0</span>
-                    <span id="selectedTextLength">Selected: 0</span>
+                <div id="editorContainer">
+                    <div id="inputEditor"></div>
+                    <div id="statusBar">
+                        <span id="lineInfo">Line: 1</span>
+                        <span id="textLength">Length: 0</span>
+                        <span id="selectedTextLength">Selected: 0</span>
+                    </div>
                 </div>
 
                 <!-- Options Section with two columns -->
@@ -142,6 +179,8 @@
                         </div>
                     </div>
                 </div>
+
+                <div id="lineStatus" class="mt-2">Total Lines: 1</div>
             </div>
 
             <!-- Output Section -->
@@ -167,6 +206,7 @@
 
     <script>
         let inputEditor;
+        let darkModeEnabled = false;
 
         // Load Monaco Editor
         require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.33.0/min/vs' } });
@@ -185,10 +225,16 @@
                 updateStatusBar();
             }
 
+            // Check localStorage for dark mode preference
+            const darkModePref = localStorage.getItem('darkMode');
+            if (darkModePref === 'enabled') {
+                enableDarkMode();
+            }
+
             // Bind to input changes to update status bar and modify numbers in real-time
             inputEditor.onDidChangeModelContent(() => {
                 updateStatusBar();
-                modifyNumbers();  // Trigger output update in real-time
+                modifyNumbers();
             });
 
             inputEditor.onDidChangeCursorPosition(() => {
@@ -309,6 +355,38 @@
             setTimeout(() => {
                 copyButton.textContent = 'Copy';
             }, 1000);
+        }
+
+        // Dark Mode Toggle
+        function toggleDarkMode() {
+            darkModeEnabled = !darkModeEnabled;
+            if (darkModeEnabled) {
+                enableDarkMode();
+            } else {
+                disableDarkMode();
+            }
+        }
+
+        function enableDarkMode() {
+            document.body.classList.add('dark-mode');
+            document.getElementById('outputNumbers').classList.add('dark-mode');
+            document.getElementById('statusBar').classList.add('dark-mode');
+            inputEditor.updateOptions({
+                theme: 'vs-dark'
+            });
+            document.getElementById('darkModeBtn').textContent = 'Disable Dark Mode';
+            localStorage.setItem('darkMode', 'enabled');  // Save preference
+        }
+
+        function disableDarkMode() {
+            document.body.classList.remove('dark-mode');
+            document.getElementById('outputNumbers').classList.remove('dark-mode');
+            document.getElementById('statusBar').classList.remove('dark-mode');
+            inputEditor.updateOptions({
+                theme: 'vs-light'
+            });
+            document.getElementById('darkModeBtn').textContent = 'Enable Dark Mode';
+            localStorage.setItem('darkMode', 'disabled');  // Save preference
         }
     </script>
 </body>
