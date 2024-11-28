@@ -9,16 +9,19 @@ app_paths = [
     'mstsc',
     r'C:\Program Files\Notepad++\notepad++.exe',
     r'C:\Program Files\PuTTY\putty.exe',
-    r'C:\Softwares\PDFXEdit10_Portable_x64\PDFXEdit.exe',
+   # r'C:\Softwares\PDFXEdit10_Portable_x64\PDFXEdit.exe',
     r'C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe'
 ]
 
 # Open Chrome with multiple URLs
 chrome_path = r'C:\Program Files\Google\Chrome\Application\chrome.exe'
 urls = [
-    "https://www.portal1.com",  # Replace with the actual URLs you want to open
-    "https://www.portal2.com",
-    "https://www.portal3.com"
+    "http://localhost:8001/",  
+    "http://localhost:8000/",
+    "https://enterprise-jira.onefiserv.net/secure/Dashboard.jspa",
+    "https://de-splunk.1dc.com/en-US/app/search/search",
+    "https://fdiflxt-vip.1dc.com/tst/cgi-bin/felix"
+    
 ]
 
 try:
