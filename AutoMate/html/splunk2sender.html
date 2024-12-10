@@ -216,37 +216,8 @@ window.onload = function () {
                 json_data.data_elements[`DE${index.toString().padStart(3, '0')}`] = value;
             }
         } else if (index === 55) {
-            console.log(`Raw BM55 Value: ${value}`);
 
-            try {
-                const parsedBM55 = {};
-                let idx = 3; // Skip the first 3 digits (length of DE55)
-
-                while (idx < value.length) {
-                    let tag = value.slice(idx, idx + 2);
-                    idx += 2;
-
-                    if (["9F", "5F", "DF"].includes(tag.slice(0, 2))) {
-                        tag += value.slice(idx, idx + 2);
-                        idx += 2;
-                    }
-
-                    const length = parseInt(value.slice(idx, idx + 2), 16);
-                    idx += 2;
-
-                    let tagValue = value.slice(idx, idx + length * 2);
-                    idx += length * 2;
-
-                    console.log(`Parsed Tag ${tag} with Length ${length} and Value ${tagValue}`);
-                    parsedBM55[tag] = tagValue;
-                }
-
-                console.log("Final Parsed BM55:", parsedBM55);
                 json_data.data_elements[`BM${index.toString().padStart(3, '0')}`] = parsedBM55;
-            } catch (error) {
-                console.error("Error parsing BM55:", error.message);
-                warnings.push(`Failed to parse BM55: ${error.message}`);
-            }
         } else if (bmIndices.includes(index)) {
             // Parse BM indices (60, 61, etc.)
             const subfields = [];
