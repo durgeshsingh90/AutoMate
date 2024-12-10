@@ -90,13 +90,12 @@ BM056: {}
 BM057: {}
 BM058: {}
 BM059: {}
-BM060:
-	sf31:
-		tag_id_len: 2
-		tag_value_len:4
-	sf32:
-	tag_id_len: 2
-	tag_value_len:4
+BM060: 
+  len: lllvar
+  tag_id_val_len: lllvar
+  tag_id:
+    len: 2
+  tag_val:
 BM061:
   len: lllvar
   tag_id_val_len: lllvar

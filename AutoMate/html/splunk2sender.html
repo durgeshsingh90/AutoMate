@@ -14,10 +14,6 @@ body {
     flex-direction: column;
     align-items: center;
 }
-h1 {
-    margin: 20px 0;
-    color: #333;
-}
 #container {
     display: flex;
     flex-direction: column;
@@ -149,6 +145,26 @@ pre {
 </div>
 
 <script>
+    let omnipayDefinitions;
+
+// Load the omnipay_fields_definitions.json on page load
+window.onload = function () {
+    fetch('/static/json/omnipay_fields_definitions.json')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Failed to load definitions: ${response.statusText}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            omnipayDefinitions = data;
+            console.log('OmniPay definitions loaded:', omnipayDefinitions);
+        })
+        .catch(error => {
+            console.error('Error loading OmniPay definitions:', error);
+            displayError('Failed to load OmniPay definitions. Please check the file path and server settings.');
+        });
+};
     document.getElementById('inputText').addEventListener('input', processText);
 
     function processText() {
@@ -165,158 +181,123 @@ pre {
     }
 
     function processInputData(inputLines) {
-        const visa_card_number = ['4970110000000005'];
-        const mc_card_number = ['5534218827246242', '6759050000000096'];
-        const diners_card_number = ['3970110000000005'];
-        const jcb_card_number = [];
-        const dummy_track2_BM35 = '=1212000000000000000';
-        const default_inst_num_BM32 = '000050';
-        const default_merchant_num_BM42 = '226000000021357';
-        const default_cvv2_BM48 = '861';
-        const default_pinblock_BM52 = '9CAE2E2A395F8564';
-        const default_emvdata_BM55 = '9F6E04230000005F2A02097882021A2B95051A2B3C4D5F9A032404199C01009F02060000000003019F03060000000000009F1006010003A410009F1A0209789F1E0831323334353637389F26080123456789ABCDEF9F2701809F3303E0E8809F34030000009F3501219F3602C3D49F3704CCDDEEFF';
-        
-        const current_date = new Date();
-        const matches = [];
-        const regex = /in\[ *(\d+): *\]<(.+?)>/g;
-        let match;
-        const mtimatch = inputLines.join('\n').match(/msgno\[ *0\]<(\d+)>/);
-        const mtivalue = mtimatch ? parseInt(mtimatch[1], 10) : 100;// Default to 100 if no match found
+    console.log("processInputData invoked with lines:", inputLines);
 
-        while ((match = regex.exec(inputLines.join('\n'))) !== null) {
-            matches.push([match[1], match[2]]);
-        }
-        
-        const indices_to_concatenate = [7, 43];
-        const json_data = {
-            "mti": mtivalue,
-            "data_elements": {}
-        };
-        const warnings = [];
+    const matches = [];
+    const regex = /in\[ *(\d+): *\]<(.+?)>/g;
+    let match;
+    const mtimatch = inputLines.join('\n').match(/msgno\[ *0\]<(\d+)>/);
+    const mtivalue = mtimatch ? parseInt(mtimatch[1], 10) : 100; // Default to 100 if no match found
 
-        matches.forEach(match => {
-            const index = parseInt(match[0]);
-            let value = match[1];
-
-            if (index === 129) {
-                return;
-            }
-
-            if (indices_to_concatenate.includes(index)) {
-                if (`DE${index.toString().padStart(3, '0')}` in json_data.data_elements) {
-                    json_data.data_elements[`DE${index.toString().padStart(3, '0')}`] += value;
-                } else {
-                    json_data.data_elements[`DE${index.toString().padStart(3, '0')}`] = value;
-                }
-            } else {
-                switch (index) {
-                    case 2:
-                        if (value.startsWith('3')) {
-                            warnings.push(`Replacing, BM002: ${value} with ${diners_card_number[0]}`);
-                            json_data.data_elements[`DE${index.toString().padStart(3, '0')}`] = diners_card_number[0];
-                        } else if (value.startsWith('4')) {
-                            warnings.push(`Replacing, BM002: ${value} with ${visa_card_number[0]}`);
-                            json_data.data_elements[`DE${index.toString().padStart(3, '0')}`] = visa_card_number[0];
-                        } else if (value.startsWith('5')) {
-                            warnings.push(`Replacing, BM002: ${value} with ${mc_card_number[0]}`);
-                            json_data.data_elements[`DE${index.toString().padStart(3, '0')}`] = mc_card_number[0];
-                        } else if (value.startsWith('6')) {
-                            warnings.push(`Replacing, BM002: ${value} with ${mc_card_number[1]}`);
-                            json_data.data_elements[`DE${index.toString().padStart(3, '0')}`] = mc_card_number[1];
-                        } else {
-                            json_data.data_elements[`DE${index.toString().padStart(3, '0')}`] = value;
-                        }
-                        break;
-                    case 3:
-                        json_data.data_elements[`DE${index.toString().padStart(3, '0')}`] = value.padEnd(6, '0');
-                        break;
-                    case 4:
-                    case 49:
-                        json_data.data_elements[`DE${index.toString().padStart(3, '0')}`] = parseInt(value, 10);
-                        break;
-                    case 11:
-                    case 12:
-                        json_data.data_elements[`DE${index.toString().padStart(3, '0')}`] = value.padStart(6, '0');
-                        break;
-                    case 13:
-                        json_data.data_elements[`DE${index.toString().padStart(3, '0')}`] = value.padStart(4, '0');
-                        break;
-                    case 14:
-                        if (value.includes('*')) {
-                            const threeYearsFromNow = new Date(current_date.getFullYear() + 3, current_date.getMonth(), current_date.getDate());
-                            const newValue = threeYearsFromNow.toISOString().slice(2, 7).replace('-', '');
-                            warnings.push(`Replacing, BM014: ${value} with ${newValue}`);
-                            value = newValue;
-                        }
-                        json_data.data_elements[`DE${index.toString().padStart(3, '0')}`] = value;
-                        break;
-                    case 22:
-                    case 23:
-                        json_data.data_elements[`DE${index.toString().padStart(3, '0')}`] = value.padStart(3, '0');
-                        break;
-                    case 25:
-                        json_data.data_elements[`DE${index.toString().padStart(3, '0')}`] = value.padStart(2, '0');
-                        break;
-                    case 32:
-                        json_data.data_elements[`DE${index.toString().padStart(3, '0')}`] = value;
-                        // json_data.data_elements[`DE${index.toString().padStart(3, '0')}`] = default_inst_num_BM32;
-                        // warnings.push(`Using default institution number:, BM032 ${default_inst_num_BM32}`);
-                        break;
-                    case 35:
-                        json_data.data_elements[`DE${index.toString().padStart(3, '0')}`] = json_data.data_elements["DE002"] + dummy_track2_BM35;
-                        warnings.push(`Using dummy track2, BM035: ${dummy_track2_BM35}`);
-                        break;
-                    case 42:
-                        json_data.data_elements[`DE${index.toString().padStart(3, '0')}`] = default_merchant_num_BM42;
-                        // json_data.data_elements[`DE${index.toString().padStart(3, '0')}`] = default_merchant_num_BM42;
-                        // warnings.push(`Using default merchant number, BM042: ${default_merchant_num_BM42}`);
-                        break;
-                    case 48:
-                        json_data.data_elements[`DE${index.toString().padStart(3, '0')}`] = default_cvv2_BM48;
-                        warnings.push(`Using default CVV2, BM048: ${default_cvv2_BM48}`);
-                        break;
-                    case 52:
-                        json_data.data_elements[`DE${index.toString().padStart(3, '0')}`] = default_pinblock_BM52;
-                        warnings.push(`Using default PIN block, BM052: ${default_pinblock_BM52}`);
-                        break;
-                    case 55:
-                        json_data.data_elements[`DE${index.toString().padStart(3, '0')}`] = default_emvdata_BM55;
-                        warnings.push(`Using default EMV data, BM055: ${default_emvdata_BM55}`);
-                        break;
-                    case 60:
-                    case 61:
-                    case 62:
-                    case 63:
-                    case 64:
-                        const subfields = [];
-                        const values = [];
-                        let i = 0;
-                        while (i < value.length) {
-                            const subfield_length = parseInt(value.slice(i, i + 3), 10);
-                            const subfield = value.slice(i + 3, i + 5);
-                            subfields.push(subfield);
-                            values.push(value.slice(i + 5, i + 5 + subfield_length - 2));
-                            i += 5 + subfield_length - 2;
-                        }
-                        const index_6x_dict = {};
-                        subfields.forEach((subfield, idx) => {
-                            index_6x_dict[subfield] = values[idx];
-                        });
-                        json_data.data_elements[`DE${index.toString().padStart(3, '0')}`] = index_6x_dict;
-                        break;
-                    default:
-                        json_data.data_elements[`DE${index.toString().padStart(3, '0')}`] = value;
-                        break;
-                }
-            }
-        });
-
-        if (json_data.data_elements["DE007"]) {
-            json_data.data_elements["DE007"] = json_data.data_elements["DE007"].padStart(10, '0');
-        }
-
-        return { jsonOutput: json_data, warnings: warnings };
+    while ((match = regex.exec(inputLines.join('\n'))) !== null) {
+        matches.push([match[1], match[2]]);
     }
+
+    const indices_to_concatenate = [7, 43, 55];
+    const bmIndices = [60, 61, 62, 65, 66]; // List of BM indices to apply the case 6x logic
+    const json_data = {
+        "mti": mtivalue,
+        "data_elements": {}
+    };
+    const warnings = [];
+
+    matches.forEach(match => {
+        const index = parseInt(match[0]);
+        let value = match[1];
+
+        if (index === 129) {
+            return; // Skip reserved index
+        }
+
+        if (indices_to_concatenate.includes(index)) {
+            if (`DE${index.toString().padStart(3, '0')}` in json_data.data_elements) {
+                json_data.data_elements[`DE${index.toString().padStart(3, '0')}`] += value;
+            } else {
+                json_data.data_elements[`DE${index.toString().padStart(3, '0')}`] = value;
+            }
+        } else if (index === 55) {
+            console.log(`Raw BM55 Value: ${value}`);
+
+            try {
+                const parsedBM55 = {};
+                let idx = 3; // Skip the first 3 digits (length of DE55)
+
+                while (idx < value.length) {
+                    let tag = value.slice(idx, idx + 2);
+                    idx += 2;
+
+                    if (["9F", "5F", "DF"].includes(tag.slice(0, 2))) {
+                        tag += value.slice(idx, idx + 2);
+                        idx += 2;
+                    }
+
+                    const length = parseInt(value.slice(idx, idx + 2), 16);
+                    idx += 2;
+
+                    let tagValue = value.slice(idx, idx + length * 2);
+                    idx += length * 2;
+
+                    console.log(`Parsed Tag ${tag} with Length ${length} and Value ${tagValue}`);
+                    parsedBM55[tag] = tagValue;
+                }
+
+                console.log("Final Parsed BM55:", parsedBM55);
+                json_data.data_elements[`BM${index.toString().padStart(3, '0')}`] = parsedBM55;
+            } catch (error) {
+                console.error("Error parsing BM55:", error.message);
+                warnings.push(`Failed to parse BM55: ${error.message}`);
+            }
+        } else if (bmIndices.includes(index)) {
+            // Parse BM indices (60, 61, etc.)
+            const subfields = [];
+            const values = [];
+            let i = 0;
+            while (i < value.length) {
+                const subfield_length = parseInt(value.slice(i, i + 3), 10);
+                const subfield = value.slice(i + 3, i + 5);
+                subfields.push(subfield);
+                values.push(value.slice(i + 5, i + 5 + subfield_length - 2));
+                i += 5 + subfield_length - 2;
+            }
+            const index_6x_dict = {};
+            subfields.forEach((subfield, idx) => {
+                index_6x_dict[subfield] = values[idx];
+            });
+            json_data.data_elements[`DE${index.toString().padStart(3, '0')}`] = index_6x_dict;
+        } else {
+            switch (index) {
+                case 3:
+                    json_data.data_elements[`DE${index.toString().padStart(3, '0')}`] = value.padEnd(6, '0');
+                    break;
+                case 12:
+                    json_data.data_elements[`DE${index.toString().padStart(3, '0')}`] = value.padStart(6, '0');
+                    break;
+                case 13:
+                    json_data.data_elements[`DE${index.toString().padStart(3, '0')}`] = value.padStart(4, '0');
+                    break;
+                case 23:
+                    json_data.data_elements[`DE${index.toString().padStart(3, '0')}`] = value.padStart(3, '0');
+                    break;
+                case 25:
+                    json_data.data_elements[`DE${index.toString().padStart(3, '0')}`] = value.padStart(2, '0');
+                    break;
+                case 49:
+                    json_data.data_elements[`DE${index.toString().padStart(3, '0')}`] = parseInt(value, 10);
+                    break;
+                default:
+                    json_data.data_elements[`DE${index.toString().padStart(3, '0')}`] = value;
+                    break;
+            }
+        }
+    });
+
+    if (json_data.data_elements["DE007"]) {
+        json_data.data_elements["DE007"] = json_data.data_elements["DE007"].padStart(10, '0');
+    }
+
+    return { jsonOutput: json_data, warnings: warnings };
+}
+
 
     function displayError(message) {
         const errorBox = document.getElementById('errorBox');
