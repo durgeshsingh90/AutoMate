@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQL Plus Output</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .sidebar {
+            height: 100%;
+            width: 25%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background-color: #f8f9fa;
+            padding-top: 20px;
+            border-right: 1px solid #dee2e6;
+            overflow-y: auto; /* Add scroll bar */
+        }
+        .content {
+            margin-left: 25%;
+            padding: 20px;
+        }
+        .btn-table {
+            width: 100%;
+            margin-bottom: 0.5rem;
+        }
+        h2, h3:hover {
+            cursor: pointer;
+            color: #007bff;
+        }
+        .table-header {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="d-flex">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <h2 class="text-center" onclick="updateTables()">Tables</h2>
+            <h3 class="table-header">Fetched Tables</h3>
+            <div id="fetched-tables-list">
+                {% for table in fetched_tables %}
+                    <button type="button" class="btn btn-secondary btn-table" onclick="fetchTableData('{{ table }}')">{{ table }}</button>
+                {% endfor %}
+            </div>
+            <h3 class="table-header">Unfetched Tables</h3>
+            <div id="unfetched-tables-list">
+                {% for table in unfetched_tables %}
+                    <button type="button" class="btn btn-secondary btn-table" onclick="getAndFetchTableData('{{ table }}')">{{ table }}</button>
+                {% endfor %}
+            </div>
+        </div>
+        <!-- Main Content -->
+        <div class="content">
+            <h1>SQL Plus Output</h1>
+            <div id="table-data"></div>
+        </div>
+    </div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        function updateTables() {
+            $.ajax({
+                url: '{% url "update_table_names" %}',
+                type: 'GET',
+                success: function(response) {
+                    var tableNames = response.table_names;
+                    var fetchedContainer = document.getElementById('fetched-tables-list');
+                    var unfetchedContainer = document.getElementById('unfetched-tables-list');
+                    fetchedContainer.innerHTML = '';
+                    unfetchedContainer.innerHTML = '';
+                    tableNames.forEach(function(tableName) {
+                        var item = document.createElement('button');
+                        item.type = 'button';
+                        item.className = 'btn btn-secondary btn-table';
+                        item.textContent = tableName;
+                        if (fetchedContainer.querySelector(`button:contains('${tableName}')`)) {
+                            item.setAttribute('onclick', `fetchTableData('${tableName}')`);
+                            fetchedContainer.appendChild(item);
+                        } else {
+                            item.setAttribute('onclick', `getAndFetchTableData('${tableName}')`);
+                            unfetchedContainer.appendChild(item);
+                        }
+                    });
+                },
+                error: function() {
+                    alert("An error occurred while updating table names.");
+                }
+            });
+        }
+
+        function fetchTableData(tableName) {
+            if (confirm(`Do you want to fetch data for table ${tableName}?`)) {
+                $.ajax({
+                    url: '{% url "fetch_table_data" table_name="TABLE_NAME_PLACEHOLDER" %}'.replace('TABLE_NAME_PLACEHOLDER', tableName),
+                    type: 'GET',
+                    success: function(response) {
+                        alert(`Data for table ${response.table_name} fetched successfully.`);
+                        var dataContainer = document.getElementById('table-data');
+                        dataContainer.innerHTML = `<h3>Data for ${response.table_name}</h3>`;
+                        var table = document.createElement('table');
+                        table.className = 'table table-striped';
+                        var thead = document.createElement('thead');
+                        var headersRow = document.createElement('tr');
+                        Object.keys(response.data[0]).forEach(function(header) {
+                            var th = document.createElement('th');
+                            th.textContent = header;
+                            headersRow.appendChild(th);
+                        });
+                        thead.appendChild(headersRow);
+                        table.appendChild(thead);
+                        var tbody = document.createElement('tbody');
+                        response.data.forEach(function(row) {
+                            var tr = document.createElement('tr');
+                            Object.values(row).forEach(function(cell) {
+                                var td = document.createElement('td');
+                                td.textContent = cell;
+                                tr.appendChild(td);
+                            });
+                            tbody.appendChild(tr);
+                        });
+                        table.appendChild(tbody);
+                        dataContainer.appendChild(table);
+                        
+                        // Move the table button from unfetched to fetched
+                        var unfetchedButton = document.querySelector(`#unfetched-tables-list button[onclick="getAndFetchTableData('${response.table_name}')"]`);
+                        if (unfetchedButton) {
+                            unfetchedButton.setAttribute('onclick', `fetchTableData('${response.table_name}')`);
+                            document.getElementById('fetched-tables-list').appendChild(unfetchedButton);
+                        }
+                    },
+                    error: function() {
+                        alert("An error occurred while fetching table data.");
+                    }
+                });
+            }
+        }
+
+        function getAndFetchTableData(tableName) {
+            if (confirm(`Do you want to fetch data for table ${tableName} and save it?`)) {
+                $.ajax({
+                    url: '{% url "fetch_table_data" table_name="TABLE_NAME_PLACEHOLDER" %}'.replace('TABLE_NAME_PLACEHOLDER', tableName),
+                    type: 'GET',
+                    success: function(response) {
+                        alert(`Data for table ${response.table_name} fetched and saved successfully.`);
+                        updateTables(); // Update the table list after fetching data
+                    },
+                    error: function() {
+                        alert("An error occurred while fetching and saving table data.");
+                    }
+                });
+            }
+        }
+    </script>
+</body>
+</html>
