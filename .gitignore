@@ -1,4 +1,4 @@
-AutoMate/logs/*.log
+AutoMate/logs
 AutoMate/db.sqlite3
 AutoMate/sender/static/sender/testcases/*
 AutoMate/sql_db/db
