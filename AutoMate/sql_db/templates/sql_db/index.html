@@ -1,0 +1,157 @@
+{%load static%}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQL Plus Output</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .sidebar {
+            height: 100%;
+            width: 25%;
+            min-width: 150px;
+            max-width: 400px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background-color: #f8f9fa;
+            padding-top: 20px;
+            border-right: 1px solid #dee2e6;
+            overflow-y: auto; /* Add scroll bar */
+        }
+        .content {
+            margin-left: 25%;
+            padding: 20px;
+            overflow: auto;
+        }
+        .btn-table {
+            width: 100%;
+            margin-bottom: 0.5rem;
+        }
+        h2, h3:hover {
+            cursor: pointer;
+            color: #007bff;
+        }
+        .table-header {
+            margin-top: 20px;
+        }
+        #table-data {
+            white-space: nowrap;  /* Prevent text from wrapping */
+            max-height: calc(100vh - 100px);
+            overflow: auto;
+            font-size: small; /* Default smaller font size */
+        }
+        @media (max-width: 768px) {
+            .content {
+                margin-left: 0;
+            }
+            .sidebar {
+                width: 100%;
+                position: relative;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="d-flex">
+        <!-- Sidebar -->
+        <div id="sidebar" class="sidebar">
+            <h2 class="text-center" onclick="updateTables()">Tables</h2>
+            <input type="text" class="form-control my-2" id="search-input" placeholder="Search tables" onkeyup="searchTables()">
+            <div class="d-flex justify-content-between px-2">
+                <button onclick="adjustSidebarWidth('increase')" class="btn btn-sm btn-secondary">➕</button>
+                <button onclick="adjustSidebarWidth('decrease')" class="btn btn-sm btn-secondary">➖</button>
+            </div>
+            <h3 class="table-header">Fetched Tables</h3>
+            <div id="fetched-tables-list">
+                {% for table in fetched_tables %}
+                    <button type="button" class="btn btn-secondary btn-table" onclick="showTableData('{{ table }}')" oncontextmenu="deleteTableData(event, '{{ table }}')">{{ table }}</button>
+                {% endfor %}
+            </div>
+            <h3 class="table-header">Unfetched Tables</h3>
+            <div id="unfetched-tables-list">
+                {% for table in unfetched_tables %}
+                    <button type="button" class="btn btn-secondary btn-table" ondblclick="getAndFetchTableData('{{ table }}')">{{ table }}</button>
+                {% endfor %}
+            </div>
+        </div>
+        <!-- Main Content -->
+        <div class="content">
+            <h1>SQL Plus Output</h1>
+            <div class="d-flex justify-content-end">
+                <button onclick="adjustFontSize('increase')" class="btn btn-sm btn-secondary">A+</button>
+                <button onclick="adjustFontSize('decrease')" class="btn btn-sm btn-secondary">A-</button>
+            </div>
+            <div id="table-data"></div>
+        </div>
+    </div>
+    <script>
+        var updateTableNamesUrl = "{% url 'update_table_names' %}";
+        var fetchTableDataUrl = "{% url 'fetch_table_data' 'TABLE_NAME_PLACEHOLDER' %}";
+        var deleteTableDataUrl = "{% url 'delete_table_data' 'TABLE_NAME_PLACEHOLDER' %}";
+        var sidebar = document.getElementById('sidebar');
+        var tableDataDiv = document.getElementById('table-data');
+
+        function adjustSidebarWidth(action) {
+            var currentWidth = sidebar.offsetWidth;
+            if (action === 'increase' && currentWidth < 400) {
+                sidebar.style.width = currentWidth + 20 + 'px';
+            } else if (action === 'decrease' && currentWidth > 150) {
+                sidebar.style.width = currentWidth - 20 + 'px';
+            }
+            adjustTableDataWidth();
+        }
+
+        function adjustFontSize(action) {
+            var currentFontSize = window.getComputedStyle(tableDataDiv).fontSize;
+            var newSize;
+            if (action === 'increase') {
+                newSize = parseInt(currentFontSize) + 2 + 'px';
+            } else if (action === 'decrease') {
+                newSize = parseInt(currentFontSize) - 2 + 'px';
+            }
+            tableDataDiv.style.fontSize = newSize;
+        }
+
+        function adjustTableDataWidth() {
+            var sidebarWidth = sidebar.offsetWidth;
+            var windowWidth = window.innerWidth;
+            tableDataDiv.style.maxWidth = (windowWidth - sidebarWidth - 40) + 'px'; // 40 accounts for padding/margin
+        }
+
+        function searchTables() {
+            var input, filter, fetchedList, unfetchedList, buttons, i, txtValue;
+            input = document.getElementById('search-input');
+            filter = input.value.toUpperCase();
+            fetchedList = document.getElementById('fetched-tables-list');
+            unfetchedList = document.getElementById('unfetched-tables-list');
+            buttons = fetchedList.getElementsByTagName('button');
+            for (i = 0; i < buttons.length; i++) {
+                txtValue = buttons[i].textContent || buttons[i].innerText;
+                if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                    buttons[i].style.display = "";
+                } else {
+                    buttons[i].style.display = "none";
+                }
+            }
+            buttons = unfetchedList.getElementsByTagName('button');
+            for (i = 0; i < buttons.length; i++) {
+                txtValue = buttons[i].textContent || buttons[i].innerText;
+                if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                    buttons[i].style.display = "";
+                } else {
+                    buttons[i].style.display = "none";
+                }
+            }
+        }
+
+        window.addEventListener('resize', adjustTableDataWidth);
+        window.addEventListener('load', adjustTableDataWidth);
+    </script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="{% static 'sql_db/scripts.js' %}"></script>
+</body>
+</html>

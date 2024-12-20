@@ -51,7 +51,8 @@ INSTALLED_APPS = [
     'splunkparser',
     'binblock',
     'slot_booking',
-    'html2emvco'
+    'html2emvco',
+    'sql_db'
 ]
 
 # Logging configuration
