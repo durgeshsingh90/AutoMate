@@ -7,7 +7,6 @@ from pathlib import Path
 from django.http import JsonResponse
 from django.shortcuts import render
 
-# Get an instance of a logger
 logger = logging.getLogger('sql_db')
 
 def get_table_names_from_db():
@@ -112,36 +111,14 @@ def update_table_names(request):
     return JsonResponse({'table_names': updated_table_data})
 
 def fetch_table_data(request, table_name):
-    sql_query = f"""
-SET PAGESIZE 999
+    script_content = f"""
+SET PAGESIZE 20
 SET LINESIZE 200
 SET FEEDBACK OFF
 SET VERIFY OFF
-COLUMN json_output FORMAT A1000
-SELECT json_arrayagg(
-         json_object(
-           'TXNSRC' VALUE TXNSRC,
-           'TXNDEST' VALUE TXNDEST,
-           'ISS_ENTITY_ID' VALUE ISS_ENTITY_ID,
-           'MSGTYPE' VALUE MSGTYPE,
-           'EXTERNALID' VALUE EXTERNALID,
-           'EXT_ID_DESC' VALUE EXT_ID_DESC,
-           'MEMBER_ID' VALUE MEMBER_ID,
-           'F_ID' VALUE F_ID,
-           'INST_ID' VALUE INST_ID,
-           'USERBIN_ID' VALUE USERBIN_ID,
-           'KEYPARAM' VALUE KEYPARAM,
-           'SITE_ID' VALUE SITE_ID,
-           'BINROUTE_GROUP' VALUE BINROUTE_GROUP
-         )
-       ) AS json_output
-FROM (
-  SELECT TXNSRC, TXNDEST, ISS_ENTITY_ID, MSGTYPE, EXTERNALID, EXT_ID_DESC, MEMBER_ID, F_ID, INST_ID, USERBIN_ID, KEYPARAM, SITE_ID, BINROUTE_GROUP
-  FROM OASIS77.{table_name}
-  WHERE ROWNUM <= 20
-)
+SELECT * FROM OASIS77.{table_name};
+EXIT;
     """
-
     data_dir = Path('C:/Durgesh/Office/Automation/AutoMate/AutoMate/sql_db/db/data')
     data_dir.mkdir(parents=True, exist_ok=True)
     data_file_path = data_dir / f"{table_name}.json"
@@ -149,7 +126,7 @@ FROM (
     try:
         with tempfile.NamedTemporaryFile('w', delete=False, suffix='.sql') as temp_script:
             script_path = temp_script.name
-            temp_script.write(sql_query)
+            temp_script.write(script_content)
 
         sql_command = f"sqlplus -S oasis77/ist0py@istu2_equ @{script_path}"
         logger.debug(f"Running SQL command: {sql_command}")
@@ -163,12 +140,13 @@ FROM (
         if stderr:
             raise subprocess.CalledProcessError(1, sql_command, stderr)
 
-        # Parsing JSON output from SQL command
-        json_output = stdout.split("JSON_OUTPUT")[1].strip()
-        json_output = json.loads(json_output)
+        # Assuming the data is structured in rows with columns separated by whitespace
+        lines = stdout.splitlines()
+        headers = lines[0].split()  # Get the headers
+        data = [dict(zip(headers, line.split())) for line in lines[1:]]
 
         with data_file_path.open('w') as data_file:
-            json.dump(json_output, data_file)
+            json.dump(data, data_file)
 
     except subprocess.CalledProcessError as e:
         logger.error(f"SQL command failed: {str(e)}")
@@ -177,7 +155,7 @@ FROM (
         os.remove(script_path)
         logger.debug(f"Temporary script removed: {script_path}")
 
-    return JsonResponse({'table_name': table_name, 'data': json_output})
+    return JsonResponse({'table_name': table_name, 'data': data})
 
 def delete_table_data(request, table_name):
     data_file_path = Path(f'C:/Durgesh/Office/Automation/AutoMate/AutoMate/sql_db/db/data/{table_name}.json')
