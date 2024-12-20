@@ -82,7 +82,6 @@ function getAndFetchTableData(tableName) {
     }
 }
 
-
 function deleteTableData(event, tableName) {
     event.preventDefault();
     if (confirm(`Do you want to delete the data for table ${tableName}?`)) {
