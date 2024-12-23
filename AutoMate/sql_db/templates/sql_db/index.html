@@ -3,154 +3,135 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SQL Plus Output</title>
-    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <title>SQL*Plus Commands Test</title>
     <style>
-        .sidebar {
-            height: 100%;
-            width: 25%;
-            min-width: 150px;
-            max-width: 400px;
-            position: fixed;
-            top: 0;
-            left: 0;
-            background-color: #f8f9fa;
-            padding-top: 20px;
-            border-right: 1px solid #dee2e6;
-            overflow-y: auto; /* Add scroll bar */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 30px;
         }
-        .content {
-            margin-left: 25%;
-            padding: 20px;
-            overflow: auto;
-        }
-        .btn-table {
-            width: 100%;
-            margin-bottom: 0.5rem;
-        }
-        h2, h3:hover {
-            cursor: pointer;
-            color: #007bff;
-        }
-        .table-header {
+        .result {
             margin-top: 20px;
+            margin-bottom: 20px;
         }
-        #table-data {
-            white-space: nowrap;
-            max-height: calc(100vh - 100px);
-            overflow: auto;
-            font-size: small; /* Default smaller font size */
+        .result pre {
+            background-color: #f4f4f4;
+            padding: 10px;
+            border: 1px solid #ddd;
+            overflow-x: auto;
         }
-        @media (max-width: 768px) {
-            .content {
-                margin-left: 0;
-            }
-            .sidebar {
-                width: 100%;
-                position: relative;
-            }
+        select, input[type="search"] {
+            margin-top: 20px;
+            display: block;
         }
     </style>
 </head>
 <body>
-    <div class="d-flex">
-        <!-- Sidebar -->
-        <div id="sidebar" class="sidebar">
-            <h2 class="text-center" onclick="updateTables()">Tables</h2>
-            <input type="text" class="form-control my-2" id="search-input" placeholder="Search tables" onkeyup="searchTables()">
-            <div class="d-flex justify-content-between px-2">
-                <button onclick="adjustSidebarWidth('increase')" class="btn btn-sm btn-secondary">➕</button>
-                <button onclick="adjustSidebarWidth('decrease')" class="btn btn-sm btn-secondary">➖</button>
-            </div>
-            <h3 class="table-header">Fetched Tables</h3>
-            <div id="fetched-tables-list">
-                {% for table in fetched_tables %}
-                    <button type="button" class="btn btn-secondary btn-table" onclick="showTableData('{{ table }}')" oncontextmenu="deleteTableData(event, '{{ table }}')">{{ table }}</button>
-                {% endfor %}
-            </div>
-            <h3 class="table-header">Unfetched Tables</h3>
-            <div id="unfetched-tables-list">
-                {% for table in unfetched_tables %}
-                    <button type="button" class="btn btn-secondary btn-table" ondblclick="getAndFetchTableData('{{ table }}')">{{ table }}</button>
-                {% endfor %}
-            </div>
-        </div>
-        <!-- Main Content -->
-        <div class="content">
-            <h1>SQL Plus Output</h1>
-            <div class="d-flex justify-content-end">
-                <button onclick="adjustFontSize('increase')" class="btn btn-sm btn-secondary">A+</button>
-                <button onclick="adjustFontSize('decrease')" class="btn btn-sm btn-secondary">A-</button>
-            </div>
-            <div id="table-data"></div>
-        </div>
-    </div>
+    <h1>SQL*Plus Commands Test</h1>
+    <h2>Select Database</h2>
+    <select id="dbSelect" onchange="listTables()">
+        <option value="">Select a database</option>
+        <option value="uat_novate">UAT Novate</option>
+        <option value="uat_oasis77">UAT Oasis77</option>
+        <option value="prod_oasis77">Prod Oasis77</option>
+        <option value="prod_f94gdos">Prod F94gdos</option>
+        <option value="prod_novate">Prod Novate</option>
+    </select>
+    <div class="result" id="listTablesResult"></div>
+    
+    <hr>
+
+    <h2>Search and Download Data from Table</h2>
+    <input type="search" id="tableSearch" placeholder="Search tables..." onkeyup="filterTables()">
+    <select id="tableSelect" onchange="selectTable()">
+        <option value="">Select a table</option>
+    </select>
+    <div class="result" id="selectAllResult"></div>
+
     <script>
-        var updateTableNamesUrl = "{% url 'update_table_names' %}";
-        var fetchTableDataUrl = "{% url 'fetch_table_data' 'TABLE_NAME_PLACEHOLDER' %}";
-        var deleteTableDataUrl = "{% url 'delete_table_data' 'TABLE_NAME_PLACEHOLDER' %}";
-        var sidebar = document.getElementById('sidebar');
-        var tableDataDiv = document.getElementById('table-data');
+        let tables = [];
 
-        function adjustSidebarWidth(action) {
-            var currentWidth = sidebar.offsetWidth;
-            if (action === 'increase' && currentWidth < 400) {
-                sidebar.style.width = currentWidth + 20 + 'px';
-            } else if (action === 'decrease' && currentWidth > 150) {
-                sidebar.style.width = currentWidth - 20 + 'px';
+        function listTables() {
+            let dbKey = document.getElementById('dbSelect').value;
+            if (!dbKey) {
+                alert('Please select a database.');
+                return;
             }
-            adjustTableDataWidth();
+
+            fetch(`/sql_db/list_tables/?db_key=${dbKey}`)
+                .then(response => response.json())
+                .then(data => {
+                    let resultDiv = document.getElementById('listTablesResult');
+                    if (data.error) {
+                        resultDiv.innerHTML = `<div style="color: red;">Error: ${data.error}</div>`;
+                    } else {
+                        tables = data.tables;
+                        let tableName = `Tables in ${dbKey}`;
+                        resultDiv.innerHTML = `<pre>${tableName}\n${tables.join('\n')}</pre>`;
+                        populateTableSelect(tables);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
         }
 
-        function adjustFontSize(action) {
-            var currentFontSize = window.getComputedStyle(tableDataDiv).fontSize;
-            var newSize;
-            if (action === 'increase') {
-                newSize = parseInt(currentFontSize) + 2 + 'px';
-            } else if (action === 'decrease') {
-                newSize = parseInt(currentFontSize) - 2 + 'px';
-            }
-            tableDataDiv.style.fontSize = newSize;
+        function filterTables() {
+            let searchInput = document.getElementById('tableSearch').value.toLowerCase();
+            let filteredTables = tables.filter(table => table.toLowerCase().includes(searchInput));
+            populateTableSelect(filteredTables);
         }
 
-        function adjustTableDataWidth() {
-            var sidebarWidth = sidebar.offsetWidth;
-            var windowWidth = window.innerWidth;
-            tableDataDiv.style.maxWidth = (windowWidth - sidebarWidth - 40) + 'px'; // 40 accounts for padding/margin
+        function populateTableSelect(tableList) {
+            let tableSelect = document.getElementById('tableSelect');
+            tableSelect.innerHTML = `<option value="">Select a table</option>`;
+            tableList.forEach(table => {
+                let option = document.createElement('option');
+                option.value = table;
+                option.textContent = table;
+                tableSelect.appendChild(option);
+            });
         }
 
-        function searchTables() {
-            var input, filter, fetchedList, unfetchedList, buttons, i, txtValue;
-            input = document.getElementById('search-input');
-            filter = input.value.toUpperCase();
-            fetchedList = document.getElementById('fetched-tables-list');
-            unfetchedList = document.getElementById('unfetched-tables-list');
-            buttons = fetchedList.getElementsByTagName('button');
-            for (i = 0; i < buttons.length; i++) {
-                txtValue = buttons[i].textContent || buttons[i].innerText;
-                if (txtValue.toUpperCase().indexOf(filter) > -1) {
-                    buttons[i].style.display = "";
-                } else {
-                    buttons[i].style.display = "none";
-                }
+        function selectTable() {
+            let tableName = document.getElementById('tableSelect').value;
+            let dbKey = document.getElementById('dbSelect').value;
+            if (!tableName) {
+                alert('Please select a table.');
+                return;
             }
-            buttons = unfetchedList.getElementsByTagName('button');
-            for (i = 0; i < buttons.length; i++) {
-                txtValue = buttons[i].textContent || buttons[i].innerText;
-                if (txtValue.toUpperCase().indexOf(filter) > -1) {
-                    buttons[i].style.display = "";
-                } else {
-                    buttons[i].style.display = "none";
-                }
+            if (!dbKey) {
+                alert('Please select a database.');
+                return;
             }
-        }
 
-        window.addEventListener('resize', adjustTableDataWidth);
-        window.addEventListener('load', adjustTableDataWidth);
+            fetch(`/sql_db/select_all_from_table/${tableName}/?db_key=${dbKey}`)
+                .then(response => response.blob())
+                .then(blob => {
+                    const url = window.URL.createObjectURL(blob);
+
+                    // Verify if the filename meets the criteria
+                    const contentDisposition = response.headers.get('Content-Disposition');
+                    let filename = '';
+                    if (contentDisposition && contentDisposition.indexOf('attachment') !== -1) {
+                        const matches = /filename="([^']+)"/.exec(contentDisposition);
+                        if (matches != null && matches[1]) filename = matches[1];
+                    }
+
+                    if (filename.startsWith(`${dbKey}_`) && filename.endsWith('.log')) {
+                        const link = document.createElement('a');
+                        link.href = url;
+                        link.setAttribute('download', filename);
+                        document.body.appendChild(link);
+                        link.click();
+                        link.parentNode.removeChild(link);
+                    } else {
+                        console.warn('Unwanted file prompt prevented:', filename);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
     </script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <script src="{% static 'sql_db/scripts.js' %}"></script>
 </body>
 </html>
