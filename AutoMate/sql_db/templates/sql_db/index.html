@@ -9,6 +9,9 @@
             font-family: Arial, sans-serif;
             margin: 30px;
         }
+        .server-buttons {
+            margin-bottom: 20px;
+        }
         .result {
             margin-top: 20px;
             margin-bottom: 20px;
@@ -27,46 +30,43 @@
 </head>
 <body>
     <h1>SQL*Plus Commands Test</h1>
-    <h2>Select Database</h2>
-    <select id="dbSelect" onchange="listTables()">
-        <option value="">Select a database</option>
-        <option value="uat_novate">UAT Novate</option>
-        <option value="uat_oasis77">UAT Oasis77</option>
-        <option value="prod_oasis77">Prod Oasis77</option>
-        <option value="prod_f94gdos">Prod F94gdos</option>
-        <option value="prod_novate">Prod Novate</option>
-    </select>
-    <div class="result" id="listTablesResult"></div>
-    
-    <hr>
+    <div class="server-buttons">
+        <button onclick="showServerFiles('uat_novate')">UAT Novate</button>
+        <button onclick="showServerFiles('uat_oasis77')">UAT Oasis77</button>
+        <button onclick="showServerFiles('prod_f94gdos')">Prod F94gdos</button>
+        <!-- <button onclick="showServerFiles('prod_novate')">Prod Novate</button> -->
+    </div>
 
-    <h2>Search and Download Data from Table</h2>
-    <input type="search" id="tableSearch" placeholder="Search tables..." onkeyup="filterTables()">
-    <select id="tableSelect" onchange="selectTable()">
-        <option value="">Select a table</option>
-    </select>
-    <div class="result" id="selectAllResult"></div>
+    <div id="serverFilesView" style="display: none;">
+        <h2 id="serverTitle"></h2>
+        <div id="fileList"></div>
+        <hr>
+        <input type="search" id="tableSearch" placeholder="Search tables..." onkeyup="filterTables()">
+        <select id="tableSelect" onchange="selectTable()">
+            <option value="">Select a table</option>
+        </select>
+        <div class="result" id="selectAllResult"></div>
+    </div>
 
     <script>
         let tables = [];
 
-        function listTables() {
-            let dbKey = document.getElementById('dbSelect').value;
-            if (!dbKey) {
-                alert('Please select a database.');
-                return;
-            }
+        function showServerFiles(server) {
+            document.getElementById('serverFilesView').style.display = 'block';
+            document.getElementById('serverTitle').innerText = `Files for ${server}`;
+            listTables(server);
+        }
 
-            fetch(`/sql_db/list_tables/?db_key=${dbKey}`)
+        function listTables(server) {
+            fetch(`/sql_db/list_tables/?db_key=${server}`)
                 .then(response => response.json())
                 .then(data => {
-                    let resultDiv = document.getElementById('listTablesResult');
+                    let resultDiv = document.getElementById('fileList');
                     if (data.error) {
                         resultDiv.innerHTML = `<div style="color: red;">Error: ${data.error}</div>`;
                     } else {
                         tables = data.tables;
-                        let tableName = `Tables in ${dbKey}`;
-                        resultDiv.innerHTML = `<pre>${tableName}\n${tables.join('\n')}</pre>`;
+                        resultDiv.innerHTML = `<pre>${data.tables.join('\n')}</pre>`;
                         populateTableSelect(tables);
                     }
                 })
@@ -94,17 +94,17 @@
 
         function selectTable() {
             let tableName = document.getElementById('tableSelect').value;
-            let dbKey = document.getElementById('dbSelect').value;
+            let server = document.getElementById('serverTitle').innerText.replace('Files for ', '');
             if (!tableName) {
                 alert('Please select a table.');
                 return;
             }
-            if (!dbKey) {
-                alert('Please select a database.');
+            if (!server) {
+                alert('Please select a server.');
                 return;
             }
 
-            fetch(`/sql_db/select_all_from_table/${tableName}/?db_key=${dbKey}`)
+            fetch(`/sql_db/select_all_from_table/${tableName}/?db_key=${server}`)
                 .then(response => response.blob())
                 .then(blob => {
                     const url = window.URL.createObjectURL(blob);
@@ -113,11 +113,11 @@
                     const contentDisposition = response.headers.get('Content-Disposition');
                     let filename = '';
                     if (contentDisposition && contentDisposition.indexOf('attachment') !== -1) {
-                        const matches = /filename="([^']+)"/.exec(contentDisposition);
+                        const matches = /filename="([^']+)"*/.exec(contentDisposition);
                         if (matches != null && matches[1]) filename = matches[1];
                     }
 
-                    if (filename.startsWith(`${dbKey}_`) && filename.endsWith('.log')) {
+                    if (filename.startsWith(`${server}_`) && filename.endsWith('.log')) {
                         const link = document.createElement('a');
                         link.href = url;
                         link.setAttribute('download', filename);
