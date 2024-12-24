@@ -10,13 +10,20 @@ import logging
 logger = logging.getLogger(__name__)
 
 # Define database connection strings
+# DB_CONNECTIONS = {
+#     'uat_novate': 'novate/nov1234@istu2',
+#     'uat_oasis77': 'oasis77/ist0py@istu2_equ',
+#     'prod_f94gdos': 'f94gdos/Pune24!@A5PCDO8001.EQU.IST',
+# }
 DB_CONNECTIONS = {
-    'uat_novate': 'novate/nov1234@istu2',
-    'uat_oasis77': 'oasis77/ist0py@istu2_equ',
-    'prod_f94gdos': 'f94gdos/Pune24!@A5PCDO8001.EQU.IST',
+    'uat_novate': 'oasis77/password@localhost/ISTU2_EQU',
+
 }
 
-OUTPUT_DIR = r"C:\Durgesh\Office\Automation\AutoMate\AutoMate\sql_db\db\data"
+# OUTPUT_DIR = r"C:\Durgesh\Office\Automation\AutoMate\AutoMate\sql_db\db\data"
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+OUTPUT_DIR = os.path.join(BASE_DIR, 'sql_db', 'db', 'data')
 
 def run_sqlplus_command(command, db_key, filename, include_db_info=False):
     try:

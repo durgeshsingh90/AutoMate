@@ -7,25 +7,6 @@ body {
     margin-bottom: 20px;
 }
 
-.server-buttons button {
-    margin: 5px;
-}
-
-.table-buttons {
-    margin-top: 20px;
-}
-
-.table-buttons button {
-    display: block;
-    width: 100%;
-    text-align: left;
-    padding: 10px;
-    margin: 5px 0;
-    background-color: #f4f4f4;
-    border: 1px solid #ddd;
-    cursor: pointer;
-}
-
 .result {
     margin-top: 20px;
     margin-bottom: 20px;
@@ -38,7 +19,7 @@ body {
     overflow-x: auto;
 }
 
-input[type="search"] {
+select, input[type="search"] {
     margin-top: 20px;
     display: block;
 }
