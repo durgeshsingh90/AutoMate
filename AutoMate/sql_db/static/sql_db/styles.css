@@ -1,0 +1,44 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 30px;
+}
+
+.server-buttons {
+    margin-bottom: 20px;
+}
+
+.server-buttons button {
+    margin: 5px;
+}
+
+.table-buttons {
+    margin-top: 20px;
+}
+
+.table-buttons button {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 10px;
+    margin: 5px 0;
+    background-color: #f4f4f4;
+    border: 1px solid #ddd;
+    cursor: pointer;
+}
+
+.result {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.result pre {
+    background-color: #f4f4f4;
+    padding: 10px;
+    border: 1px solid #ddd;
+    overflow-x: auto;
+}
+
+input[type="search"] {
+    margin-top: 20px;
+    display: block;
+}
