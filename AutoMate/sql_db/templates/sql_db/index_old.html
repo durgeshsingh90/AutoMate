@@ -1,0 +1,32 @@
+{%load static%}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQL*Plus Commands Test</title>
+    <link rel="stylesheet" href="{% static 'sql_db/styles.css' %}">
+</head>
+<body>
+    <h1>SQL*Plus Commands Test</h1>
+    <div class="server-buttons">
+        <button onclick="showServerFiles('uat_novate')">UAT Novate</button>
+        <button onclick="showServerFiles('uat_oasis77')">UAT Oasis77</button>
+        <button onclick="showServerFiles('prod_f94gdos')">Prod F94gdos</button>
+        <!-- <button onclick="showServerFiles('prod_novate')">Prod Novate</button> -->
+    </div>
+
+    <div id="serverFilesView" style="display: none;">
+        <h2 id="serverTitle"></h2>
+        <div id="fileList"></div>
+        <hr>
+        <input type="search" id="tableSearch" placeholder="Search tables..." onkeyup="filterTables()">
+        <select id="tableSelect" onchange="selectTable()">
+            <option value="">Select a table</option>
+        </select>
+        <div class="result" id="selectAllResult"></div>
+    </div>
+
+    <script src="{% static 'sql_db/scripts.js' %}"></script>
+</body>
+</html>

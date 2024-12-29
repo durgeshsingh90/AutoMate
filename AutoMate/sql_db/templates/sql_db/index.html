@@ -1,32 +1,213 @@
-{%load static%}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SQL*Plus Commands Test</title>
-    <link rel="stylesheet" href="{% static 'sql_db/styles.css' %}">
+    <title>SQL DB Explorer</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            height: 100vh;
+        }
+
+        .explorer {
+            background-color: #1e1e1e;
+            color: #fff;
+            overflow-y: auto;
+            border-right: 1px solid #333;
+            padding: 10px;
+            min-width: 150px;
+            width: 300px;
+            resize: horizontal;
+            overflow: auto;
+        }
+
+        .explorer-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .explorer-header h3 {
+            margin: 0;
+            font-size: 16px;
+        }
+
+        .refresh-icon {
+            cursor: pointer;
+            color: #fff;
+            transition: transform 0.2s;
+        }
+
+        .refresh-icon:hover {
+            transform: rotate(90deg); /* Adds a rotation effect on hover */
+        }
+
+        .explorer ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .explorer li {
+            cursor: pointer;
+            padding: 5px 8px;
+            border-radius: 3px;
+            margin: 2px 0;
+            font-size: 14px;
+            display: block;
+        }
+
+        .explorer li:hover {
+            background-color: #2d2d2d;
+        }
+
+        .explorer .folder-icon::before {
+            content: "📂";
+            margin-right: 5px;
+        }
+
+        .explorer .file-icon::before {
+            content: "📄";
+            margin-right: 5px;
+        }
+
+        .file-list {
+            padding-left: 20px;
+            margin-top: 3px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .content {
+            flex-grow: 1;
+            background-color: #f4f4f4;
+            overflow: auto;
+            padding: 10px;
+        }
+    </style>
 </head>
 <body>
-    <h1>SQL*Plus Commands Test</h1>
-    <div class="server-buttons">
-        <button onclick="showServerFiles('uat_novate')">UAT Novate</button>
-        <button onclick="showServerFiles('uat_oasis77')">UAT Oasis77</button>
-        <button onclick="showServerFiles('prod_f94gdos')">Prod F94gdos</button>
-        <!-- <button onclick="showServerFiles('prod_novate')">Prod Novate</button> -->
+    <div class="explorer">
+        <div class="explorer-header">
+            <h3>SQL DB Explorer</h3>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-clockwise refresh-icon" viewBox="0 0 16 16" onclick="refreshTableList()">
+                <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2z"/>
+                <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466"/>
+            </svg>
+        </div>
+        <ul id="explorer-list"></ul>
+    </div>
+    <div class="content">
+        <p>Select a table to view associated files.</p>
     </div>
 
-    <div id="serverFilesView" style="display: none;">
-        <h2 id="serverTitle"></h2>
-        <div id="fileList"></div>
-        <hr>
-        <input type="search" id="tableSearch" placeholder="Search tables..." onkeyup="filterTables()">
-        <select id="tableSelect" onchange="selectTable()">
-            <option value="">Select a table</option>
-        </select>
-        <div class="result" id="selectAllResult"></div>
-    </div>
+    <script>
+        // Fetch table list and display it as a collapsible tree structure
+        async function loadTableList() {
+            const response = await fetch('/sql_db/list_tables/');
+            const data = await response.json();
 
-    <script src="{% static 'sql_db/scripts.js' %}"></script>
+            if (data.error) {
+                alert(data.error);
+                return;
+            }
+
+            const explorerList = document.getElementById('explorer-list');
+            explorerList.innerHTML = '';
+
+            data.tables.forEach(tableName => {
+                const li = document.createElement('li');
+                li.className = 'folder-icon';
+                li.textContent = tableName;
+
+                // Add click event for expanding/collapsing file list
+                li.addEventListener('click', () => loadTableFiles(tableName, li));
+
+                explorerList.appendChild(li);
+            });
+        }
+
+        // Fetch the latest table list by calling the refresh_list_tables endpoint
+        const dbKey = "{{ db_key }}"; // Pass the default DB key from the backend
+
+        async function refreshTableList() {
+            const dbKey = "{{ db_key }}"; // Use the default DB key passed from the backend
+        
+            try {
+                const response = await fetch(`/sql_db/refresh_list_tables/?db_key=${dbKey}`);
+                const data = await response.json();
+        
+                if (data.error) {
+                    alert(data.error);
+                    return;
+                }
+        
+                const explorerList = document.getElementById('explorer-list');
+                explorerList.innerHTML = '';
+        
+                data.tables.forEach(tableName => {
+                    const li = document.createElement('li');
+                    li.className = 'folder-icon';
+                    li.textContent = tableName;
+        
+                    // Add click event for expanding/collapsing file list
+                    li.addEventListener('click', () => loadTableFiles(tableName, li));
+        
+                    explorerList.appendChild(li);
+                });
+        
+                alert('Table list refreshed!');
+            } catch (error) {
+                console.error('Error refreshing table list:', error);
+                alert('Failed to refresh table list. Check the console for details.');
+            }
+        }
+        
+        // Load files for a specific table and display them as a collapsible list
+        async function loadTableFiles(tableName, tableElement) {
+            const response = await fetch(`/sql_db/select_all_from_table/${tableName}/`);
+            const data = await response.json();
+
+            if (data.error) {
+                alert(data.error);
+                return;
+            }
+
+            // Check if the file list already exists
+            let fileList = tableElement.querySelector('.file-list');
+            if (fileList) {
+                fileList.classList.toggle('hidden');
+                return; // Toggle visibility
+            }
+
+            // Create a file list container
+            fileList = document.createElement('ul');
+            fileList.className = 'file-list';
+
+            if (data.files && data.files.length > 0) {
+                data.files.forEach(fileName => {
+                    const fileItem = document.createElement('li');
+                    fileItem.className = 'file-icon';
+                    fileItem.textContent = fileName;
+                    fileList.appendChild(fileItem);
+                });
+            } else {
+                const noFiles = document.createElement('li');
+                noFiles.textContent = 'No files found.';
+                noFiles.style.color = '#888';
+                fileList.appendChild(noFiles);
+            }
+
+            tableElement.appendChild(fileList);
+        }
+
+        // Load the table list on page load
+        window.onload = loadTableList;
+    </script>
 </body>
 </html>

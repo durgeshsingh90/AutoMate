@@ -1,0 +1,25 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 30px;
+}
+
+.server-buttons {
+    margin-bottom: 20px;
+}
+
+.result {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.result pre {
+    background-color: #f4f4f4;
+    padding: 10px;
+    border: 1px solid #ddd;
+    overflow-x: auto;
+}
+
+select, input[type="search"] {
+    margin-top: 20px;
+    display: block;
+}

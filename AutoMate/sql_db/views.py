@@ -5,7 +5,7 @@ from datetime import datetime
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render
 import logging
-
+import glob
 # Set up logging
 logger = logging.getLogger(__name__)
 
@@ -37,6 +37,7 @@ def run_sqlplus_command(command, db_key, filename, include_db_info=False):
         os.makedirs(db_directory, exist_ok=True)
 
         filepath = os.path.join(db_directory, filename)
+        logger.info(f"Creating new tablelist file: {filepath}")
 
         # SQLPlus configuration settings
         sqlplus_config = """
@@ -116,10 +117,13 @@ def run_sqlplus_command(command, db_key, filename, include_db_info=False):
         logger.error(f"Exception occurred: {str(e)}")
         return None, str(e)
 
-def index(request):
-    return render(request, 'sql_db/index.html')
+# def index(request):
+#     return render(request, 'sql_db/index.html')
 
-def list_tables(request):
+def index(request):
+    return render(request, 'sql_db/index.html', {'db_key': 'uat_novate'})  # Replace with your desired default
+
+def refresh_list_tables(request):
     db_key = request.GET.get('db_key')
     if not db_key:
         return JsonResponse({'error': 'Database key is required'})
@@ -144,7 +148,7 @@ def list_tables(request):
 
     return JsonResponse({'tables': tables})
 
-def select_all_from_table(request, table_name):
+def refresh_select_all_from_table(request, table_name):
     db_key = request.GET.get('db_key')
     if not db_key:
         return JsonResponse({'error': 'Database key is required'})
@@ -162,3 +166,48 @@ def select_all_from_table(request, table_name):
         response = HttpResponse(file.read(), content_type='text/plain')
         response['Content-Disposition'] = f'attachment; filename={filename}'
         return response
+
+
+def list_tables(request):
+    try:
+        # Search for tablelist files recursively in OUTPUT_DIR
+        search_pattern = os.path.join(OUTPUT_DIR, '**', 'tablelist_*.log')
+        files = glob.glob(search_pattern, recursive=True)
+
+        if not files:
+            return JsonResponse({'error': 'No table list files found.'})
+
+        # Find the latest tablelist file
+        latest_file = max(files, key=os.path.getmtime)
+
+        # Read the contents of the latest file
+        tables = []
+        with open(latest_file, 'r') as file:
+            for line in file:
+                line = line.strip()
+                if line and not line.startswith(("TABLE_NAME", "---------")):
+                    tables.append(line)
+
+        tables.sort()
+        return JsonResponse({'tables': tables})
+    except Exception as e:
+        return JsonResponse({'error': str(e)})
+
+def select_all_from_table(request, table_name):
+    try:
+        # Search for files related to the given table name in all subdirectories of OUTPUT_DIR
+        search_pattern = os.path.join(OUTPUT_DIR, '**', f'{table_name}_*.log')
+        related_files = glob.glob(search_pattern, recursive=True)
+
+        if not related_files:
+            return JsonResponse({'files': []})  # Return an empty list if no files found
+
+        # Sort files by modification time, latest first
+        related_files.sort(key=os.path.getmtime, reverse=True)
+
+        # Extract file names without the full path for display
+        file_names = [os.path.basename(file_path) for file_path in related_files]
+
+        return JsonResponse({'files': file_names})
+    except Exception as e:
+        return JsonResponse({'error': str(e)})
