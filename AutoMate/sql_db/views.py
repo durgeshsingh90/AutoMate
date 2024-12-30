@@ -151,45 +151,62 @@ def refresh_list_tables(request):
 def refresh_select_all_from_table(request, table_name):
     db_key = request.GET.get('db_key')
     if not db_key:
-        return JsonResponse({'error': 'Database key is required'})
+        return JsonResponse({'error': 'Database key is required'}, status=400)
 
     # Create a timestamped filename
-    command = f'SELECT * FROM OASIS77.{table_name};'
+    command = f'SELECT * FROM {table_name};'
     timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
     filename = f"{table_name}_{timestamp}.log"
     filepath, error = run_sqlplus_command(command, db_key, filename)
-    
+
     if error:
-        return JsonResponse({'error': error})
-    
-    with open(filepath, 'rb') as file:
-        response = HttpResponse(file.read(), content_type='text/plain')
-        response['Content-Disposition'] = f'attachment; filename={filename}'
-        return response
+        return JsonResponse({'error': error}, status=500)
+
+    # Verify the file creation
+    if not os.path.exists(filepath):
+        return JsonResponse({'error': 'File creation failed or file not found.'}, status=500)
+
+    # Return a JSON response with the filename
+    return JsonResponse({
+        'message': f'Table "{table_name}" refreshed successfully.',
+        'filename': filename
+    })
 
 
 def list_tables(request):
     try:
-        # Search for tablelist files recursively in OUTPUT_DIR
         search_pattern = os.path.join(OUTPUT_DIR, '**', 'tablelist_*.log')
         files = glob.glob(search_pattern, recursive=True)
 
         if not files:
             return JsonResponse({'error': 'No table list files found.'})
 
-        # Find the latest tablelist file
         latest_file = max(files, key=os.path.getmtime)
 
         # Read the contents of the latest file
         tables = []
+        tables_with_files = []
+        tables_without_files = []
+
         with open(latest_file, 'r') as file:
             for line in file:
                 line = line.strip()
                 if line and not line.startswith(("TABLE_NAME", "---------")):
-                    tables.append(line)
+                    table_name = line
+                    # Check if there are files for this table
+                    table_files_pattern = os.path.join(OUTPUT_DIR, '**', f'{table_name}_*.log')
+                    related_files = glob.glob(table_files_pattern, recursive=True)
+                    if related_files:
+                        tables_with_files.append(table_name)
+                    else:
+                        tables_without_files.append(table_name)
 
-        tables.sort()
-        return JsonResponse({'tables': tables})
+        # Combine tables with files first, then others
+        tables_with_files.sort()
+        tables_without_files.sort()
+        sorted_tables = tables_with_files + tables_without_files
+
+        return JsonResponse({'tables': sorted_tables})
     except Exception as e:
         return JsonResponse({'error': str(e)})
 

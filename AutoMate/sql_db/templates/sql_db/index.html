@@ -117,7 +117,28 @@
     
             renderTableList(data.tables);
         }
-    
+        async function refreshTableData(tableName, tableElement) {
+            const dbKey = "{{ db_key }}"; // Use the default DB key passed from the backend
+        
+            try {
+                const response = await fetch(`/sql_db/refresh_select_all_from_table/${tableName}/?db_key=${dbKey}`);
+                const data = await response.json();
+        
+                if (data.error) {
+                    alert(data.error);
+                    return;
+                }
+        
+                alert(data.message); // Display the success message
+                loadTableFiles(tableName, tableElement, true); // Refresh the file list
+            } catch (error) {
+                console.error('Error refreshing table data:', error);
+                alert('Failed to refresh table data. Check the console for details.');
+            }
+        }
+        
+        
+        
         function renderTableList(tables) {
             const explorerList = document.getElementById('explorer-list');
             explorerList.innerHTML = '';
