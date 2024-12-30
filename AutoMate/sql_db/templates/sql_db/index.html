@@ -59,18 +59,16 @@
             font-size: 14px;
             display: block;
         }
-
+        
         .explorer li:hover {
             background-color: #2d2d2d;
         }
-
+        
         .explorer .folder-icon::before {
-            content: "📂";
             margin-right: 5px;
         }
 
         .explorer .file-icon::before {
-            content: "📄";
             margin-right: 5px;
         }
 
@@ -117,119 +115,142 @@
                 return;
             }
     
+            renderTableList(data.tables);
+        }
+    
+        function renderTableList(tables) {
             const explorerList = document.getElementById('explorer-list');
             explorerList.innerHTML = '';
     
-            data.tables.forEach(tableName => {
-                const li = document.createElement('li');
-                li.className = 'folder-icon';
-                
-                const nameSpan = document.createElement('span');
-                nameSpan.textContent = tableName;
-    
-                const refreshIcon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-                refreshIcon.setAttribute("width", "16");
-                refreshIcon.setAttribute("height", "16");
-                refreshIcon.setAttribute("fill", "currentColor");
-                refreshIcon.setAttribute("class", "bi bi-arrow-clockwise refresh-icon");
-                refreshIcon.setAttribute("viewBox", "0 0 16 16");
-                refreshIcon.innerHTML = `
-                    <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2z"/>
-                    <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466"/>
-                `;
-                refreshIcon.style.marginLeft = "10px";
-                refreshIcon.style.cursor = "pointer";
-    
-                refreshIcon.addEventListener("click", () => refreshTableData(tableName));
-    
-                li.appendChild(nameSpan);
-                li.appendChild(refreshIcon);
-    
-                li.addEventListener('click', () => loadTableFiles(tableName, li));
-    
+            tables.forEach(tableName => {
+                const li = createTableElement(tableName);
                 explorerList.appendChild(li);
             });
         }
     
-        async function refreshTableData(tableName) {
-            const dbKey = "{{ db_key }}"; // Use the default DB key passed from the backend
-    
-            try {
-                const response = await fetch(`/sql_db/refresh_select_all_from_table/${tableName}/?db_key=${dbKey}`);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-    
-                alert(`Table data refreshed for ${tableName}.`);
-            } catch (error) {
-                console.error('Error refreshing table data:', error);
-                alert(`Failed to refresh table data for ${tableName}. Check the console for details.`);
-            }
+        function createTableElement(tableName) {
+            const li = document.createElement('li');
+            li.className = 'folder-icon';
+            
+            const container = document.createElement('div');
+            container.style.display = 'flex';
+            container.style.alignItems = 'center'; // Align items vertically
+            container.style.justifyContent = 'space-between'; // Space between name and refresh icon
+            container.style.gap = '8px'; // Optional: Add some spacing between items
+            
+            // Add a sub-container for the folder icon and table name
+            const nameContainer = document.createElement('div');
+            nameContainer.style.display = 'flex';
+            nameContainer.style.alignItems = 'center'; // Align icon and text vertically
+            nameContainer.style.gap = '8px'; // Space between icon and name
+        
+            // Add folder icon
+            const folderIcon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+            folderIcon.setAttribute("width", "16");
+            folderIcon.setAttribute("height", "16");
+            folderIcon.setAttribute("fill", "currentColor");
+            folderIcon.setAttribute("class", "bi bi-folder");
+            folderIcon.setAttribute("viewBox", "0 0 16 16");
+            folderIcon.innerHTML = `
+                <path d="M.54 3.87.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3h3.982a2 2 0 0 1 1.992 2.181l-.637 7A2 2 0 0 1 13.174 14H2.826a2 2 0 0 1-1.991-1.819l-.637-7a2 2 0 0 1 .342-1.31zM2.19 4a1 1 0 0 0-.996 1.09l.637 7a1 1 0 0 0 .995.91h10.348a1 1 0 0 0 .995-.91l.637-7A1 1 0 0 0 13.81 4zm4.69-1.707A1 1 0 0 0 6.172 2H2.5a1 1 0 0 0-1 .981l.006.139q.323-.119.684-.12h5.396z"/>
+            `;
+        
+            const nameSpan = document.createElement('span');
+            nameSpan.textContent = tableName;
+        
+            nameContainer.appendChild(folderIcon);
+            nameContainer.appendChild(nameSpan);
+        
+            // Add refresh icon
+            const refreshIcon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+            refreshIcon.setAttribute("width", "16");
+            refreshIcon.setAttribute("height", "16");
+            refreshIcon.setAttribute("fill", "currentColor");
+            refreshIcon.setAttribute("class", "bi bi-arrow-clockwise refresh-icon");
+            refreshIcon.setAttribute("viewBox", "0 0 16 16");
+            refreshIcon.innerHTML = `
+                <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2z"/>
+                <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466"/>
+            `;
+            refreshIcon.style.cursor = 'pointer';
+        
+            refreshIcon.addEventListener("click", (event) => {
+                event.stopPropagation(); // Prevent triggering parent click events
+                refreshTableData(tableName, li);
+            });
+        
+            // Append nameContainer and refreshIcon to the main container
+            container.appendChild(nameContainer);
+            container.appendChild(refreshIcon);
+        
+            li.appendChild(container);
+        
+            li.addEventListener('click', () => loadTableFiles(tableName, li));
+        
+            return li;
         }
-    
-
-        // Fetch the latest table list by calling the refresh_list_tables endpoint
-        const dbKey = "{{ db_key }}"; // Pass the default DB key from the backend
-
+            
+        
         async function refreshTableList() {
             const dbKey = "{{ db_key }}"; // Use the default DB key passed from the backend
-        
+    
             try {
                 const response = await fetch(`/sql_db/refresh_list_tables/?db_key=${dbKey}`);
                 const data = await response.json();
-        
+    
                 if (data.error) {
                     alert(data.error);
                     return;
                 }
-        
-                const explorerList = document.getElementById('explorer-list');
-                explorerList.innerHTML = '';
-        
-                data.tables.forEach(tableName => {
-                    const li = document.createElement('li');
-                    li.className = 'folder-icon';
-                    li.textContent = tableName;
-        
-                    // Add click event for expanding/collapsing file list
-                    li.addEventListener('click', () => loadTableFiles(tableName, li));
-        
-                    explorerList.appendChild(li);
-                });
-        
+    
+                renderTableList(data.tables); // Re-render table list
                 alert('Table list refreshed!');
             } catch (error) {
                 console.error('Error refreshing table list:', error);
                 alert('Failed to refresh table list. Check the console for details.');
             }
         }
+    
+        async function loadTableFiles(tableName, tableElement, forceRefresh = false) {
+            const existingFileList = tableElement.querySelector('.file-list');
+            if (existingFileList && !forceRefresh) {
+                existingFileList.classList.toggle('hidden');
+                return; // Toggle visibility
+            }
         
-        // Load files for a specific table and display them as a collapsible list
-        async function loadTableFiles(tableName, tableElement) {
             const response = await fetch(`/sql_db/select_all_from_table/${tableName}/`);
             const data = await response.json();
-
+        
             if (data.error) {
                 alert(data.error);
                 return;
             }
-
-            // Check if the file list already exists
-            let fileList = tableElement.querySelector('.file-list');
-            if (fileList) {
-                fileList.classList.toggle('hidden');
-                return; // Toggle visibility
+        
+            if (existingFileList) {
+                tableElement.removeChild(existingFileList); // Remove old list if refreshing
             }
-
-            // Create a file list container
-            fileList = document.createElement('ul');
+        
+            const fileList = document.createElement('ul');
             fileList.className = 'file-list';
-
+        
             if (data.files && data.files.length > 0) {
                 data.files.forEach(fileName => {
                     const fileItem = document.createElement('li');
                     fileItem.className = 'file-icon';
-                    fileItem.textContent = fileName;
+        
+                    // Add file icon
+                    const fileIcon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+                    fileIcon.setAttribute("width", "16");
+                    fileIcon.setAttribute("height", "16");
+                    fileIcon.setAttribute("fill", "currentColor");
+                    fileIcon.setAttribute("class", "bi bi-file-earmark");
+                    fileIcon.setAttribute("viewBox", "0 0 16 16");
+                    fileIcon.innerHTML = `
+                        <path d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5zm-3 0A1.5 1.5 0 0 1 9.5 3V1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V4.5z"/>
+                    `;
+        
+                    fileItem.appendChild(fileIcon);
+                    fileItem.appendChild(document.createTextNode(` ${fileName}`));
                     fileList.appendChild(fileItem);
                 });
             } else {
@@ -238,12 +259,13 @@
                 noFiles.style.color = '#888';
                 fileList.appendChild(noFiles);
             }
-
+        
             tableElement.appendChild(fileList);
         }
-
+    
         // Load the table list on page load
         window.onload = loadTableList;
     </script>
+    
 </body>
 </html>
