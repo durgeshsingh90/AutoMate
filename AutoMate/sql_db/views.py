@@ -16,7 +16,8 @@ logger = logging.getLogger(__name__)
 #     'prod_f94gdos': 'f94gdos/Pune24!@A5PCDO8001.EQU.IST',
 # }
 DB_CONNECTIONS = {
-    'uat_novate': 'oasis77/password@localhost/ISTU2_EQU',
+    # 'uat_novate': 'oasis77/password@localhost/ISTU2_EQU',
+    'uat_novate': 'oasis77/ist0py@istu2_equ',
 
 }
 

@@ -10,7 +10,7 @@
             font-family: Arial, sans-serif;
             display: flex;
             height: 100vh;
-        }
+        } 
 
         .explorer {
             background-color: #1e1e1e;
@@ -22,34 +22,34 @@
             width: 300px;
             resize: horizontal;
             overflow: auto;
-        }
+        } 
 
         .explorer-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-        }
+        } 
 
         .explorer-header h3 {
             margin: 0;
             font-size: 16px;
-        }
+        } 
 
         .refresh-icon {
             cursor: pointer;
             color: #fff;
             transition: transform 0.2s;
-        }
-
+        } 
+        
         .refresh-icon:hover {
             transform: rotate(90deg); /* Adds a rotation effect on hover */
-        }
+        } 
 
         .explorer ul {
             list-style: none;
             padding: 0;
             margin: 0;
-        }
+        } 
 
         .explorer li {
             cursor: pointer;
@@ -66,26 +66,37 @@
         
         .explorer .folder-icon::before {
             margin-right: 5px;
-        }
+        } 
 
         .explorer .file-icon::before {
             margin-right: 5px;
-        }
+        } 
 
         .file-list {
             padding-left: 20px;
             margin-top: 3px;
-        }
+        } 
 
         .hidden {
             display: none;
         }
 
-        .content {
-            flex-grow: 1;
-            background-color: #f4f4f4;
-            overflow: auto;
-            padding: 10px;
+        .search-container {
+            display: flex;
+            align-items: center;
+            padding: 5px 0;
+        }
+
+        .search-container input {
+            width: 100%;
+            padding: 5px;
+            border: none;
+            border-radius: 3px;
+            font-size: 14px;
+        }
+
+        .search-container input::placeholder {
+            color: #888;
         }
     </style>
 </head>
@@ -98,6 +109,9 @@
                 <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466"/>
             </svg>
         </div>
+        <div class="search-container">
+            <input type="text" id="search-bar" placeholder="Search tables...">
+        </div>
         <ul id="explorer-list"></ul>
     </div>
     <div class="content">
@@ -109,62 +123,61 @@
         async function loadTableList() {
             const response = await fetch('/sql_db/list_tables/');
             const data = await response.json();
-    
+
             if (data.error) {
                 alert(data.error);
                 return;
             }
-    
+
             renderTableList(data.tables);
         }
-        async function refreshTableData(tableName, tableElement) {
+
+        async function refreshTableList() {
             const dbKey = "{{ db_key }}"; // Use the default DB key passed from the backend
-        
+
             try {
-                const response = await fetch(`/sql_db/refresh_select_all_from_table/${tableName}/?db_key=${dbKey}`);
+                const response = await fetch(`/sql_db/refresh_list_tables/?db_key=${dbKey}`);
                 const data = await response.json();
-        
+
                 if (data.error) {
                     alert(data.error);
                     return;
                 }
-        
-                alert(data.message); // Display the success message
-                loadTableFiles(tableName, tableElement, true); // Refresh the file list
+
+                renderTableList(data.tables); // Re-render table list
+                alert('Table list refreshed!');
             } catch (error) {
-                console.error('Error refreshing table data:', error);
-                alert('Failed to refresh table data. Check the console for details.');
+                console.error('Error refreshing table list:', error);
+                alert('Failed to refresh table list. Check the console for details.');
             }
         }
-        
-        
-        
+
         function renderTableList(tables) {
             const explorerList = document.getElementById('explorer-list');
             explorerList.innerHTML = '';
-    
+
             tables.forEach(tableName => {
                 const li = createTableElement(tableName);
                 explorerList.appendChild(li);
             });
         }
-    
+
         function createTableElement(tableName) {
             const li = document.createElement('li');
             li.className = 'folder-icon';
-            
+
             const container = document.createElement('div');
             container.style.display = 'flex';
             container.style.alignItems = 'center'; // Align items vertically
             container.style.justifyContent = 'space-between'; // Space between name and refresh icon
             container.style.gap = '8px'; // Optional: Add some spacing between items
-            
+
             // Add a sub-container for the folder icon and table name
             const nameContainer = document.createElement('div');
             nameContainer.style.display = 'flex';
             nameContainer.style.alignItems = 'center'; // Align icon and text vertically
             nameContainer.style.gap = '8px'; // Space between icon and name
-        
+
             // Add folder icon
             const folderIcon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
             folderIcon.setAttribute("width", "16");
@@ -175,13 +188,13 @@
             folderIcon.innerHTML = `
                 <path d="M.54 3.87.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3h3.982a2 2 0 0 1 1.992 2.181l-.637 7A2 2 0 0 1 13.174 14H2.826a2 2 0 0 1-1.991-1.819l-.637-7a2 2 0 0 1 .342-1.31zM2.19 4a1 1 0 0 0-.996 1.09l.637 7a1 1 0 0 0 .995.91h10.348a1 1 0 0 0 .995-.91l.637-7A1 1 0 0 0 13.81 4zm4.69-1.707A1 1 0 0 0 6.172 2H2.5a1 1 0 0 0-1 .981l.006.139q.323-.119.684-.12h5.396z"/>
             `;
-        
+
             const nameSpan = document.createElement('span');
             nameSpan.textContent = tableName;
-        
+
             nameContainer.appendChild(folderIcon);
             nameContainer.appendChild(nameSpan);
-        
+
             // Add refresh icon
             const refreshIcon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
             refreshIcon.setAttribute("width", "16");
@@ -194,71 +207,70 @@
                 <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466"/>
             `;
             refreshIcon.style.cursor = 'pointer';
-        
+
             refreshIcon.addEventListener("click", (event) => {
                 event.stopPropagation(); // Prevent triggering parent click events
                 refreshTableData(tableName, li);
             });
-        
+
             // Append nameContainer and refreshIcon to the main container
             container.appendChild(nameContainer);
             container.appendChild(refreshIcon);
-        
+
             li.appendChild(container);
-        
+
             li.addEventListener('click', () => loadTableFiles(tableName, li));
-        
+
             return li;
         }
-            
-        
-        async function refreshTableList() {
+
+        async function refreshTableData(tableName, tableElement) {
             const dbKey = "{{ db_key }}"; // Use the default DB key passed from the backend
-    
+
             try {
-                const response = await fetch(`/sql_db/refresh_list_tables/?db_key=${dbKey}`);
+                const response = await fetch(`/sql_db/refresh_select_all_from_table/${tableName}/?db_key=${dbKey}`);
                 const data = await response.json();
-    
+
                 if (data.error) {
                     alert(data.error);
                     return;
                 }
-    
-                renderTableList(data.tables); // Re-render table list
-                alert('Table list refreshed!');
+
+                alert(data.message); // Display the success message
+                loadTableFiles(tableName, tableElement, true); // Refresh the file list
             } catch (error) {
-                console.error('Error refreshing table list:', error);
-                alert('Failed to refresh table list. Check the console for details.');
+                console.error('Error refreshing table data:', error);
+                alert('Failed to refresh table data. Check the console for details.');
             }
         }
-    
+
         async function loadTableFiles(tableName, tableElement, forceRefresh = false) {
             const existingFileList = tableElement.querySelector('.file-list');
             if (existingFileList && !forceRefresh) {
                 existingFileList.classList.toggle('hidden');
                 return; // Toggle visibility
             }
-        
+
             const response = await fetch(`/sql_db/select_all_from_table/${tableName}/`);
             const data = await response.json();
-        
+
             if (data.error) {
                 alert(data.error);
                 return;
             }
-        
+
             if (existingFileList) {
                 tableElement.removeChild(existingFileList); // Remove old list if refreshing
             }
-        
+
             const fileList = document.createElement('ul');
             fileList.className = 'file-list';
-        
+
             if (data.files && data.files.length > 0) {
                 data.files.forEach(fileName => {
                     const fileItem = document.createElement('li');
                     fileItem.className = 'file-icon';
-        
+
                     // Add file icon
                     const fileIcon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
                     fileIcon.setAttribute("width", "16");
@@ -269,7 +281,7 @@
                     fileIcon.innerHTML = `
                         <path d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5zm-3 0A1.5 1.5 0 0 1 9.5 3V1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V4.5z"/>
                     `;
-        
+
                     fileItem.appendChild(fileIcon);
                     fileItem.appendChild(document.createTextNode(` ${fileName}`));
                     fileList.appendChild(fileItem);
@@ -280,13 +292,29 @@
                 noFiles.style.color = '#888';
                 fileList.appendChild(noFiles);
             }
-        
+
             tableElement.appendChild(fileList);
         }
-    
+
+        function filterTableList(event) {
+            const filterText = event.target.value.toLowerCase();
+            const tableListItems = document.querySelectorAll('#explorer-list li');
+
+            tableListItems.forEach(item => {
+                const tableName = item.querySelector('span').textContent.toLowerCase();
+                if (tableName.includes(filterText)) {
+                    item.style.display = '';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
         // Load the table list on page load
         window.onload = loadTableList;
+
+        // Add event listener to search bar
+        document.getElementById('search-bar').addEventListener('input', filterTableList);
     </script>
-    
 </body>
 </html>
