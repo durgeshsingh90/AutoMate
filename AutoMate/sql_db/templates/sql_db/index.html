@@ -111,26 +111,62 @@
         async function loadTableList() {
             const response = await fetch('/sql_db/list_tables/');
             const data = await response.json();
-
+    
             if (data.error) {
                 alert(data.error);
                 return;
             }
-
+    
             const explorerList = document.getElementById('explorer-list');
             explorerList.innerHTML = '';
-
+    
             data.tables.forEach(tableName => {
                 const li = document.createElement('li');
                 li.className = 'folder-icon';
-                li.textContent = tableName;
-
-                // Add click event for expanding/collapsing file list
+                
+                const nameSpan = document.createElement('span');
+                nameSpan.textContent = tableName;
+    
+                const refreshIcon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+                refreshIcon.setAttribute("width", "16");
+                refreshIcon.setAttribute("height", "16");
+                refreshIcon.setAttribute("fill", "currentColor");
+                refreshIcon.setAttribute("class", "bi bi-arrow-clockwise refresh-icon");
+                refreshIcon.setAttribute("viewBox", "0 0 16 16");
+                refreshIcon.innerHTML = `
+                    <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2z"/>
+                    <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466"/>
+                `;
+                refreshIcon.style.marginLeft = "10px";
+                refreshIcon.style.cursor = "pointer";
+    
+                refreshIcon.addEventListener("click", () => refreshTableData(tableName));
+    
+                li.appendChild(nameSpan);
+                li.appendChild(refreshIcon);
+    
                 li.addEventListener('click', () => loadTableFiles(tableName, li));
-
+    
                 explorerList.appendChild(li);
             });
         }
+    
+        async function refreshTableData(tableName) {
+            const dbKey = "{{ db_key }}"; // Use the default DB key passed from the backend
+    
+            try {
+                const response = await fetch(`/sql_db/refresh_select_all_from_table/${tableName}/?db_key=${dbKey}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+    
+                alert(`Table data refreshed for ${tableName}.`);
+            } catch (error) {
+                console.error('Error refreshing table data:', error);
+                alert(`Failed to refresh table data for ${tableName}. Check the console for details.`);
+            }
+        }
+    
 
         // Fetch the latest table list by calling the refresh_list_tables endpoint
         const dbKey = "{{ db_key }}"; // Pass the default DB key from the backend
