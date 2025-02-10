@@ -52,7 +52,9 @@ INSTALLED_APPS = [
     'binblock',
     'slot_booking',
     'html2emvco',
-    'sql_db'
+    'sql_db',
+    'pdf_merger',
+
 ]
 
 # Logging configuration

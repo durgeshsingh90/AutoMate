@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Merge PDFs</title>
+    <style>
+        #file-list {
+            list-style-type: none;
+            padding: 0;
+            width: 300px;
+        }
+        #file-list li {
+            margin: 8px 0;
+            padding: 8px;
+            background-color: #f3f3f3;
+            border: 1px solid #ddd;
+            cursor: move;
+        }
+    </style>
+    <script>
+        function handleFileSelect(event) {
+            const files = event.target.files;
+            const fileList = document.getElementById('file-list');
+            fileList.innerHTML = '';
+            for (let i = 0; i < files.length; i++) {
+                const li = document.createElement('li');
+                li.textContent = files[i].name;
+                li.setAttribute('data-index', i);
+                li.draggable = true;
+                li.addEventListener('dragstart', handleDragStart);
+                li.addEventListener('dragover', handleDragOver);
+                li.addEventListener('drop', handleDrop);
+                fileList.appendChild(li);
+            }
+        }
+
+        function handleDragStart(event) {
+            event.dataTransfer.setData('text/plain', event.target.dataset.index);
+        }
+
+        function handleDragOver(event) {
+            event.preventDefault();
+        }
+
+        function handleDrop(event) {
+            event.preventDefault();
+            const oldIndex = event.dataTransfer.getData('text');
+            const newIndex = event.target.dataset.index;
+            const fileList = document.getElementById('file-list');
+            const items = fileList.children;
+            fileList.insertBefore(items[oldIndex], items[newIndex].nextSibling);
+        }
+
+        function submitForm(event) {
+            const fileList = document.getElementById('file-list');
+            const order = [];
+            for (let i = 0; i < fileList.children.length; i++) {
+                order.push(fileList.children[i].dataset.index);
+            }
+            document.getElementById('file-order').value = order.join(',');
+        }
+    </script>
+</head>
+<body>
+    <h2>Merge PDFs</h2>
+    <form method="post" enctype="multipart/form-data" onsubmit="submitForm(event)">
+        {% csrf_token %}
+        <input type="file" id="pdf-files" name="pdf_files" multiple required onchange="handleFileSelect(event)">
+        <ul id="file-list"></ul>
+        <input type="hidden" id="file-order" name="file_order">
+        <button type="submit">Merge PDFs</button>
+    </form>
+    {% if error %}
+        <p style="color: red;">{{ error }}</p>
+    {% endif %}
+</body>
+</html>

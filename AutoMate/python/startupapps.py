@@ -2,24 +2,24 @@ import subprocess
 import time
 import pyautogui
 
-# Network drive credentials
-network_path = r'\\G4PPSS1005C2L3.1dc.com\DVOL_Omnipay\omnipay_teams\authorisation'
-username = r'1dc\f94gdos'
-password = r'ST78^$tD78'
-
-# Disconnect the network drive
-try:
-    subprocess.run(['net', 'use', 'Z:', '/delete', '/y'], check=True)
-    print("Disconnected existing Z: drive")
-except subprocess.CalledProcessError as e:
-    print(f"Failed to disconnect Z: drive. Error: {e}")
-
-# Connect the network drive
-try:
-    subprocess.run(['net', 'use', 'Z:', network_path, '/user:' + username, password], check=True)
-    print(f"Connected Z: drive to {network_path}")
-except subprocess.CalledProcessError as e:
-    print(f"Failed to connect Z: drive. Error: {e}")
+## Network drive credentials
+#network_path = r'\\G4PPSS1005C2L3.1dc.com\DVOL_Omnipay\omnipay_teams\authorisation'
+#username = r'1dc\f94gdos'
+#password = r'ST78^$tD78'
+#
+## Disconnect the network drive
+#try:
+#    subprocess.run(['net', 'use', 'Z:', '/delete', '/y'], check=True)
+#    print("Disconnected existing Z: drive")
+#except subprocess.CalledProcessError as e:
+#    print(f"Failed to disconnect Z: drive. Error: {e}")
+#
+## Connect the network drive
+#try:
+#    subprocess.run(['net', 'use', 'Z:', network_path, '/user:' + username, password], check=True)
+#    print(f"Connected Z: drive to {network_path}")
+#except subprocess.CalledProcessError as e:
+#    print(f"Failed to connect Z: drive. Error: {e}")
 
 # List of app paths
 app_paths = [
@@ -29,7 +29,8 @@ app_paths = [
     r'C:\Program Files\Notepad++\notepad++.exe',
 #    r'C:\Program Files\PuTTY\putty.exe',
     r'C:\Program Files\Tracker Software\PDF Editor\PDFXEdit.exe',
-#    r'C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe'
+#    r'C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe',
+    r'C:\Program Files (x86)\Mobatek\MobaXterm\MobaXterm_Personal_23.4.exe'
 ]
 
 # Open Chrome with multiple URLs
@@ -40,7 +41,8 @@ urls = [
     "https://enterprise-jira.onefiserv.net/secure/Dashboard.jspa",
     "https://de-splunk.1dc.com/en-US/app/search/search",
     "https://fdiflxt-vip.1dc.com/tst/cgi-bin/felix",
-    "https://outlook.office.com/mail/"
+    "https://outlook.office.com/mail/",
+    "https://app.aitrium.app.atlas.gfs-emea-ai-platform.aws.fisv.cloud/"
 ]
 try:
     # Pass all URLs as arguments to Chrome

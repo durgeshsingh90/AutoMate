@@ -38,4 +38,6 @@ urlpatterns = [
     path('html2emvco/', include('html2emvco.urls')),
     path('reader/', TemplateView.as_view(template_name='reader.html'), name='reader'),
     path('sql_db/', include('sql_db.urls')),  # Ensure you are including 'sql_db.urls'
+    path('pdf_merger/', include('pdf_merger.urls')),
+
 ]
