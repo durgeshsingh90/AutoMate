@@ -14,6 +14,10 @@ import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+# Add these settings at the end of the file
+DATA_UPLOAD_MAX_NUMBER_FILES = 1000  # Set this to a value higher than the number of files you expect
 
 # Create a directory for logs
 LOG_DIR = BASE_DIR / 'logs'
@@ -54,7 +58,7 @@ INSTALLED_APPS = [
     'html2emvco',
     'sql_db',
     'pdf_merger',
-
+    'signoff_cert_report',
 ]
 
 # Logging configuration
