@@ -68,11 +68,28 @@ def parse_iso8583(log_data):
     message = {}
     de007_parts = []
     bm43_parts = []
+    de053_parts = []
     de055_parts = []
     mti = ""
 
     lines = log_data.split("\n")
     logger.debug(f"Number of lines received for parsing: {len(lines)}")
+
+    data_elements = {}  # Dictionary to store Data Elements
+
+    # Define which DE fields should be converted to integers
+    integer_fields = ['004', '049']  # Add more fields if needed
+    # Define which DE fields need to be zero-padded and their respective lengths
+    pad_zero_fields = {
+        '013': 4,
+        '019': 3,
+        '022': 3,
+        '023': 3,
+        '025': 2
+    }
+
+    # Define the flags for DE053
+    first_bm53_skipped = False
 
     # Search for MTI anywhere in the input
     for line in lines:
@@ -80,7 +97,7 @@ def parse_iso8583(log_data):
         if not mti:
             mti_match = re.match(r"msgno\[\s*0\]<(.+)>", line.strip())
             if mti_match:
-                mti = str(mti_match.group(1))
+                mti = mti_match.group(1)
                 logger.info(f"MTI extracted: {mti}")
                 continue
 
@@ -111,14 +128,14 @@ def parse_iso8583(log_data):
                 if field_number == '003':
                     value = value.ljust(field_length, '0')
                     logger.debug(f"Adjusted field {field_number} to match length: {value}")
-                elif field_number == '004':
+                elif field_number == '004':  # Unlikely to be adjusted here due to being in integer_fields already
                     value = value.zfill(field_length)
                     logger.debug(f"Adjusted field {field_number} to match length: {value}")
 
-            # Special handling for BM 60, 61, and 62
+            # Special handling for DE 60, 61, and 62
             if field_number in ['060', '061', '062']:
                 value = parse_bm6x(value)
-                logger.info(f"Parsed BM {field_number}: {value}")
+                logger.info(f"Parsed DE {field_number}: {value}")
 
             # Handling for DE 55 across multiple lines
             if field_number == '055':
@@ -132,49 +149,86 @@ def parse_iso8583(log_data):
                 logger.debug(f"Accumulating DE 007 parts: {de007_parts}")
                 continue
 
-            # Handling for BM 43
+            # Handling for DE 43
             if field_number == '043':
-                bm43_parts.append(value.strip())
-                logger.debug(f"Accumulating BM 43 parts: {bm43_parts}")
+                bm43_parts.append(value)  # Append value without stripping spaces
+                logger.debug(f"Accumulating DE 43 parts: {bm43_parts}")
                 continue
 
-            message[f"BM{field_number}"] = value
+            # Handling for DE 53: Ignore the first line and combine the rest
+            if field_number == '053':
+                if not first_bm53_skipped:
+                    first_bm53_skipped = True
+                    logger.debug(f"Skipping first DE 53 part: {value}")
+                else:
+                    de053_parts.append(value.strip())  # You can decide whether to strip or not
+                    logger.debug(f"Accumulating DE 53 parts: {de053_parts}")
+                continue
+
+            # Convert to integer if the field is in the integer_fields list
+            if field_number in integer_fields:
+                value = int(value.lstrip('0'))
+                logger.debug(f"Converted field {field_number} to integer: {value}")
+
+            # Pad with zeros if the field is in the pad_zero_fields list
+            if field_number in pad_zero_fields:
+                value = value.zfill(pad_zero_fields[field_number])
+                logger.debug(f"Padded field {field_number} with zeros: {value}")
+
+            data_elements[f"DE{field_number}"] = value
 
     # Combine and pad DE007
     if de007_parts:
         combined_de007 = ''.join(de007_parts)
-        message["BM007"] = combined_de007.zfill(10)
-        logger.info(f"Combined BM 007: {message['BM007']}")
+        data_elements["DE007"] = combined_de007.zfill(10)
+        logger.info(f"Combined DE 007: {data_elements['DE007']}")
 
-    # Combine parts of BM 43
+    # Combine parts of DE 43 without stripping spaces
     if bm43_parts:
-        message["BM043"] = ' '.join(bm43_parts).strip()
-        logger.info(f"Combined BM 43: {message['BM043']}")
+        data_elements["DE043"] = ''.join(bm43_parts)  # Combine without stripping spaces
+        logger.info(f"Combined DE 43: {data_elements['DE043']}")
+
+    # Combine parts of DE 53
+    if de053_parts:
+        data_elements["DE053"] = ''.join(de053_parts)  # Retain spaces if needed
+        logger.info(f"Combined DE 53: {data_elements['DE053']}")
 
     # Combine parts of DE 55 and parse as TLV
     if de055_parts:
         combined_de055 = ''.join(de055_parts)
         logger.debug(f"Combined DE 55: {combined_de055}")
         parsed_de055 = parse_emv_field_55(combined_de055)  # Parse the combined DE 55
-        message["BM055"] = parsed_de055
-        logger.info(f"Parsed BM 055: {message['BM055']}")
+        data_elements["DE055"] = parsed_de055
+        logger.info(f"Parsed DE 055: {data_elements['DE055']}")
 
-    # Sort message by keys in ascending order
-    sorted_message = dict(sorted(message.items()))
+    # Sort data_elements by keys in ascending order
+    sorted_data_elements = dict(sorted(data_elements.items()))
 
-    # Place MTI at the top of the sorted message
+    logger.info("Final data elements constructed successfully.")
+    logger.debug(f"Final sorted data elements: {sorted_data_elements}")
+
+    # Convert MTI to integer if it is numeric
+    try:
+        mti = int(mti)
+    except ValueError:
+        logger.debug(f"MTI is not numeric: {mti}")
+
+    # Construct the final message
     if mti:
-        sorted_message = {"MTI": mti, **sorted_message}
+        message["mti"] = mti
 
-    logger.info("Final message constructed successfully.")
-    logger.debug(f"Final sorted message: {sorted_message}")
+    message["data_elements"] = sorted_data_elements
 
-    return sorted_message
+    logger.info("Final message constructed successfully with data elements.")
+    logger.debug(f"Final message: {message}")
+
+    return message
+
 
 def parse_emv_field_55(emv_data):
     parsed_tlvs = {}
     index = 3  # Skip the first 3 digits which represent the total length of DE 55
-    total_bm55_value_length = 0  # Variable to accumulate the total length of BM55 values
+    total_bm55_value_length = 0  # Variable to accumulate the total length of DE55 values
 
     # Tags that have their value length as exact, not doubled
     exact_length_tags = ["9F1E", "9F13"]  # Add more tags if needed
@@ -251,13 +305,13 @@ def parse_emv_field_55(emv_data):
         # Store the tag and value in the parsed TLVs dictionary
         parsed_tlvs[tag] = value
 
-        # Accumulate the length of BM55 values
+        # Accumulate the length of DE55 values
         total_bm55_value_length += len(value)
 
         logger.debug(f"Extracted value for tag {tag}: {value}")
 
-    # Log the total length of BM55 values
-    logger.info(f"Total length of BM55 values: {total_bm55_value_length} characters")
+    # Log the total length of DE55 values
+    logger.info(f"Total length of DE55 values: {total_bm55_value_length} characters")
 
     logger.info("Completed parsing DE 55.")
     return parsed_tlvs
@@ -275,6 +329,6 @@ def parse_bm6x(value):
         i += 5 + subfield_length - 2
 
     parsed_fields = {subfield: values[idx] for idx, subfield in enumerate(subfields)}
-    logger.debug(f"BM6x parsed fields: {parsed_fields}")
+    logger.debug(f"DE6x parsed fields: {parsed_fields}")
     return parsed_fields
 

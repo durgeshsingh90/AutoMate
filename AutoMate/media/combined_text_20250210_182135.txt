@@ -1,0 +1,143 @@
+Filename: Fiserv ISO8583 PSP Certification Sign Off - Cetler-71- NomuPay FT-19524.pdf
+
+Page | 1 
+ 
+ 
+OmniPay Auths PSP Certification Sign-Off for 
+NomuPay (Cetler - Inst 71)  
+FT-19524 CNP 
+ 
+ 
+ 
+ 
+              
+ 
+Version:  
+1.2 
+Date:  12 Jul 2023 
+ 
+ 
+ 
+ 
+  
+Fiserv Inc.                                                                      10HQ Dublin Docklands, Dublin 2, D02 K51 
+Page | 2                                                          OmniPay Auths PSP Certification Sign-Off for NomuPay (Cetler - Inst 71)  FT-19524 CNP 
+                                                                                                                               
+ 
+Company Name:  Nomu Pay Limited 
+ 
+Acquiring Institution:   CETLER - 000071 
+_____________________________________________________________________________ 
+Street:  
+Post Code and City 
+5th floor Rear, Connaught House, 1 Burlington 
+Road 
+ 
+Ireland D04 C5Y6 Dublin 4  
+Phone Number: 
+Contact person: 
++34 647 05 35 99 
+ 
+Adolfo Gabriel Sanz 
+E-Mail Address: 
+Terminal Type / Host Type: 
+adolfo.gabriel@nomupay.com 
+ 
+Debian GNU/Linux 11 
+ 
+Software version:   
+Termid : NOMUPAY 
+dotnet 6.0.19 
+ 
+ 
+ 
+Certification carried out during the period 22nd of June 2023 to the 7th of July 2023 has been 
+successfully completed, and no major issues were encountered. We are now able to issue this 
+OmniPay Authorisation Certification Sign-off, for the CNP functionalities that were successfully 
+tested as per the table below.  Omnipay reserves the right to withdraw this certification in the 
+future if production issues occur because of any changes to the certified software or POS 
+solution. 
+The following specification documents have been utilised as basis for the certification 
+testing:    
+This Certification covers the following functionality: 
+ 
+Scheme Region 
+Function 
+Approved 
+MasterCard  
+EU 
+Visa  
+EU 
+eCommerce 
+    ✓ 
+✓ 
+                 ✓ 
+3DS 2.0 
+    ✓ 
+              ✓ 
+                 ✓ 
+SCA Exemption EU 
+    ✓ 
+              ✓ 
+                 ✓ 
+MOTO 
+    ✓ 
+              ✓ 
+                 ✓ 
+AVS 
+    ✓ 
+              ✓ 
+                 ✓ 
+Recurring 
+    ✓ 
+              ✓ 
+                 ✓ 
+Payment Facilitator 
+    ✓ 
+              ✓ 
+                 ✓ 
+CoF & MIT (only CNP) 
+    ✓ 
+              ✓ 
+                 ✓ 
+Tokenisation 
+    ✓ 
+              ✓ 
+                 ✓ 
+Multiple Clearing Single Auth 
+    ✓ 
+              ✓ 
+                 ✓ 
+PreAuth 
+    ✓ 
+              ✓ 
+                 ✓ 
+Fiserv Inc.                                                                      10HQ Dublin Docklands, Dublin 2, D02 K51 
+Page | 3                                                          OmniPay Auths PSP Certification Sign-Off for NomuPay (Cetler - Inst 71)  FT-19524 CNP 
+                                                                                                                               
+ZeroAmount auths 
+    ✓ 
+              ✓ 
+                 ✓ 
+Incremental 
+    ✓ 
+              ✓ 
+                 ✓ 
+Partial reversal 
+    ✓ 
+              ✓ 
+                 ✓ 
+ 
+ 
+ 
+Other:  
+Comments: 
+Communication Type: 
+Certifying Auth Engineer at Omnipay: Adelina Vasami 
+ 
+Our Best Regards  
+ 
+      Ian Delamere 
+Director of Production Operations & iCTO for OmniPay 
+
+
