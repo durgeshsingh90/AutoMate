@@ -1,24 +1,18 @@
-from django.http import JsonResponse
-import re
-import logging
 import json
+import logging
 import os
-import csv
-import io
+import re
+from django.http import JsonResponse
 
 # Configure logger for detailed logging
 logger = logging.getLogger('splunkparser')
-# logger.setLevel(logging.DEBUG)
 
-# Define a console handler for outputting log messages to the console
 console_handler = logging.StreamHandler()
 console_handler.setLevel(logging.DEBUG)
 
-# Define a formatter and set it for the handler
 formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(name)s: %(message)s')
 console_handler.setFormatter(formatter)
 
-# Add the console handler to the logger
 logger.addHandler(console_handler)
 
 # Load field definitions from the JSON file
@@ -38,20 +32,17 @@ FIELD_DEFINITIONS = load_field_definitions()
 def parse_logs(request):
     if request.method == 'POST':
         try:
-            # Read the JSON data directly from the request body
             data = json.loads(request.body)
             log_data = data.get('log_data', '')
 
             logger.info("Received request for log parsing.")
             logger.debug(f"Raw log data received: {log_data}")
 
-            # Always parse the log data
             parsed_output = parse_iso8583(log_data)
 
             logger.info("Log data parsed successfully.")
             logger.debug(f"Parsed output: {parsed_output}")
 
-            # Return the parsed output
             return JsonResponse({'status': 'success', 'result': parsed_output})
 
         except json.JSONDecodeError as e:
@@ -198,6 +189,8 @@ def parse_iso8583(log_data):
         combined_de055 = ''.join(de055_parts)
         logger.debug(f"Combined DE 55: {combined_de055}")
         parsed_de055 = parse_emv_field_55(combined_de055)  # Parse the combined DE 55
+        # Update the DE 55 data if necessary
+        update_de55(parsed_de055)
         data_elements["DE055"] = parsed_de055
         logger.info(f"Parsed DE 055: {data_elements['DE055']}")
 
@@ -215,7 +208,7 @@ def parse_iso8583(log_data):
 
     # Construct the final message
     if mti:
-        message["mti"] = mti
+        message["MTI"] = mti
 
     message["data_elements"] = sorted_data_elements
 
@@ -223,7 +216,6 @@ def parse_iso8583(log_data):
     logger.debug(f"Final message: {message}")
 
     return message
-
 
 def parse_emv_field_55(emv_data):
     parsed_tlvs = {}
@@ -316,6 +308,15 @@ def parse_emv_field_55(emv_data):
     logger.info("Completed parsing DE 55.")
     return parsed_tlvs
 
+def update_de55(de55_data):
+    if '9F1E' in de55_data:
+        original_value = de55_data['9F1E']
+        hex_value = ''.join(format(ord(c), '02x') for c in original_value)
+        de55_data['9F1E'] = hex_value
+        logger.info(f"Converted 9F1E value to hexadecimal: {hex_value}")
+    else:
+        logger.debug("Tag 9F1E not present in DE55 data.")
+
 def parse_bm6x(value):
     subfields = []
     values = []
@@ -331,4 +332,3 @@ def parse_bm6x(value):
     parsed_fields = {subfield: values[idx] for idx, subfield in enumerate(subfields)}
     logger.debug(f"DE6x parsed fields: {parsed_fields}")
     return parsed_fields
-
