@@ -208,7 +208,7 @@ def parse_iso8583(log_data):
 
     # Construct the final message
     if mti:
-        message["MTI"] = mti
+        message["mti"] = mti
 
     message["data_elements"] = sorted_data_elements
 
