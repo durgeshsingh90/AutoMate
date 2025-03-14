@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Omnipay Message Mapping</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        .container {
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .header {
+            background-color: #FF6600;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+        }
+        h1 {
+            font-size: 24px;
+            margin: 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Omnipay Message Mapping</h1>
+        </div>
+        <h2>Overview</h2>
+        <p>This document illustrates how message formats in Omnipay are mapped with Visa and Mastercard.</p>
+
+        <h2>Message Mapping with Visa</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Omnipay Field</th>
+                    <th>Visa Field</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Field 1</td>
+                    <td>Visa Field X</td>
+                </tr>
+                <tr>
+                    <td>Field 2</td>
+                    <td>Visa Field Y</td>
+                </tr>
+                <!-- Add more rows as needed to map all fields -->
+            </tbody>
+        </table>
+
+        <h2>Message Mapping with Mastercard</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Omnipay Field</th>
+                    <th>Mastercard Field</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Field A</td>
+                    <td>Mastercard Field 1</td>
+                </tr>
+                <tr>
+                    <td>Field B</td>
+                    <td>Mastercard Field 2</td>
+                </tr>
+                <!-- Add more rows as needed to map all fields -->
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

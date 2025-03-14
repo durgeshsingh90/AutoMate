@@ -61,6 +61,7 @@ def parse_iso8583(log_data):
     bm43_parts = []
     de053_parts = []
     de055_parts = []
+    de090_parts = []
     mti = ""
 
     lines = log_data.split("\n")
@@ -140,6 +141,12 @@ def parse_iso8583(log_data):
                 logger.debug(f"Accumulating DE 007 parts: {de007_parts}")
                 continue
 
+            # Handling for DE090
+            if field_number == '090':
+                de090_parts.append(value)
+                logger.debug(f"Accumulating DE 090 parts: {de090_parts}")
+                continue
+
             # Handling for DE 43
             if field_number == '043':
                 bm43_parts.append(value)  # Append value without stripping spaces
@@ -173,6 +180,14 @@ def parse_iso8583(log_data):
         combined_de007 = ''.join(de007_parts)
         data_elements["DE007"] = combined_de007.zfill(10)
         logger.info(f"Combined DE 007: {data_elements['DE007']}")
+
+    # Combine and pad DE090
+    if de090_parts:
+        combined_de090 = ''.join(de090_parts)
+        logger.debug(f"Combined DE 090: {combined_de090}")
+        parsed_de090 = parse_de090_fields(combined_de090)  # Call parse function for DE090
+        data_elements["DE090"] = parsed_de090
+        logger.info(f"Parsed DE 090: {data_elements['DE090']}")
 
     # Combine parts of DE 43 without stripping spaces
     if bm43_parts:
@@ -216,6 +231,17 @@ def parse_iso8583(log_data):
     logger.debug(f"Final message: {message}")
 
     return message
+
+# Function to parse DE090 and format its components
+def parse_de090_fields(value):
+    fields = {
+        "orig_mti": value[0:3].zfill(4),
+        "orig_stan": value[3:9].zfill(6),
+        "orig_xmsn_datetime": value[9:18].zfill(10),
+        "orig_acq_id": value[18:29].zfill(11),
+        "orig_frwd_id": value[29:40].zfill(11)
+    }
+    return fields
 
 def parse_emv_field_55(emv_data):
     parsed_tlvs = {}
