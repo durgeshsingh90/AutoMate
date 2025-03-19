@@ -28,4 +28,6 @@ urlpatterns = [
     path('binblock/', include('binblock.urls')),
     path('reader/', TemplateView.as_view(template_name='reader.html'), name='reader'),
     path('pdf_merger/', include('pdf_merger.urls')),
+    path('slot_booking/', include('slot_booking.urls')),
+
 ]

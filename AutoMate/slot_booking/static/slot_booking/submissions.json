@@ -1,0 +1,38 @@
+{
+    "submissions": [
+        {
+            "projectName": "test",
+            "projectID": "test",
+            "psp": {
+                "name": "TrustPayment",
+                "pspID": "000049"
+            },
+            "comments": "",
+            "owner": {
+                "name": "Durgesh Singh",
+                "lanID": "f94gdos"
+            },
+            "server": {
+                "hostname": "A5CVAP1003.1dc.com",
+                "user": "dev77"
+            },
+            "schemeType": [
+                "DinersRoute"
+            ],
+            "simulator": {
+                "name": "Astrex-1",
+                "ipAddress": "10.77.6.248"
+            },
+            "dateRange": {
+                "start": "19/03/2025",
+                "end": "20/03/2025"
+            },
+            "timeSlot": [
+                "morning"
+            ],
+            "openSlot": false,
+            "bookingID": 19,
+            "status": "Booked"
+        }
+    ]
+}

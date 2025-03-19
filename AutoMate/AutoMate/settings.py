@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'splunkparser',
     'binblock',
     'pdf_merger',
+    'slot_booking'
 ]
 
 # Logging configuration
@@ -169,11 +170,12 @@ STATIC_ROOT = BASE_DIR / "staticfiles"  # or os.path.join(BASE_DIR, 'staticfiles
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     BASE_DIR / "static",  # Replace with the path to your global static directory
-
     BASE_DIR / "AutoMate/static",
     BASE_DIR / "first_page/static",
     BASE_DIR / "splunkparser/static",
     BASE_DIR / "binblock/static",
+    BASE_DIR / "slot_booking/static",
+
     
     # Add other app static directories as needed
 ]

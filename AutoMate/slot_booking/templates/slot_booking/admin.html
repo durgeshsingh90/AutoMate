@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Slot Booking Admin Panel</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        #editorContainer {
+            width: 100%;
+            height: 800px;
+            border: 1px solid #ccc;
+        }
+        button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+        }
+        #errorContainer {
+            color: red;
+            margin-top: 10px;
+        }
+    </style>
+    <!-- Import Monaco Editor -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.28.1/min/vs/loader.js"></script>
+</head>
+<body>
+
+    <h2>Slot Booking Admin Panel</h2>
+    <form id="adminForm">
+        <div id="editorContainer"></div>
+        {% csrf_token %}
+        <button type="button" id="saveButton" onclick="saveConfig()">Save Config</button>
+        <div id="errorContainer"></div>
+    </form>
+
+    <script>
+        let editor;
+
+        // Load Monaco Editor
+        require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.28.1/min/vs' }});
+
+        require(['vs/editor/editor.main'], function() {
+            editor = monaco.editor.create(document.getElementById('editorContainer'), {
+                language: 'json',
+                theme: 'vs-dark',
+                automaticLayout: true
+            });
+
+            loadConfig();
+            setupSaveShortcut();
+        });
+
+        function getCSRFToken() {
+            return document.querySelector('[name=csrfmiddlewaretoken]').value;
+        }
+
+        function loadConfig() {
+            fetch('/slot_booking/config.json')
+                .then(response => response.json())
+                .then(config => {
+                    editor.setValue(JSON.stringify(config, null, 2));
+                });
+        }
+
+        function setupSaveShortcut() {
+            window.addEventListener('keydown', function(event) {
+                if ((event.ctrlKey || event.metaKey) && event.key === 's') {
+                    event.preventDefault();
+                    saveConfig();
+                }
+            });
+        }
+
+        function displayError(error) {
+            const errorContainer = document.getElementById('errorContainer');
+            errorContainer.textContent = `Error: ${error.message}`;
+        }
+
+        function saveConfig() {
+            const config = editor.getValue();
+            const csrfToken = getCSRFToken();
+            const saveButton = document.getElementById('saveButton');
+            try {
+                const parsedConfig = JSON.parse(config); // Validate JSON
+                saveButton.textContent = 'Saving...';
+                saveButton.style.backgroundColor = '';
+
+                fetch('/slot_booking/config.json', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken
+                    },
+                    body: JSON.stringify(parsedConfig, null, 2)
+                }).then(response => {
+                    if (response.ok) {
+                        saveButton.textContent = 'Saved';
+                        saveButton.style.backgroundColor = 'green';
+                        document.getElementById('errorContainer').textContent = '';
+                    } else {
+                        response.text().then(text => { throw new Error(text); });
+                    }
+                }).catch(error => {
+                    handleSaveError(error);
+                });
+            } catch (error) {
+                handleSaveError(error);
+            }
+        }
+
+        function handleSaveError(error) {
+            const saveButton = document.getElementById('saveButton');
+            saveButton.textContent = 'Error';
+            saveButton.style.backgroundColor = 'red';
+            displayError(error);
+            
+            setTimeout(() => {
+                saveButton.textContent = 'Save Config';
+                saveButton.style.backgroundColor = '';
+            }, 1000);
+            
+            // Highlight error in the editor
+            const match = error.message.match(/at position (\d+)/);
+            if (match) {
+                const pos = parseInt(match[1], 10);
+                const model = editor.getModel();
+                const position = model.getPositionAt(pos);
+
+                editor.deltaDecorations([], [
+                    {
+                        range: new monaco.Range(position.lineNumber, position.column, position.lineNumber, position.column + 1),
+                        options: { 
+                            className: 'inline-error',
+                            glyphMarginClassName: 'glyph-error',
+                            glyphMarginHoverMessage: { value: error.message }
+                        }
+                    }
+                ]);
+            }
+        }
+    </script>
+
+</body>
+</html>
