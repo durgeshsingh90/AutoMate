@@ -52,16 +52,10 @@
 
 <div class="nav">
     <a href="#">Home</a>
-    <a href="{% url 'splunk2sender' %}">Splunk to Mango</a>
-    <a href="{% url 'upload_log_file' %}">Filter MC EMVCo Logs</a>
     <a href="{% url 'json2yaml' %}">Json/Yaml Converter</a>
     <a href="{% url 'SplunkRRN' %}">SplunkRRN</a>
     <a href="{% url 'compare' %}">Compare texts</a>
-    <a href="{% url 'slot_booking:calendar' %}">Bookings</a>
     <a href="{% url 'binblock:binblocking_editor' %}">Bin Blocking</a> 
-    <a href="{% url 'sender:home' %}">Sender</a> 
-    {% comment %} <a href="{% url 'sql2json' %}">SQLInsert/Json Converter</a>  {% endcomment %}
-    {% comment %} <a href="{% url 'sql2json_object' %}">SQL/Json_Object</a>  {% endcomment %}
     <a href="{% url 'splunkparser:index' %}">Splunk Parser</a> 
     <a href="{% url 'reader' %}">Reader</a>
     <a href="{% url 'merge_pdfs' %}">Merge PDFs</a>

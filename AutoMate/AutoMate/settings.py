@@ -46,19 +46,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'first_page',
-    'mclogsfilter',
-    'sender',
     'django_extensions',
-    'certifications',
-    'bookings',
-    'binblocking',
     'splunkparser',
     'binblock',
-    'slot_booking',
-    'html2emvco',
-    'sql_db',
     'pdf_merger',
-    'signoff_cert_report',
 ]
 
 # Logging configuration
@@ -181,15 +172,8 @@ STATICFILES_DIRS = [
 
     BASE_DIR / "AutoMate/static",
     BASE_DIR / "first_page/static",
-    BASE_DIR / "mclogsfilter/static",
-    BASE_DIR / "sender/static",
-    BASE_DIR / "bookings/static",
-    BASE_DIR / "bookings/static",
-    BASE_DIR / "binblocking/static",
     BASE_DIR / "splunkparser/static",
     BASE_DIR / "binblock/static",
-    BASE_DIR / "slot_booking/static",
-    BASE_DIR / "html2emvco/static",
     
     # Add other app static directories as needed
 ]

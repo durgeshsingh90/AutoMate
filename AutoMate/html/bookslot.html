@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Project Information Form</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        form {
+            width: 300px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input[type="text"], input[type="date"], select, textarea {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .multi-select, .checkboxes {
+            margin-bottom: 10px;
+        }
+        .checkboxes label {
+            display: block;
+        }
+    </style>
+    <link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet">
+</head>
+<body>
+
+    <h2>Project Information Form</h2>
+    <form id="projectForm">
+        <label for="projectName">Project Name:</label>
+        <input type="text" id="projectName" name="projectName" required>
+
+        <label for="projectID">Project ID:</label>
+        <input type="text" id="projectID" name="projectID">
+
+        <label for="pspName">PSP Name:</label>
+        <input type="text" id="pspName" name="pspName" required>
+
+        <label for="instID">Inst ID:</label>
+        <input type="text" id="instID" name="instID">
+
+        <label for="owner">Owner:</label>
+        <select id="owner" name="owner" required>
+            <!-- Options will be loaded here -->
+        </select>
+
+        <label for="server">Server:</label>
+        <select id="server" name="server" required>
+            <!-- Options will be loaded here -->
+        </select>
+
+        <label for="schemeType">Scheme Type:</label>
+        <div class="multi-select">
+            <select id="schemeType" name="schemeType" multiple required>
+                <!-- Options will be loaded here -->
+            </select>
+        </div>
+
+        <label for="dateRange">Date Range:</label>
+        <input type="text" id="dateRange" name="dateRange" placeholder="DD/MM/YYYY to DD/MM/YYYY" required>
+
+        <label for="timeSlot">Time Slot:</label>
+        <div class="checkboxes">
+            <label><input type="checkbox" name="timeSlot" value="morning" required> Morning</label>
+            <label><input type="checkbox" name="timeSlot" value="afternoon"> Afternoon</label>
+            <label><input type="checkbox" name="timeSlot" value="overnight"> Overnight</label>
+        </div>
+
+        <label for="openSlot">Open Slot:</label>
+        <input type="checkbox" id="openSlot" name="openSlot">
+
+        <br>
+        <button type="button" onclick="submitForm()">Submit</button>
+    </form>
+
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            loadConfig();
+
+            flatpickr("#dateRange", {
+                mode: "range",
+                dateFormat: "d/m/Y",
+                altInput: true,
+                altFormat: "d/m/Y",
+                allowInput: true
+            });
+        });
+
+        function loadConfig() {
+            fetch('config.json')
+                .then(response => response.json())
+                .then(config => {
+                    populateSelect('owner', config.owners);
+                    populateSelect('server', config.servers);
+                    populateSelect('schemeType', config.schemeTypes, true);
+                });
+        }
+
+        function populateSelect(elementId, options, isMultiple = false) {
+            const selectElement = document.getElementById(elementId);
+            selectElement.innerHTML = "";
+            options.forEach(option => {
+                const opt = document.createElement('option');
+                opt.value = option;
+                opt.text = option;
+                selectElement.add(opt);
+            });
+        }
+
+        function uniqueID() {
+            return 'xxxxxx4xxxyxxxyxxxx'.replace(/[xy]/g, function(c) {
+                var r = Math.random() * 16 | 0,
+                    v = c == 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+
+        function submitForm() {
+            const form = document.getElementById('projectForm');
+            const formData = new FormData(form);
+
+            const dateRange = formData.get('dateRange');
+            const dateRangeArray = dateRange ? dateRange.split(" to ") : [];
+
+            const jsonData = {
+                bookingID: uniqueID(),
+                projectName: formData.get('projectName'),
+                projectID: formData.get('projectID') || "",
+                pspName: formData.get('pspName'),
+                instID: formData.get('instID') || "",
+                owner: formData.get('owner'),
+                server: formData.get('server'),
+                schemeType: formData.getAll('schemeType'),
+                dateRange: {
+                    start: dateRangeArray[0] || "",
+                    end: dateRangeArray[1] || ""
+                },
+                timeSlot: formData.getAll('timeSlot'),
+                openSlot: formData.has('openSlot')
+            };
+
+            console.log(JSON.stringify(jsonData, null, 2));
+        }
+    </script>
+
+</body>
+</html>

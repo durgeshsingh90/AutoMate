@@ -21,24 +21,11 @@ from django.views.generic import TemplateView
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('first_page.urls')),
-    path('splunk2sender/', TemplateView.as_view(template_name='splunk2sender.html'), name='splunk2sender'),
-    path('mclogsfilter/', include('mclogsfilter.urls')),
     path('SplunkRRN/', TemplateView.as_view(template_name='SplunkRRN.html'), name='SplunkRRN'),
     path('json2yaml/', TemplateView.as_view(template_name='json2yaml.html'), name='json2yaml'),
     path('compare/', TemplateView.as_view(template_name='compare.html'), name='compare'),
-    path('sender/', include('sender.urls')),  # Include the urls for the 'sender' app
-    path('certifications/', include('certifications.urls')),
-    path('bookings/', include('bookings.urls')),
-    path('binblocking/', include('binblocking.urls')),
-    path('sql2json/', TemplateView.as_view(template_name='sql2json.html'), name='sql2json'),
-    path('sql2json_object/', TemplateView.as_view(template_name='sql2json_object.html'), name='sql2json_object'),
     path('splunkparser/', include('splunkparser.urls')),  # Include the URLs from the splunkparser app
     path('binblock/', include('binblock.urls')),
-    path('slot_booking/', include('slot_booking.urls')),
-    path('html2emvco/', include('html2emvco.urls')),
     path('reader/', TemplateView.as_view(template_name='reader.html'), name='reader'),
-    path('sql_db/', include('sql_db.urls')),  # Ensure you are including 'sql_db.urls'
     path('pdf_merger/', include('pdf_merger.urls')),
-    path('signoff_cert_report/', include('signoff_cert_report.urls')),
-
 ]

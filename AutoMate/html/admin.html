@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Panel</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        #editorContainer {
+            width: 100%;
+            height: 500px;
+            border: 1px solid #ccc;
+        }
+        button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+        }
+    </style>
+    <!-- Import Monaco Editor -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.28.1/min/vs/loader.js"></script>
+</head>
+<body>
+
+    <h2>Admin Panel</h2>
+    <div id="editorContainer"></div>
+    <button onclick="saveConfig()">Save Config</button>
+
+    <script>
+        let editor;
+
+        // Load Monaco Editor
+        require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.28.1/min/vs' }});
+
+        require(['vs/editor/editor.main'], function() {
+            editor = monaco.editor.create(document.getElementById('editorContainer'), {
+                language: 'json',
+                theme: 'vs-dark',
+                automaticLayout: true
+            });
+
+            loadConfig();
+        });
+
+        function loadConfig() {
+            fetch('config.json')
+                .then(response => response.json())
+                .then(config => {
+                    editor.setValue(JSON.stringify(config, null, 2));
+                });
+        }
+
+        function saveConfig() {
+            const config = editor.getValue();
+            try {
+                const parsedConfig = JSON.parse(config); // Validate JSON
+                fetch('config.json', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(parsedConfig, null, 2)
+                }).then(response => {
+                    if (response.ok) {
+                        alert('Configuration saved successfully');
+                        loadConfig();
+                    } else {
+                        alert('Failed to save configuration');
+                    }
+                });
+            } catch (e) {
+                alert('Invalid JSON format. Please correct it and try again.');
+            }
+        }
+    </script>
+
+</body>
+</html>
