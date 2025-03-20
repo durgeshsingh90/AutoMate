@@ -74,6 +74,10 @@
     ],
     "psps": [
         {
+            "name": "All",
+            "pspID": "All"
+        },
+        {
             "name": "TrustPayment",
             "pspID": "000049"
         },

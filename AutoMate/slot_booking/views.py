@@ -128,3 +128,13 @@ def save_submission(request):
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=500)
     return HttpResponse(status=405)  # Method not allowed
+
+# NEW VIEW: Serve the submissions for the calendar
+def get_submissions(request):
+    if request.method == 'GET':
+        try:
+            with open(SUBMISSIONS_FILE, 'r') as file:
+                submissions_data = json.load(file)
+                return JsonResponse(submissions_data, safe=False)
+        except FileNotFoundError:
+            return JsonResponse({"submissions": []})

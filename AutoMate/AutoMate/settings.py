@@ -169,8 +169,6 @@ STATIC_ROOT = BASE_DIR / "staticfiles"  # or os.path.join(BASE_DIR, 'staticfiles
 # Additional directories for static files from different apps
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
-    BASE_DIR / "static",  # Replace with the path to your global static directory
-    BASE_DIR / "AutoMate/static",
     BASE_DIR / "first_page/static",
     BASE_DIR / "splunkparser/static",
     BASE_DIR / "binblock/static",
