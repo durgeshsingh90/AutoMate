@@ -1,247 +1,118 @@
+{%load static%}
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Project Information Form</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-        form {
-            width: 300px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-        }
-        input[type="text"], select, textarea {
-            width: 100%;
-            padding: 8px;
-            margin-bottom: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        .multi-select, .checkboxes {
-            margin-bottom: 10px;
-        }
-        .checkboxes label {
-            display: block;
-        }
-    </style>
-    <link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <title>Slot Booking Form & Calendar</title>
+
+  <!-- Flatpickr for date range picker -->
+  <link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet" />
+
+  <!-- FullCalendar CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet" />
+<!-- Select2 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+<!-- jQuery (required for Select2) -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- Select2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+ <!-- External CSS -->
+ <link href="{% static 'slot_booking/css/styles.css' %}" rel="stylesheet" />
+
 </head>
 <body>
 
-    <h2>Project Information Form</h2>
-    <form id="projectForm">
+  <!-- Title and Search -->
+  <div style="display: flex; align-items: center; justify-content: space-between;">
+    <h1>Slot Booking</h1>
+    <div style="display: flex; align-items: center;">
+      <input type="text" id="globalSearchInput" placeholder="Search anything..." style="height: 30px; font-size: 12px; padding: 4px 8px; margin-right: 8px; border-radius: 4px; border: 1px solid #ccc; width: 250px;" />
+      <button onclick="globalSearch()" style="height: 32px; font-size: 12px; padding: 4px 8px; border-radius: 4px; border: none; background-color: #007bff; color: white; cursor: pointer;">Search</button>
+      <button onclick="clearSearch()" style="height: 32px; font-size: 12px; padding: 4px 8px; border-radius: 4px; border: none; background-color: #dc3545; color: white; cursor: pointer; margin-right: 5px;">Clear</button>
+
+      <!-- Settings Gear Button -->
+      <button onclick="goToSettings()" style="height: 32px; width: 32px; border: none; background: none; cursor: pointer;">
+          ⚙️
+      </button>
+    </div>
+  </div>
+
+  <div id="searchResult" style="margin-top: 10px; font-size: 14px;"></div>
+
+  <!-- Legend -->
+  <div class="legend-container">
+    <strong>Color Coding:</strong>
+    <span style="background:#ffa500;"></span> Morning
+    <span style="background:#800080;"></span> Afternoon
+    <span style="background:#a52a2a;"></span> Overnight
+    <span style="background:#28a745;"></span> Open Slot
+  </div>
+
+  <div class="container">
+    <!-- Form Section -->
+    <div class="form-container">
+      <form id="projectForm">
         {% csrf_token %}
+
         <label for="projectName">Project Name:</label>
-        <input type="text" id="projectName" name="projectName" required>
+        <input type="text" id="projectName" name="projectName" required />
 
         <label for="projectID">Project ID:</label>
-        <input type="text" id="projectID" name="projectID">
+        <input type="text" id="projectID" name="projectID" />
 
-        <label for="psp">PSP Name:</label>
-        <select id="psp" name="psp" required>
-            <!-- Options will be loaded here -->
-        </select>
-
-        <label for="owner">Owner:</label>
-        <select id="owner" name="owner" required>
-            <!-- Options will be loaded here -->
-        </select>
+        <div class="form-field">
+            <label for="psp">PSP Name:</label>
+            <select id="psp" name="psp" required style="width: 100%;"></select>
+          </div>
+          
+        <label for="owner" style="margin-bottom: 6px;">Owner:</label>
+        <select id="owner" name="owner" required style="width: 100%; margin-bottom: 20px;"></select>
+        
 
         <label for="server">Server:</label>
-        <select id="server" name="server" required>
-            <!-- Options will be loaded here -->
-        </select>
+        <select id="server" name="server" required></select>
 
         <label for="schemeType">Scheme Type:</label>
-        <div class="multi-select">
-            <select id="schemeType" name="schemeType" multiple required>
-                <!-- Options will be loaded here -->
-            </select>
-        </div>
+        <select id="schemeType" name="schemeType" multiple required size="6" style="min-height: 70px;"></select>
+        
 
         <label for="simulator">Simulator:</label>
-        <select id="simulator" name="simulator" required>
-            <!-- Options will be loaded here -->
-        </select>
+        <select id="simulator" name="simulator" required></select>
 
         <label for="dateRange">Date Range:</label>
-        <input type="text" id="dateRange" name="dateRange" placeholder="DD/MM/YYYY to DD/MM/YYYY" required>
+        <input type="text" id="dateRange" name="dateRange" placeholder="DD/MM/YYYY to DD/MM/YYYY" required />
 
         <label for="timeSlot">Time Slot:</label>
         <div class="checkboxes" required>
-            <label><input type="checkbox" name="timeSlot" value="morning"> Morning</label>
-            <label><input type="checkbox" name="timeSlot" value="afternoon"> Afternoon</label>
-            <label><input type="checkbox" name="timeSlot" value="overnight"> Overnight</label>
+          <label><input type="checkbox" name="timeSlot" value="morning" /> Morning</label>
+          <label><input type="checkbox" name="timeSlot" value="afternoon" /> Afternoon</label>
+          <label><input type="checkbox" name="timeSlot" value="overnight" /> Overnight</label>
         </div>
 
         <label for="openSlot">Open Slot (optional):</label>
-        <input type="checkbox" id="openSlot" name="openSlot">
+        <input type="checkbox" id="openSlot" name="openSlot" />
 
         <label for="comments">Comments (optional):</label>
-        <input type="text" id="comments" name="comments">
+        <input type="text" id="comments" name="comments" />
 
-        <br>
         <button type="button" id="submitButton" onclick="submitForm()">Submit</button>
         <div id="submissionMessage"></div>
-    </form>
+      </form>
+    </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            loadConfig();
+    <!-- Calendar Section -->
+    <div class="calendar-container">
+      <div id="calendar"></div>
+    </div>
+  </div>
 
-            flatpickr("#dateRange", {
-                mode: "range",
-                dateFormat: "d/m/Y",
-                altInput: true,
-                altFormat: "d/m/Y",
-                allowInput: true
-            });
-        });
-
-        function getCSRFToken() {
-            return document.querySelector('[name=csrfmiddlewaretoken]').value;
-        }
-
-        function loadConfig() {
-            fetch('/slot_booking/config.json')
-                .then(response => response.json())
-                .then(config => {
-                    populateSelect('psp', config.psps, false, false, false, false, false, true);
-                    populateSelect('owner', config.owners, false, true);
-                    populateSelect('server', config.servers, false, false, true);
-                    populateSelect('schemeType', config.schemeTypes, true, false, false, true);
-                    populateSelect('simulator', config.simulators, false, false, false, false, true);
-                });
-        }
-
-        function populateSelect(elementId, options, isMultiple = false, isOwner = false, isServer = false, isSchemeType = false, isSimulator = false, isPSP = false) {
-            const selectElement = document.getElementById(elementId);
-            selectElement.innerHTML = "";
-            options.forEach(option => {
-                const opt = document.createElement('option');
-                if (isOwner) {
-                    opt.value = JSON.stringify(option); // Store as JSON string to parse later
-                    opt.text = `${option.name} (${option.lanID})`;
-                } else if (isServer) {
-                    opt.value = JSON.stringify(option); // Store as JSON string to parse later
-                    opt.text = `${option.hostname} (${option.user})`;
-                } else if (isSchemeType) {
-                    opt.value = option.name;
-                    opt.text = option.name;
-                } else if (isSimulator) {
-                    opt.value = JSON.stringify(option); // Store as JSON string to parse later
-                    opt.text = `${option.name} (${option.ipAddress})`;
-                } else if (isPSP) {
-                    opt.value = JSON.stringify(option); // Store as JSON string to parse later
-                    opt.text = `${option.name} (${option.pspID})`;
-                } else {
-                    opt.value = option;
-                    opt.text = option;
-                }
-                selectElement.add(opt);
-            });
-        }
-
-        function validateForm() {
-            const projectName = document.getElementById('projectName').value;
-            const pspName = document.getElementById('psp').value;
-            const owner = document.getElementById('owner').value;
-            const server = document.getElementById('server').value;
-            const schemeType = document.getElementById('schemeType').selectedOptions.length;
-            const simulator = document.getElementById('simulator').value;
-            const dateRange = document.getElementById('dateRange').value;
-            const timeSlots = document.querySelectorAll('input[name="timeSlot"]:checked').length;
-
-            if (!projectName || !pspName || !owner || !server || !schemeType || !simulator || !dateRange || !timeSlots) {
-                document.getElementById('submissionMessage').textContent = 'Please fill out all required fields';
-                document.getElementById('submissionMessage').style.color = 'red';
-                return false;
-            }
-            return true;
-        }
-
-        function submitForm() {
-            const formValid = validateForm();
-            if (!formValid) {
-                return;
-            }
-
-            const form = document.getElementById('projectForm');
-            const formData = new FormData(form);
-            const dateRange = formData.get('dateRange');
-            const dateRangeArray = dateRange ? dateRange.split(" to ") : [];
-            const csrfToken = getCSRFToken();
-            const pspDetails = JSON.parse(formData.get('psp'));
-            const ownerDetails = JSON.parse(formData.get('owner'));
-            const serverDetails = JSON.parse(formData.get('server'));
-            const simulatorDetails = JSON.parse(formData.get('simulator'));
-
-            const jsonData = {
-                projectName: formData.get('projectName'),
-                projectID: formData.get('projectID') || "",
-                psp: pspDetails,
-                comments: formData.get('comments') || "",
-                owner: ownerDetails,
-                server: serverDetails,
-                schemeType: formData.getAll('schemeType'),
-                simulator: simulatorDetails,
-                dateRange: {
-                    start: dateRangeArray[0] || "",
-                    end: dateRangeArray[1] || ""
-                },
-                timeSlot: formData.getAll('timeSlot'),
-                openSlot: formData.has('openSlot')
-            };
-
-            fetch('/slot_booking/submit/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrfToken
-                },
-                body: JSON.stringify(jsonData)
-            }).then(response => {
-                const submitButton = document.getElementById('submitButton');
-                if (response.ok) {
-                    submitButton.textContent = 'Booked';
-                    submitButton.style.backgroundColor = 'green';
-                    document.getElementById('submissionMessage').textContent = 'Submission saved successfully!';
-                    document.getElementById('submissionMessage').style.color = 'green';
-                    setTimeout(() => {
-                        submitButton.textContent = 'Submit';
-                        submitButton.style.backgroundColor = '';
-                        document.getElementById('projectForm').reset(); // Reset the form
-                    }, 1000);
-                } else {
-                    response.json().then(data => {
-                        document.getElementById('submissionMessage').textContent = `Error: ${data.error}`;
-                        document.getElementById('submissionMessage').style.color = 'red';
-                        submitButton.textContent = 'Error';
-                        submitButton.style.backgroundColor = 'red';
-                        setTimeout(() => {
-                            submitButton.textContent = 'Submit';
-                            submitButton.style.backgroundColor = '';
-                        }, 1000);
-                    });
-                }
-            }).catch(error => {
-                const submitButton = document.getElementById('submitButton');
-                document.getElementById('submissionMessage').textContent = `Error: ${error.message}`;
-                document.getElementById('submissionMessage').style.color = 'red';
-                submitButton.textContent = 'Error';
-                submitButton.style.backgroundColor = 'red';
-                setTimeout(() => {
-                    submitButton.textContent = 'Submit';
-                    submitButton.style.backgroundColor = '';
-                }, 1000);
-            });
-        }
-    </script>
+  <!-- JS Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+  <script src="{% static 'slot_booking/js/scripts.js' %}" defer></script>
 
 </body>
 </html>
