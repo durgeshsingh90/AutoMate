@@ -29,16 +29,40 @@ function loadConfig() {
       populateSelect('simulator', config.simulators, false, false, false, false, true);
     });
 }
-
 function setupDatePicker() {
   flatpickr("#dateRange", {
     mode: "range",
-    dateFormat: "d/m/Y",
-    altInput: true,
-    altFormat: "d/m/Y",
-    allowInput: true
+    dateFormat: "d/m/Y",     // Format for the input field
+    allowInput: true,
+    altInput: false,         // Don't use altInput, so we fully control it
+
+    // Trigger whenever a date is selected
+    onChange: function(selectedDates, dateStr, instance) {
+      if (selectedDates.length === 1) {
+        const singleDate = instance.formatDate(selectedDates[0], "d/m/Y");
+        instance.input.value = `${singleDate} to ${singleDate}`;
+      } else if (selectedDates.length === 2) {
+        const startDate = instance.formatDate(selectedDates[0], "d/m/Y");
+        const endDate = instance.formatDate(selectedDates[1], "d/m/Y");
+        instance.input.value = `${startDate} to ${endDate}`;
+      }
+    },
+
+    // Optional: Force consistent behavior when you open the picker
+    onOpen: function(selectedDates, dateStr, instance) {
+      if (selectedDates.length === 1) {
+        const singleDate = instance.formatDate(selectedDates[0], "d/m/Y");
+        instance.input.value = `${singleDate} to ${singleDate}`;
+      } else if (selectedDates.length === 2) {
+        const startDate = instance.formatDate(selectedDates[0], "d/m/Y");
+        const endDate = instance.formatDate(selectedDates[1], "d/m/Y");
+        instance.input.value = `${startDate} to ${endDate}`;
+      }
+    }
   });
 }
+
+
 function populateSelect(elementId, options, isMultiple = false, isOwner = false, isServer = false, isSchemeType = false, isSimulator = false, isPSP = false) {
   const selectElement = document.getElementById(elementId);
   selectElement.innerHTML = "";
@@ -135,42 +159,49 @@ function submitForm() {
     body: JSON.stringify(jsonData)
   }).then(response => {
     if (response.ok) {
-      document.getElementById('submissionMessage').textContent = 'Submission saved successfully!';
-      document.getElementById('submissionMessage').style.color = 'green';
-      document.getElementById('projectForm').reset();
-      calendar.refetchEvents();
-
-      // Change button color to green
-      submitButton.style.backgroundColor = 'green';
-
-      // Reset button after 1 second
-      setTimeout(() => {
-        submitButton.style.backgroundColor = ''; // or your default color like '#007bff'
-      }, 1000);
-
+      // Parse JSON to get bookingID
+      response.json().then(data => {
+        const bookingID = data.bookingID || 'N/A';
+  
+        // Success message with booking ID
+        document.getElementById('submissionMessage').textContent = `Submission saved successfully! Booking ID: ${bookingID}`;
+        document.getElementById('submissionMessage').style.color = 'green';
+  
+        // Change button text and color
+        submitButton.textContent = 'Booked';
+        submitButton.style.backgroundColor = 'green';
+  
+        // After 1 second: reload page
+        setTimeout(() => {
+          location.reload();  // ✅ Reload page
+        }, 1000);
+      });
     } else {
       response.json().then(data => {
+        // Error feedback
         document.getElementById('submissionMessage').textContent = `Error: ${data.error}`;
         document.getElementById('submissionMessage').style.color = 'red';
-
-        // Change button color to red
+  
+        submitButton.textContent = 'Error';
         submitButton.style.backgroundColor = 'red';
-
-        // Reset button after 1 second
+  
         setTimeout(() => {
-          submitButton.style.backgroundColor = ''; // or your default color like '#007bff'
+          submitButton.textContent = 'Submit';
+          submitButton.style.backgroundColor = '';
         }, 1000);
       });
     }
   }).catch(error => {
+    // Fetch error handling
     document.getElementById('submissionMessage').textContent = `Error: ${error.message}`;
     document.getElementById('submissionMessage').style.color = 'red';
-
-    // Change button color to red on fetch error
+  
+    submitButton.textContent = 'Error';
     submitButton.style.backgroundColor = 'red';
-
+  
     setTimeout(() => {
-      submitButton.style.backgroundColor = ''; // or your default color like '#007bff'
+      submitButton.textContent = 'Submit';
+      submitButton.style.backgroundColor = '';
     }, 1000);
   });
 }

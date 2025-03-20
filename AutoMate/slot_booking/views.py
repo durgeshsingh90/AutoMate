@@ -124,9 +124,15 @@ def save_submission(request):
                 file.seek(0)
                 json.dump(submissions_data, file, indent=4)
 
-            return JsonResponse({"message": "Submission saved successfully"}, status=200)
+            # ✅ Return the booking ID in the response!
+            return JsonResponse({
+                "message": "Submission saved successfully",
+                "bookingID": new_booking_id
+            }, status=200)
+
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=500)
+
     return HttpResponse(status=405)  # Method not allowed
 
 # NEW VIEW: Serve the submissions for the calendar
