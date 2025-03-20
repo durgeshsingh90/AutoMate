@@ -172,6 +172,42 @@
             "openSlot": false,
             "bookingID": 5,
             "status": "Booked"
+        },
+        {
+            "projectName": "test",
+            "projectID": "test",
+            "psp": {
+                "name": "All",
+                "pspID": "All"
+            },
+            "comments": "testing only",
+            "owner": {
+                "name": "Durgesh Singh",
+                "lanID": "f94gdos"
+            },
+            "server": {
+                "hostname": "A5CVAP1003.1dc.com",
+                "user": "dev77"
+            },
+            "schemeType": [
+                "VisaRoute",
+                "MastercardRoute",
+                "DinersRoute"
+            ],
+            "simulator": {
+                "name": "Astrex-1",
+                "ipAddress": "10.77.6.248"
+            },
+            "dateRange": {
+                "start": "04/03/2025",
+                "end": "21/03/2025"
+            },
+            "timeSlot": [
+                "afternoon"
+            ],
+            "openSlot": false,
+            "bookingID": 6,
+            "status": "Booked"
         }
     ]
 }

@@ -15,19 +15,25 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import include, path
+from django.urls import path, include
 from django.views.generic import TemplateView
 
 urlpatterns = [
+    # Django Admin Panel
     path('admin/', admin.site.urls),
-    path('', include('first_page.urls')),
+
+    # Home page (Landing Page)
+    path('', include('home.urls')),
+
+    # Static Template Pages (no backend logic)
     path('SplunkRRN/', TemplateView.as_view(template_name='SplunkRRN.html'), name='SplunkRRN'),
     path('json2yaml/', TemplateView.as_view(template_name='json2yaml.html'), name='json2yaml'),
     path('compare/', TemplateView.as_view(template_name='compare.html'), name='compare'),
-    path('splunkparser/', include('splunkparser.urls')),  # Include the URLs from the splunkparser app
-    path('binblock/', include('binblock.urls')),
     path('reader/', TemplateView.as_view(template_name='reader.html'), name='reader'),
+
+    # Django Apps with dynamic URLs
+    path('splunkparser/', include('splunkparser.urls')),
+    path('binblock/', include('binblock.urls')),
     path('pdf_merger/', include('pdf_merger.urls')),
     path('slot_booking/', include('slot_booking.urls')),
-
 ]

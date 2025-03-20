@@ -1,0 +1,68 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Penguin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'home/styles.css' %}">
+
+</head>
+<body>
+
+<header>
+    <h1>Penguin</h1>
+    <p>Select a tool to get started</p>
+</header>
+
+<section class="container">
+
+    <div class="app-card">
+        <h3>Splunk Parser</h3>
+        <p>Parse Splunk logs to mango format.</p>
+        <a href="/splunkparser/" class="btn">Launch</a>
+    </div>
+
+    <div class="app-card">
+        <h3>Text Comparison</h3>
+        <p>Compare two pieces of texts.</p>
+        <a href="/compare/" class="btn">Launch</a>
+    </div>
+
+    <div class="app-card">
+        <h3>Slot Booking</h3>
+        <p>Book slots for clients.</p>
+        <a href="/slot_booking/" class="btn">Launch</a>
+    </div>
+
+    <div class="app-card">
+        <h3>JSON to YAML Converter</h3>
+        <p>Convert JSON to YAML.</p>
+        <a href="/json2yaml/" class="btn">Launch</a>
+    </div>
+
+    <div class="app-card">
+        <h3>HTML/Xml/EMVco Reader</h3>
+        <p>Read and analyse long text files</p>
+        <a href="/reader/" class="btn">Launch</a>
+    </div>
+
+    <div class="app-card">
+        <h3>PDF Merger</h3>
+        <p>Merge multiple PDFs in one click.</p>
+        <a href="/pdf_merger/" class="btn">Launch</a>
+    </div>
+
+    <div class="app-card">
+        <h3>Bin Block</h3>
+        <p>Block bins</p>
+        <a href="/binblock/" class="btn">Launch</a>
+    </div>
+</section>
+
+<footer style="padding: 1rem; color: #aaa;">
+    &copy; 2025 Fiserv. All rights reserved.
+</footer>
+
+</body>
+</html>

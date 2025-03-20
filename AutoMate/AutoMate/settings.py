@@ -45,12 +45,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'first_page',
     'django_extensions',
+    'home',
+    'slot_booking',
     'splunkparser',
     'binblock',
-    'pdf_merger',
-    'slot_booking'
+    'pdf_merger'
 ]
 
 # Logging configuration
@@ -169,7 +169,7 @@ STATIC_ROOT = BASE_DIR / "staticfiles"  # or os.path.join(BASE_DIR, 'staticfiles
 # Additional directories for static files from different apps
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
-    BASE_DIR / "first_page/static",
+    BASE_DIR / "home/static",
     BASE_DIR / "splunkparser/static",
     BASE_DIR / "binblock/static",
     BASE_DIR / "slot_booking/static",

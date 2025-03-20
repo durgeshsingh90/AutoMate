@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Services</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        header {
+            background-color: #333;
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+            width: 100%;
+        }
+
+        .services-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            padding: 20px;
+            max-width: 1200px;
+        }
+
+        .service-card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin: 20px;
+            padding: 20px;
+            width: 300px;
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+
+        .service-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .service-card img {
+            max-width: 100px;
+            margin-bottom: 15px;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .service-card {
+            animation: fadeIn 0.8s ease forwards;
+        }
+        .service-card:nth-child(even) {
+          animation-delay: 0.2s;
+        }
+
+        .service-card:nth-child(odd) {
+          animation-delay: 0.4s;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Welcome to My Services</h1>
+    </header>
+
+    <div class="services-container">
+        <div class="service-card">
+            <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAEKADAAQAAAABAAAAEAAAAAA0iQYIAAAAjUlEQVR4Ae3XwQ2AMBAEwN/5B9r6yI4i908XgUjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0JGNCRjQkY0J
