@@ -39,30 +39,43 @@ function setupDatePicker() {
     allowInput: true
   });
 }
-
 function populateSelect(elementId, options, isMultiple = false, isOwner = false, isServer = false, isSchemeType = false, isSimulator = false, isPSP = false) {
-const selectElement = document.getElementById(elementId);
-selectElement.innerHTML = "";
+  const selectElement = document.getElementById(elementId);
+  selectElement.innerHTML = "";
 
-options.forEach(option => {
-const opt = document.createElement('option');
-if (isPSP) {
-  opt.value = JSON.stringify(option);
-  opt.text = `${option.name} (${option.pspID})`;
-} else {
-  opt.value = option.name || option.hostname || option.pspID || option.lanID;
-  opt.text = option.name || option.hostname || option.pspID || option.lanID;
-}
-selectElement.add(opt);
-});
+  options.forEach(option => {
+    const opt = document.createElement('option');
 
-if (elementId === 'psp') {
-$('#psp').select2({
-  placeholder: 'Select a PSP',
-  allowClear: true,
-  width: 'resolve'
-});
-}
+    if (isPSP) {
+      opt.value = JSON.stringify(option);
+      opt.text = `${option.name} (${option.pspID})`;
+    } else if (isOwner) {
+      opt.value = JSON.stringify(option);  // ✅ HERE!
+      opt.text = `${option.name} (${option.lanID})`;
+    } else if (isServer) {
+      opt.value = JSON.stringify(option);
+      opt.text = `${option.hostname} (${option.user})`;
+    } else if (isSimulator) {
+      opt.value = JSON.stringify(option);
+      opt.text = `${option.name} (${option.ipAddress})`;
+    } else if (isSchemeType) {
+      opt.value = option.name;
+      opt.text = option.name;
+    } else {
+      opt.value = option.name || option.hostname || option.pspID || option.lanID;
+      opt.text = option.name || option.hostname || option.pspID || option.lanID;
+    }
+
+    selectElement.add(opt);
+  });
+
+  if (elementId === 'psp') {
+    $('#psp').select2({
+      placeholder: 'Select a PSP',
+      allowClear: true,
+      width: 'resolve'
+    });
+  }
 }
 
 
@@ -337,3 +350,4 @@ function globalSearch() {
       }
     });
 }
+
