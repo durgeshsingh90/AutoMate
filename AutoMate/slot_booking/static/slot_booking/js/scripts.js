@@ -107,6 +107,7 @@ function submitForm() {
   const dateRange = formData.get('dateRange');
   const dateRangeArray = dateRange ? dateRange.split(" to ") : [];
   const csrfToken = getCSRFToken();
+  const submitButton = document.getElementById('submitButton');
 
   const jsonData = {
     projectName: formData.get('projectName'),
@@ -138,14 +139,42 @@ function submitForm() {
       document.getElementById('submissionMessage').style.color = 'green';
       document.getElementById('projectForm').reset();
       calendar.refetchEvents();
+
+      // Change button color to green
+      submitButton.style.backgroundColor = 'green';
+
+      // Reset button after 1 second
+      setTimeout(() => {
+        submitButton.style.backgroundColor = ''; // or your default color like '#007bff'
+      }, 1000);
+
     } else {
       response.json().then(data => {
         document.getElementById('submissionMessage').textContent = `Error: ${data.error}`;
         document.getElementById('submissionMessage').style.color = 'red';
+
+        // Change button color to red
+        submitButton.style.backgroundColor = 'red';
+
+        // Reset button after 1 second
+        setTimeout(() => {
+          submitButton.style.backgroundColor = ''; // or your default color like '#007bff'
+        }, 1000);
       });
     }
+  }).catch(error => {
+    document.getElementById('submissionMessage').textContent = `Error: ${error.message}`;
+    document.getElementById('submissionMessage').style.color = 'red';
+
+    // Change button color to red on fetch error
+    submitButton.style.backgroundColor = 'red';
+
+    setTimeout(() => {
+      submitButton.style.backgroundColor = ''; // or your default color like '#007bff'
+    }, 1000);
   });
 }
+
 function goToSettings() {
 window.location.href = "/slot_booking/admin/";
 }
