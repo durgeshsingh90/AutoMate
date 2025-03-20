@@ -380,3 +380,6 @@ function globalSearch() {
     });
 }
 
+function clearSearch() {
+  location.reload(); // Reloads the current page
+}
