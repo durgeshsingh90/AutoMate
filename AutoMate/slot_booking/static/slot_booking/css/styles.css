@@ -1,0 +1,185 @@
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+  }
+
+  .container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 40px;
+  }
+
+  .form-container {
+    flex: 1;
+    min-width: 300px;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .calendar-container {
+    flex: 2;
+    min-width: 600px;
+  }
+
+  .form-container label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 6px;
+  }
+
+  .form-container label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 8px; /* Space between label and input */
+  }
+
+  .form-container .form-field {
+  margin-bottom: 20px; /* Space between fields */
+  }
+  
+  /* If Select2 is used */
+  .select2-container--default .select2-selection--single {
+  height: 40px;
+  padding: 6px 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  }
+  
+  .select2-container--default .select2-selection--single .select2-selection__rendered {
+  line-height: 26px; /* Align text vertically */
+  }
+  
+  .select2-container--default .select2-selection--single .select2-selection__arrow {
+  height: 38px; /* Align arrow */
+  }
+
+  .form-container input[type="text"],
+  .form-container select,
+  .form-container textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px;
+    height: 40px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin-bottom: 15px;
+  }
+
+  #dateRange {
+    font-size: 18px;
+    height: 50px;
+    padding: 10px 12px;
+  }
+
+  .form-container .checkboxes {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 15px;
+  }
+
+  button#submitButton {
+    padding: 10px;
+    font-size: 16px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  button#submitButton:hover {
+    background-color: #0056b3;
+  }
+
+  #submissionMessage {
+    margin-top: 10px;
+    font-size: 14px;
+  }
+
+  /* Calendar Styles */
+  #calendar {
+    width: 100%;
+    height: auto;
+  }
+
+  .event-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin: 0 auto;
+  }
+
+  .event-bar {
+    color: white;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-size: 11px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .open-slot-color {
+    background-color: #28a745;
+  }
+
+  .morning-slot {
+    background-color: #ffa500;
+  }
+
+  .afternoon-slot {
+    background-color: #800080;
+  }
+
+  .overnight-slot {
+    background-color: #a52a2a;
+  }
+
+  .tooltip {
+    position: absolute;
+    background-color: rgba(0, 0, 0, 0.85);
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    pointer-events: none;
+    z-index: 9999;
+    max-width: 300px;
+    white-space: normal;
+  }
+
+  .zoom-animation {
+    animation: zoomInOut 0.3s ease;
+  }
+
+  @keyframes zoomInOut {
+    0% {
+      transform: scale(0.95);
+      opacity: 0;
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+  .fc-multimonth-title {
+    cursor: pointer;
+  }
+
+  .legend-container {
+    margin-bottom: 20px;
+  }
+
+  .legend-container span {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    margin-left: 10px;
+    margin-right: 4px;
+    vertical-align: middle;
+  }
