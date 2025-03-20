@@ -246,23 +246,38 @@ function initCalendar() {
       }
     },
     eventContent: function (arg) {
-      const viewType = arg.view.type;
       const sub = arg.event.extendedProps;
+      const viewType = arg.view.type;
+    
       let colorClass = sub.openSlot ? 'open-slot-color' : '';
-
+    
       if (!sub.openSlot) {
         if (sub.timeSlot.includes('morning')) colorClass = 'morning-slot';
         else if (sub.timeSlot.includes('afternoon')) colorClass = 'afternoon-slot';
         else if (sub.timeSlot.includes('overnight')) colorClass = 'overnight-slot';
       }
-
+    
+      // If Cancelled, override the colorClass
+      if (sub.status === 'Cancelled') {
+        colorClass = 'cancelled-slot';  // Add a special CSS class
+      }
+    
+      const baseTitle = sub.openSlot
+        ? 'Open Slot'
+        : `${sub.bookingID} - ${sub.server.user} - ${sub.schemeType.join("/")} - ${sub.simulator.name}`;
+    
+      const title = sub.status === 'Cancelled'
+        ? `❌ <del>${baseTitle}</del>`  // ❌ icon and strike-through
+        : baseTitle;
+    
       if (viewType === 'multiMonthYear') {
         return { html: `<div class="event-dot ${colorClass}"></div>` };
       } else {
-        const title = sub.openSlot ? 'Open Slot' : `${sub.bookingID} - ${sub.server.user} - ${sub.schemeType.join("/")} - ${sub.simulator.name}`;
         return { html: `<div class="event-bar ${colorClass}">${title}</div>` };
       }
-    },
+    }
+    ,
+    
     eventMouseEnter: function (info) {
       const sub = info.event.extendedProps;
 
@@ -292,7 +307,23 @@ function initCalendar() {
       info.el.addEventListener('mouseleave', function () {
         tooltip.remove();
       });
+    },
+    eventDidMount: function (info) {
+      info.el.addEventListener('dblclick', function () {
+        const bookingID = info.event.extendedProps.bookingID;
+        const status = info.event.extendedProps.status;
+    
+        if (status === 'Cancelled') {
+          alert(`Booking ID ${bookingID} is already cancelled.`);
+          return;
+        }
+    
+        if (confirm(`Do you want to cancel booking ID ${bookingID}?`)) {
+          cancelBooking(bookingID);
+        }
+      });
     }
+    
   });
 
   calendar.render();
@@ -413,4 +444,27 @@ function globalSearch() {
 
 function clearSearch() {
   location.reload(); // Reloads the current page
+}
+
+
+function cancelBooking(bookingID) {
+  fetch(`/slot_booking/cancel/${bookingID}/`, {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': getCSRFToken(),
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.message) {
+      alert(data.message);
+      calendar.refetchEvents(); // Refresh the calendar events
+    } else {
+      alert(data.error || "Failed to cancel booking.");
+    }
+  })
+  .catch(error => {
+    console.error(error);
+    alert("An error occurred while cancelling the booking.");
+  });
 }

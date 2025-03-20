@@ -32,7 +32,7 @@
             ],
             "openSlot": false,
             "bookingID": 1,
-            "status": "Booked"
+            "status": "Cancelled"
         },
         {
             "projectName": "test",
@@ -102,7 +102,7 @@
             ],
             "openSlot": true,
             "bookingID": 3,
-            "status": "Booked"
+            "status": "Cancelled"
         },
         {
             "projectName": "test",
@@ -207,7 +207,7 @@
             ],
             "openSlot": false,
             "bookingID": 6,
-            "status": "Booked"
+            "status": "Cancelled"
         }
     ]
 }

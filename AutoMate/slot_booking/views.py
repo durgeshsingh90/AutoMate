@@ -144,3 +144,32 @@ def get_submissions(request):
                 return JsonResponse(submissions_data, safe=False)
         except FileNotFoundError:
             return JsonResponse({"submissions": []})
+
+from django.views.decorators.csrf import csrf_exempt
+
+@csrf_exempt  # Or use CSRF token in the fetch call!
+def cancel_booking(request, booking_id):
+    ensure_files_exist()
+    if request.method == 'POST':
+        try:
+            booking_id = int(booking_id)
+            with open(SUBMISSIONS_FILE, 'r+') as file:
+                data = json.load(file)
+                updated = False
+                for submission in data["submissions"]:
+                    if submission["bookingID"] == booking_id:
+                        submission["status"] = "Cancelled"
+                        updated = True
+                        break
+                if not updated:
+                    return JsonResponse({"error": "Booking not found"}, status=404)
+
+                file.seek(0)
+                json.dump(data, file, indent=4)
+                file.truncate()
+
+            return JsonResponse({"message": "Booking cancelled successfully"})
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+
+    return JsonResponse({"error": "Method not allowed"}, status=405)
