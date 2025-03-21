@@ -1,0 +1,75 @@
+{
+    "submissions": [
+        {
+            "projectName": "Payment Facilitator processing",
+            "projectID": "GBSSOL-5366",
+            "psp": {
+                "name": "Paystrax",
+                "pspID": "000069"
+            },
+            "comments": "",
+            "owner": {
+                "name": "Durgesh Singh",
+                "lanID": "f94gdos"
+            },
+            "server": {
+                "hostname": "A5CVAP1003.1dc.com",
+                "user": "dev77"
+            },
+            "schemeType": [
+                "VisaRoute",
+                "MastercardRoute"
+            ],
+            "simulator": {
+                "name": "Astrex-1",
+                "ipAddress": "10.77.6.248"
+            },
+            "dateRange": {
+                "start": "24/03/2025",
+                "end": "24/03/2025"
+            },
+            "timeSlot": [
+                "morning"
+            ],
+            "openSlot": false,
+            "bookingID": 2,
+            "status": "Booked"
+        },
+        {
+            "projectName": "Open Slot",
+            "projectID": "Open Slot",
+            "psp": {
+                "name": "All",
+                "pspID": "All"
+            },
+            "comments": "",
+            "owner": {
+                "name": "Durgesh Singh",
+                "lanID": "f94gdos"
+            },
+            "server": {
+                "hostname": "A5CVAP1003.1dc.com",
+                "user": "dev77"
+            },
+            "schemeType": [
+                "VisaRoute",
+                "MastercardRoute",
+                "DinersRoute"
+            ],
+            "simulator": {
+                "name": "Astrex-1",
+                "ipAddress": "10.77.6.248"
+            },
+            "dateRange": {
+                "start": "01/01/2025",
+                "end": "31/12/2025"
+            },
+            "timeSlot": [
+                "morning"
+            ],
+            "openSlot": true,
+            "bookingID": 1,
+            "status": "Booked"
+        }
+    ]
+}
