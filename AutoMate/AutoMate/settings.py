@@ -50,7 +50,8 @@ INSTALLED_APPS = [
     'slot_booking',
     'splunkparser',
     'binblock',
-    'pdf_merger'
+    'pdf_merger',
+    'gen_reversals'
 ]
 
 # Logging configuration
@@ -173,6 +174,7 @@ STATICFILES_DIRS = [
     BASE_DIR / "splunkparser/static",
     BASE_DIR / "binblock/static",
     BASE_DIR / "slot_booking/static",
+    BASE_DIR / "gen_reversals/static",
 
     
     # Add other app static directories as needed

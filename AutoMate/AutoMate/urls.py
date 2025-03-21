@@ -36,4 +36,6 @@ urlpatterns = [
     path('binblock/', include('binblock.urls')),
     path('pdf_merger/', include('pdf_merger.urls')),
     path('slot_booking/', include('slot_booking.urls')),
+    path('gen_reversals/', include('gen_reversals.urls')),
+
 ]

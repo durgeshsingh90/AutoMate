@@ -1,0 +1,51 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Generate Reversals</title>
+
+  <!-- Static CSS -->
+  <link rel="stylesheet" href="{% static 'gen_reversals/styles.css' %}">
+
+  <!-- CodeMirror CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.css">
+</head>
+<body>
+
+  <div class="container">
+    <!-- Input Box -->
+    <div class="box">
+      <div class="header">
+        <span>Input (with line numbers)</span>
+      </div>
+      <div class="codemirror-container" id="input-editor"></div>
+    </div>
+
+    <!-- Output Box -->
+    <div class="box">
+      <div class="header">
+        <span>Output</span>
+        <div class="buttons-container">
+          <button id="copyBtn" onclick="copyOutput()">Copy</button>
+          <button onclick="handleAction('400 Reversal')">400 Reversal</button>
+          <button onclick="handleAction('401 Reversal')">401 Reversal</button>
+          <button onclick="handleAction('420 Reversal')">420 Reversal</button>
+          <button onclick="handleAction('Refund')">Refund</button>
+        </div>
+      </div>
+      <div class="output-container" id="output-display"></div>
+    </div>
+  </div>
+
+  <!-- CodeMirror JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/javascript/javascript.min.js"></script>
+
+  <!-- Static JS -->
+  <script src="{% static 'gen_reversals/scripts.js' %}"></script>
+
+</body>
+</html>
