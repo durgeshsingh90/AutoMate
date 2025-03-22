@@ -64,21 +64,33 @@
     background-color: #0056b3;
   }
   
-  #saveButton {
-    background-color: #28a745;
-    margin-bottom: 10px;
-    width: fit-content;
-  }
-  
-  #saveButton:hover {
-    background-color: #1e7e34;
-  }
-  
-  #errorContainer {
-    color: red;
-    margin-top: 10px;
-  }
-  
+  .save-button-container {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* space between button and error message */
+  margin-bottom: 10px;
+}
+
+#saveButton {
+  background-color: #007bff; /* default blue */
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-size: 14px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+#saveButton:hover {
+  background-color: #0056b3;
+}
+
+#errorContainer {
+  color: red;
+  font-size: 14px;
+  white-space: nowrap; /* prevent text wrapping */
+}
+
   .export-header {
     font-size: 20px;
     font-weight: bold;
@@ -108,11 +120,15 @@
 
     <!-- Left Side: Text Editor & Save -->
     <div class="left-panel">
-      <button type="button" id="saveButton" onclick="saveConfig()">Save Config</button>
-      <form id="adminForm" style="flex: 1;">
-        {% csrf_token %}
-        <div id="editorContainer"></div>
+      <div class="save-button-container">
+        <button type="button" id="saveButton" onclick="saveConfig()">Save Config</button>
         <div id="errorContainer"></div>
+      </div>
+      
+            <form id="adminForm" style="flex: 1;">
+        {% csrf_token %}
+
+        <div id="editorContainer"></div>
       </form>
     </div>
 
@@ -166,49 +182,74 @@
     }
 
     function saveConfig() {
-      const config = editor.getValue();
-      const csrfToken = getCSRFToken();
-      const saveButton = document.getElementById('saveButton');
+  const config = editor.getValue();
+  const csrfToken = getCSRFToken();
+  const saveButton = document.getElementById('saveButton');
+  const errorContainer = document.getElementById('errorContainer');
 
-      try {
-        const parsedConfig = JSON.parse(config); // Validate JSON
-        saveButton.textContent = 'Saving...';
-        saveButton.style.backgroundColor = '';
+  try {
+    const parsedConfig = JSON.parse(config); // Validate JSON
 
-        fetch('/slot_booking/config.json', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': csrfToken
-          },
-          body: JSON.stringify(parsedConfig, null, 2)
-        }).then(response => {
-          if (response.ok) {
-            saveButton.textContent = 'Saved';
-            saveButton.style.backgroundColor = 'green';
-            document.getElementById('errorContainer').textContent = '';
-          } else {
-            response.text().then(text => { throw new Error(text); });
-          }
-        }).catch(error => {
-          handleSaveError(error);
+    // Start saving...
+    saveButton.textContent = 'Saving...';
+    saveButton.style.backgroundColor = '#007bff'; // Blue while saving
+
+    // DO NOT clear the error here (let it stay until a successful save)
+    fetch('/slot_booking/config.json', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrfToken
+      },
+      body: JSON.stringify(parsedConfig, null, 2)
+    }).then(response => {
+      if (response.ok) {
+        // ✅ Save successful
+        saveButton.textContent = 'Saved';
+        saveButton.style.backgroundColor = 'green';
+
+        // ✅ Clear the error message on successful save!
+        errorContainer.textContent = '';
+
+        // Revert button after 1 second
+        setTimeout(() => {
+          saveButton.textContent = 'Save Config';
+          saveButton.style.backgroundColor = '#007bff'; // Back to blue
+        }, 1000);
+
+      } else {
+        // ❌ Server-side save failed
+        response.text().then(text => {
+          throw new Error(text);
         });
-      } catch (error) {
-        handleSaveError(error);
       }
-    }
+    }).catch(error => {
+      // ❌ Fetch error or response error
+      handleSaveError(error);
+    });
 
-    function handleSaveError(error) {
-      const saveButton = document.getElementById('saveButton');
-      saveButton.textContent = 'Error';
-      saveButton.style.backgroundColor = 'red';
-      displayError(error);
+  } catch (error) {
+    // ❌ JSON parse error
+    handleSaveError(error);
+  }
+}
 
-      setTimeout(() => {
-        saveButton.textContent = 'Save Config';
-        saveButton.style.backgroundColor = '#28a745';
-      }, 1000);
-    }
+function handleSaveError(error) {
+  const saveButton = document.getElementById('saveButton');
+  const errorContainer = document.getElementById('errorContainer');
+
+  saveButton.textContent = 'Error';
+  saveButton.style.backgroundColor = 'red';
+
+  // Leave the error message visible!
+  errorContainer.textContent = `❗ ${error.message}`;
+
+  // Revert button after 1 second, but leave error message intact!
+  setTimeout(() => {
+    saveButton.textContent = 'Save Config';
+    saveButton.style.backgroundColor = '#007bff'; // Back to blue
+  }, 1000);
+}
 
     function displayError(error) {
       const errorContainer = document.getElementById('errorContainer');
