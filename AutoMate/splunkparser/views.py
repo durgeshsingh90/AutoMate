@@ -4,6 +4,70 @@ import os
 import re
 from django.http import JsonResponse
 
+
+
+from django.shortcuts import render
+import json
+import logging
+
+logger = logging.getLogger('splunkparser')
+
+def editor_page(request):
+    logger.info("Rendering the main editor page.")
+    return render(request, 'splunkparser/index.html')  # Template location!
+
+def config_editor_page(request):
+    logger.info("Rendering the settings editor page.")
+    return render(request, 'splunkparser/settings.html')  # Template location!
+
+import os
+import json
+from django.http import JsonResponse, HttpResponse, HttpResponseNotAllowed
+
+def get_settings(request):
+    if request.method == 'GET':
+        settings_file_path = os.path.join(os.path.dirname(__file__), 'static', 'splunkparser', 'settings.json')
+
+        try:
+            with open(settings_file_path, 'r') as f:
+                data = json.load(f)
+            return JsonResponse(data, safe=False)
+        except Exception as e:
+            return JsonResponse({'error': f'Failed to load settings.json: {str(e)}'}, status=500)
+
+    return HttpResponseNotAllowed(['GET'])
+import os
+import json
+from django.http import JsonResponse, HttpResponseBadRequest
+from django.views.decorators.csrf import csrf_exempt
+
+@csrf_exempt
+def save_settings(request):
+    if request.method == 'POST':
+        try:
+            settings_file_path = os.path.join(
+                os.path.dirname(__file__),  # points to splunkparser/
+                'static',                  # static directory
+                'splunkparser',
+                'settings.json'
+            )
+
+            # Parse the JSON from the request body
+            data = json.loads(request.body)
+
+            # Write it back to the settings.json file
+            with open(settings_file_path, 'w') as f:
+                json.dump(data, f, indent=4)
+
+            return JsonResponse({'status': 'success', 'message': 'Settings saved successfully'})
+
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)})
+
+    return HttpResponseBadRequest('Only POST method is allowed')
+
+
+#=====================Do not edit below lines
 # Configure logger for detailed logging
 logger = logging.getLogger('splunkparser')
 

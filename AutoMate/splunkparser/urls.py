@@ -1,15 +1,27 @@
-# splunkparser/urls.py
+# # splunkparser/urls.py
+
+# from django.urls import path
+# from .views import parse_logs
+# from django.shortcuts import render
+
+# app_name = 'splunkparser'
+
+# def index(request):
+#     return render(request, 'splunkparser/parser.html')
+
+# urlpatterns = [
+#     path('', index, name='index'),
+#     path('parse_logs/', parse_logs, name='parse_logs'),  # Update the URL pattern to point to the new view
+# ]
+
 
 from django.urls import path
-from .views import parse_logs
-from django.shortcuts import render
-
-app_name = 'splunkparser'
-
-def index(request):
-    return render(request, 'splunkparser/parser.html')
+from . import views
 
 urlpatterns = [
-    path('', index, name='index'),
-    path('parse_logs/', parse_logs, name='parse_logs'),  # Update the URL pattern to point to the new view
+    path('', views.editor_page, name='splunkparser_index'),
+    path('settings/', views.config_editor_page, name='splunkparser_settings'),
+    path('settings-json/', views.get_settings, name='get_settings_json'),  # <== new!
+    path('save-settings/', views.save_settings, name='save_settings_json'),  # Optional: save handler!
+    path('parse/', views.parse_logs, name='parse_logs'),
 ]
