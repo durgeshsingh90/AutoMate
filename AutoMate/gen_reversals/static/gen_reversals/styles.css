@@ -1,83 +1,76 @@
 html, body {
-    height: 100%;
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background-color: #f0f0f0;
-  }
-  
-  .container {
-    display: flex;
-    height: 100vh;
-    width: 100%;
-    box-sizing: border-box;
-    gap: 10px;
-    padding: 10px;
-  }
-  
-  .box {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    background: #ffffff;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    overflow: hidden;
-  }
-  
-  .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px;
-    background: #333;
-    color: #fff;
-    flex-wrap: wrap;
-    gap: 10px;
-  }
-  
-  .buttons-container {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-  }
-  
-  .header button {
-    background-color: #007bff;
-    border: none;
-    color: #fff;
-    padding: 6px 12px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: background-color 0.3s, color 0.3s;
-  }
-  
-  .header button:hover {
-    background-color: #0056b3;
-  }
-  
-  .header button.copied {
-    background-color: #28a745 !important;
-    color: #fff !important;
-  }
-  
-  .codemirror-container,
-  .output-container {
-    flex: 1;
-    height: 100%;
-    width: 100%;
-    border: none;
-    resize: none;
-    box-sizing: border-box;
-    overflow: auto;
-  }
-  
-  .output-container {
-    padding: 10px;
-    background-color: #f9f9f9;
-    color: #333;
-    font-size: 16px;
-    white-space: pre-wrap;
-    word-wrap: break-word;
-  }
-  
+  height: 100%;
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
+
+.container {
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+  gap: 10px;
+  padding: 10px;
+  box-sizing: border-box;
+  background-color: #f0f0f0;
+}
+
+.box {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #333;
+  color: #fff;
+  padding: 10px;
+  flex-wrap: wrap;
+}
+
+.buttons-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.buttons-container span {
+  font-size: 14px;
+}
+
+button {
+  padding: 6px 12px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  font-size: 14px;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+button.copied {
+  background-color: #28a745 !important;
+  color: #fff !important;
+}
+
+.editor-container {
+  flex: 1;
+  height: 100%;
+}
+
+#json-status {
+  font-size: 14px;
+  display: none;
+}
