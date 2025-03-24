@@ -1,113 +1,171 @@
-var inputEditor = CodeMirror(document.getElementById('input-editor'), {
-    lineNumbers: true,
-    mode: "application/json",
-    theme: "default",
-    value: ""
+require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.33.0/min/vs' } });
+
+let inputEditor, outputEditor;
+let currentTheme = 'vs-light';
+
+require(['vs/editor/editor.main'], function () {
+  inputEditor = monaco.editor.create(document.getElementById('input-editor'), {
+    value: '',
+    language: 'json',
+    theme: currentTheme,
+    automaticLayout: true,
+    minimap: { enabled: false }
   });
-  
-  function resizeEditor() {
-    const containerHeight = document.getElementById('input-editor').parentElement.clientHeight;
-    inputEditor.setSize("100%", containerHeight - 40);
+
+  outputEditor = monaco.editor.create(document.getElementById('output-editor'), {
+    value: '',
+    language: 'json',
+    theme: currentTheme,
+    readOnly: true,
+    automaticLayout: true,
+    minimap: { enabled: false }
+  });
+
+  inputEditor.onDidChangeModelContent(() => {
+    const rawInput = inputEditor.getValue();
+    updateJsonStatus(rawInput);
+  });
+});
+
+function toggleTheme() {
+  currentTheme = currentTheme === 'vs-light' ? 'vs-dark' : 'vs-light';
+  monaco.editor.setTheme(currentTheme);
+}
+
+function updateJsonStatus(text) {
+  const model = inputEditor.getModel();
+  const statusElement = document.getElementById('json-status');
+
+  try {
+    JSON.parse(text);
+    monaco.editor.setModelMarkers(model, 'json', []);
+    statusElement.innerText = "Status: ✅ Valid JSON";
+    statusElement.style.color = "limegreen";
+  } catch (error) {
+    monaco.editor.setModelMarkers(model, 'json', [{
+      startLineNumber: 1,
+      startColumn: 1,
+      endLineNumber: 1,
+      endColumn: 1,
+      message: "Invalid JSON: " + error.message,
+      severity: monaco.MarkerSeverity.Error
+    }]);
+    statusElement.innerText = "Status: ❌ Invalid JSON";
+    statusElement.style.color = "red";
   }
-  
-  window.addEventListener('resize', resizeEditor);
-  resizeEditor();
-  
-  inputEditor.on("change", function (cm) {
-    const rawInput = cm.getValue();
-    processInputDataPreserveFormat(rawInput);
-  });
-  
-  function processInputDataPreserveFormat(rawText) {
-    const outputBox = document.getElementById('output-display');
-  
-    // Extract JSON-like blocks from raw text
-    const jsonRegex = /{[\s\S]*?}/g;  // Captures multi-line JSON blocks
-    const jsonMatches = rawText.match(jsonRegex);
-  
-    if (!jsonMatches) {
-      outputBox.innerText = "❌ No JSON data found.";
+}
+
+function cleanData() {
+  const rawText = inputEditor.getValue();
+  const cleanedJsonBlocks = extractJsonBlocks(rawText);
+
+  if (cleanedJsonBlocks.length === 0) {
+    alert("❌ No JSON blocks found.");
+    inputEditor.setValue(""); // clear input editor
+    return;
+  }
+
+  const jsonObjects = cleanedJsonBlocks.map(jsonStr => {
+    try {
+      return JSON.parse(jsonStr);
+    } catch (e) {
+      console.warn("Skipped invalid JSON block during parsing:", jsonStr);
+      return null;
+    }
+  }).filter(obj => obj !== null);
+
+  const requests100 = [];
+  const responses110 = [];
+
+  jsonObjects.forEach(obj => {
+    const mti = obj.mti;
+    const de037 = obj?.d0t0_elements?.DE037 || obj?.d0t0_elements?.DE037?.trim();
+
+    if (!de037) {
+      console.warn("Skipped message without DE037:", obj);
       return;
     }
-  
-    let mti100Messages = [];
-    let mti110Messages = [];
-  
-    jsonMatches.forEach(jsonStr => {
-      try {
-        const jsonData = JSON.parse(jsonStr);
-  
-        if (jsonData.mti === "100") {
-          mti100Messages.push({
-            rrn: jsonData.DE037 || 'NO_DE037',
-            raw: jsonStr
-          });
-        } else if (jsonData.mti === "110") {
-          mti110Messages.push({
-            rrn: jsonData.DE037 || 'NO_DE037',
-            raw: jsonStr
-          });
+
+    if (mti === 100 || mti === "100") {
+      requests100.push({ rrn: de037, message: obj });
+    } else if (mti === 110 || mti === "110") {
+      responses110.push({ rrn: de037, message: obj });
+    }
+  });
+
+  const groupedMessages = [];
+
+  requests100.forEach((request, index) => {
+    const rrn = request.rrn;
+    const matchingResponse = responses110.find(response => response.rrn === rrn);
+
+    const pair = {};
+    pair[`request${index + 1}`] = request.message;
+    pair[`response${index + 1}`] = matchingResponse ? matchingResponse.message : null;
+
+    groupedMessages.push(pair);
+  });
+
+  const finalJsonString = JSON.stringify(groupedMessages, null, 4);
+
+  inputEditor.setValue(finalJsonString);
+}
+
+function copyOutput() {
+  const copyBtn = document.getElementById('copyBtn');
+  const outputText = outputEditor.getValue();
+
+  navigator.clipboard.writeText(outputText)
+    .then(() => {
+      copyBtn.innerText = "Copied!";
+      copyBtn.classList.add("copied");
+
+      setTimeout(() => {
+        copyBtn.innerText = "Copy Output";
+        copyBtn.classList.remove("copied");
+      }, 1000);
+    })
+    .catch(err => {
+      console.error('❌ Failed to copy:', err);
+    });
+}
+
+function handleAction(actionName) {
+  console.log(`${actionName} button clicked!`);
+
+  const outputText = outputEditor.getValue();
+  const updatedOutput = `${actionName} action triggered!\n\n` + outputText;
+
+  outputEditor.setValue(updatedOutput);
+}
+
+function extractJsonBlocks(text) {
+  const blocks = [];
+  let braceCount = 0;
+  let startIndex = -1;
+
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
+
+    if (char === '{') {
+      if (braceCount === 0) {
+        startIndex = i;
+      }
+      braceCount++;
+    } else if (char === '}') {
+      braceCount--;
+      if (braceCount === 0 && startIndex !== -1) {
+        const jsonBlock = text.slice(startIndex, i + 1);
+        try {
+          JSON.parse(jsonBlock);
+          blocks.push(jsonBlock);
+        } catch (e) {
+          console.warn("Skipped invalid JSON block:", jsonBlock);
         }
-  
-      } catch (error) {
-        // Skip invalid JSON blocks
-        console.warn("Invalid JSON block skipped:", jsonStr);
+        startIndex = -1;
       }
-    });
-  
-    // Validation Checks
-    if (mti100Messages.length === 0 || mti110Messages.length === 0) {
-      outputBox.innerText = "❌ Missing MTI 100 or MTI 110 messages.";
-      return;
     }
-  
-    if (mti100Messages.length !== mti110Messages.length) {
-      outputBox.innerText = `❌ MTI 100 count (${mti100Messages.length}) does not match MTI 110 count (${mti110Messages.length}).`;
-      return;
-    }
-  
-    // Group by DE037
-    let groupedResults = '';
-  
-    mti100Messages.forEach(msg100 => {
-      const rrn100 = msg100.rrn;
-  
-      const matching110 = mti110Messages.find(msg110 => msg110.rrn === rrn100);
-  
-      if (matching110) {
-        groupedResults += `------ DE037: ${rrn100} ------\n`;
-        groupedResults += `${msg100.raw}\n`;
-        groupedResults += `${matching110.raw}\n\n`;
-      } else {
-        groupedResults += `------ DE037: ${rrn100} (No matching MTI 110) ------\n`;
-        groupedResults += `${msg100.raw}\n\n`;
-      }
-    });
-  
-    // Output untouched original JSON blocks grouped logically
-    outputBox.innerText = groupedResults.trim();
   }
-  
-  function copyOutput() {
-    const copyBtn = document.getElementById('copyBtn');
-    const outputText = document.getElementById('output-display').innerText;
-  
-    navigator.clipboard.writeText(outputText)
-      .then(() => {
-        copyBtn.innerText = "Copied!";
-        copyBtn.classList.add("copied");
-  
-        setTimeout(() => {
-          copyBtn.innerText = "Copy";
-          copyBtn.classList.remove("copied");
-        }, 2000);
-      });
-  }
-  
-  function handleAction(actionName) {
-    console.log(actionName + " button clicked");
-  
-    const outputBox = document.getElementById('output-display');
-    outputBox.innerText = `${actionName} action triggered!\n\n` + outputBox.innerText;
-  }
-  
+
+  return blocks;
+}
