@@ -215,62 +215,68 @@
     }
 
     function cleanData() {
-      const rawText = inputEditor.getValue();
-      const cleanedJsonBlocks = extractJsonBlocks(rawText);
+  const rawText = inputEditor.getValue();
+  const cleanedJsonBlocks = extractJsonBlocks(rawText);
 
-      if (cleanedJsonBlocks.length === 0) {
-        alert("❌ No JSON blocks found.");
-        inputEditor.setValue("");
-        updateJsonStatus("");
-        return;
-      }
+  if (cleanedJsonBlocks.length === 0) {
+    alert("❌ No JSON blocks found.");
+    inputEditor.setValue("");
+    updateJsonStatus("");
+    return;
+  }
 
-      const jsonObjects = cleanedJsonBlocks.map(jsonStr => {
-        try {
-          return JSON.parse(jsonStr);
-        } catch (e) {
-          console.warn("Skipped invalid JSON block during parsing:", jsonStr);
-          return null;
-        }
-      }).filter(obj => obj !== null);
-
-      const requests100 = [];
-      const responses110 = [];
-
-      jsonObjects.forEach(obj => {
-        const mti = obj.mti;
-        const de037 = obj?.d0t0_elements?.DE037 || obj?.d0t0_elements?.DE037?.trim();
-
-        if (!de037) {
-          console.warn("Skipped message without DE037:", obj);
-          return;
-        }
-
-        if (mti === 100 || mti === "100") {
-          requests100.push({ rrn: de037, message: obj });
-        } else if (mti === 110 || mti === "110") {
-          responses110.push({ rrn: de037, message: obj });
-        }
-      });
-
-      const groupedMessages = [];
-
-      requests100.forEach((request, index) => {
-        const rrn = request.rrn;
-        const matchingResponse = responses110.find(response => response.rrn === rrn);
-
-        const pair = {};
-        pair[`request${index + 1}`] = request.message;
-        pair[`response${index + 1}`] = matchingResponse ? matchingResponse.message : null;
-
-        groupedMessages.push(pair);
-      });
-
-      const finalJsonString = JSON.stringify(groupedMessages, null, 4);
-
-      inputEditor.setValue(finalJsonString);
-      updateJsonStatus(finalJsonString);
+  const jsonObjects = cleanedJsonBlocks.map(jsonStr => {
+    try {
+      return JSON.parse(jsonStr);
+    } catch (e) {
+      console.warn("Skipped invalid JSON block during parsing:", jsonStr);
+      return null;
     }
+  }).filter(obj => obj !== null);
+
+  const requests100 = [];
+  const responses110 = [];
+
+  jsonObjects.forEach(obj => {
+    const mti = obj.mti;
+    const de037 = obj?.data_elements?.DE037 || obj?.data_elements?.DE037?.trim();
+
+    if (!de037) {
+      console.warn("Skipped message without DE037:", obj);
+      return;
+    }
+
+    if (mti === 100 || mti === "100") {
+      requests100.push({ rrn: de037, message: obj });
+    } else if (mti === 110 || mti === "110") {
+      responses110.push({ rrn: de037, message: obj });
+    }
+  });
+
+  const groupedMessages = [];
+
+  requests100.forEach((request) => {
+    const rrn = request.rrn;
+    const matchingResponse = responses110.find(response => response.rrn === rrn);
+
+    const group = [];
+
+    // Push request
+    group.push(request.message);
+
+    // Push response if exists
+    if (matchingResponse) {
+      group.push(matchingResponse.message);
+    }
+
+    groupedMessages.push(group);
+  });
+
+  const finalJsonString = JSON.stringify(groupedMessages, null, 4);
+
+  inputEditor.setValue(finalJsonString);
+  updateJsonStatus(finalJsonString);
+}
 
     function copyOutput() {
       const copyBtn = document.getElementById('copyBtn');
