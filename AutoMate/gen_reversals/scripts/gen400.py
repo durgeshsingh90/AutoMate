@@ -1,28 +1,7 @@
 import datetime
 import json
 
-def get_user_input():
-    print("Please enter the 0100 authorization request message in JSON format (press Enter twice to complete):")
-    input_message = ""
-    while True:
-        line = input()
-        if line == "":
-            break
-        input_message += line + "\n"
-    auth_request = json.loads(input_message)
-
-    print("Please enter the 0110 authorization response message in JSON format (press Enter twice to complete):")
-    input_message = ""
-    while True:
-        line = input()
-        if line == "":
-            break
-        input_message += line + "\n"
-    auth_response = json.loads(input_message)
-
-    return auth_request, auth_response
-
-def create_reversal_message(auth_request, auth_response):
+def create_reversal_0400_message(auth_request, auth_response):
     reversal_message = {}
 
     # Copying mandatory data elements from the auth request
@@ -97,10 +76,3 @@ def format_original_data_elements(auth_request):
         "orig_frwd_id": original_data_elements[31:42]
     }
 
-def main():
-    auth_request, auth_response = get_user_input()
-    reversal_message = create_reversal_message(auth_request, auth_response)
-    print(json.dumps(reversal_message, indent=4))
-
-if __name__ == "__main__":
-    main()

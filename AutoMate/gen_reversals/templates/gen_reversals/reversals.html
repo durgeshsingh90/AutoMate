@@ -297,14 +297,44 @@
         });
     }
 
-    function handleAction(actionName) {
-      console.log(`${actionName} button clicked!`);
+    async function handleAction(actionName) {
+  console.log(`${actionName} button clicked!`);
 
-      const outputText = outputEditor.getValue();
-      const updatedOutput = `${actionName} action triggered!\n\n` + outputText;
+  const inputJson = inputEditor.getValue();
 
-      outputEditor.setValue(updatedOutput);
+  let parsedData;
+  try {
+    parsedData = JSON.parse(inputJson);
+  } catch (error) {
+    alert("❌ Invalid JSON in the input box!");
+    return;
+  }
+
+  try {
+    const response = await fetch(`/gen_reversals/generate-reversal/${encodeURIComponent(actionName)}/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(parsedData)
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Server responded with error:", errorData);
+      alert(`❌ Error from server: ${errorData.error || response.status}`);
+      return;
     }
+
+    const reversalMessages = await response.json();
+    const formattedJson = JSON.stringify(reversalMessages, null, 4);
+    outputEditor.setValue(formattedJson);
+
+  } catch (error) {
+    console.error("❌ Failed to send data to the server:", error);
+    alert("❌ Failed to send data to the server.");
+  }
+}
 
     function extractJsonBlocks(text) {
       const blocks = [];
@@ -336,6 +366,11 @@
 
       return blocks;
     }
+    function getCSRFToken() {
+  const cookieValue = document.cookie.match('(^|;)\\s*csrftoken\\s*=\\s*([^;]+)')?.pop() || '';
+  return cookieValue;
+}
+
   </script>
 </body>
 </html>
