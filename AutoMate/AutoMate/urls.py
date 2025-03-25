@@ -17,6 +17,8 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.views.generic import TemplateView
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     # Django Admin Panel
@@ -37,5 +39,10 @@ urlpatterns = [
     path('pdf_merger/', include('pdf_merger.urls')),
     path('slot_booking/', include('slot_booking.urls')),
     path('gen_reversals/', include('gen_reversals.urls')),
+    path('emvco_filter/', include('emvco_filter.urls')),
 
 ]
+
+# Append this only when DEBUG is True (development mode)
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

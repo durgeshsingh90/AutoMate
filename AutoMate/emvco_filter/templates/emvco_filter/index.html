@@ -1,0 +1,134 @@
+<!-- emvco_filter/templates/emvco_filter/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>XML Formatter</title>
+  <style>
+    * { box-sizing: border-box; }
+    body, html { margin: 0; height: 100%; font-family: Arial, sans-serif; display: flex; }
+
+
+.left-container {
+  width: 100%;
+  height: 100vh;
+  padding: 10px;
+  background-color: #f0f0f0;
+  border-right: 1px solid #ccc;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative; /* required for absolute positioning */
+}
+
+
+    .right-container {
+      width: 50%;
+      height: 100vh;
+      padding: 20px;
+      background-color: #ffffff;
+      position: relative;
+    }
+.download-link {
+  position:fixed;
+  top: 20px;
+  right: 20px;
+  background-color: #4CAF50;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 5px;
+  text-decoration: none;
+  white-space: nowrap; /* Forces all words onto one line */
+  display: none; /* Hidden initially */
+  z-index: 1000;
+  font-size: 14px;
+}
+
+
+.download-link:hover { 
+  background-color: #45a049; 
+}
+    .form-group { margin-bottom: 25px; }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: bold;
+    }
+
+    input, select, button {
+      width: 100%;
+      padding: 12px;
+      font-size: 1em;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    button:hover { background-color: #45a049; }
+  </style>
+</head>
+<body>
+
+  <div class="left-container">
+    <h2>Upload XML and Select Gateway</h2>
+    <form id="uploadForm" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div class="form-group">
+        <label for="xmlFile">Choose XML File:</label>
+        <input type="file" id="xmlFile" name="xmlFile" accept=".xml" required>
+      </div>
+
+      <div class="form-group">
+        <label for="gateway">Select Payment Gateway:</label>
+        <select id="gateway" name="gateway">
+          <option value="TrustPayments">TrustPayments (000049)</option>
+          <option value="Option2">Another Gateway (000050)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <button type="submit">Submit</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="right-container">
+    <a id="downloadLink" class="download-link" href="#" download>Download Formatted XML</a>
+  </div>
+
+  <script>
+    const form = document.getElementById('uploadForm');
+    const downloadLink = document.getElementById('downloadLink');
+
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const formData = new FormData(form);
+
+      fetch('{% url "format_xml" %}', {
+        method: 'POST',
+        body: formData,
+        headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.download_link) {
+          downloadLink.href = data.download_link;
+          downloadLink.style.display = 'block';
+        } else {
+          alert('Formatting failed. Try again.');
+        }
+      })
+      
+      .catch(() => alert('An error occurred.'));
+    });
+  </script>
+</body>
+</html>

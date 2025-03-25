@@ -51,7 +51,8 @@ INSTALLED_APPS = [
     'splunkparser',
     'binblock',
     'pdf_merger',
-    'gen_reversals'
+    'gen_reversals',
+    'emvco_filter'
 ]
 
 # Logging configuration
@@ -175,6 +176,7 @@ STATICFILES_DIRS = [
     BASE_DIR / "binblock/static",
     BASE_DIR / "slot_booking/static",
     BASE_DIR / "gen_reversals/static",
+    BASE_DIR / "emvco_filter/static",
 
     
     # Add other app static directories as needed
