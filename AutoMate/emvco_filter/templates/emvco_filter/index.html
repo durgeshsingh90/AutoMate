@@ -73,11 +73,33 @@
     }
 
     button:hover { background-color: #45a049; }
+
+    .settings-icon {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 20px;
+  color: #333;
+  text-decoration: none;
+  z-index: 1000;
+}
+
+.settings-icon:hover {
+  color: #007bff;
+}
+
   </style>
+  <!-- Bootstrap Icons CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+
 </head>
 <body>
 
   <div class="left-container">
+    <a href="/emvco_filter/settings/" class="settings-icon" title="Edit Settings">
+        <i class="bi bi-gear"></i>
+      </a>
+      
     <h2>Upload XML and Select Gateway</h2>
     <form id="uploadForm" enctype="multipart/form-data">
       {% csrf_token %}
@@ -87,12 +109,13 @@
       </div>
 
       <div class="form-group">
-        <label for="gateway">Select Payment Gateway:</label>
-        <select id="gateway" name="gateway">
-          <option value="TrustPayments">TrustPayments (000049)</option>
-          <option value="Option2">Another Gateway (000050)</option>
+        <label for="configSelect">Select Gateway:</label>
+        <select id="configSelect" name="gateway" required>
+          <!-- Dynamically loaded -->
         </select>
       </div>
+      
+      
 
       <div class="form-group">
         <button type="submit">Submit</button>
@@ -105,13 +128,35 @@
   </div>
 
   <script>
+    // 🔁 1. Load Name and instid from settings.json into the dropdown
+    document.addEventListener('DOMContentLoaded', function () {
+      fetch('/emvco_filter/get-config-list/')
+        .then(response => response.json())
+        .then(data => {
+          const dropdown = document.getElementById('configSelect');
+  
+          if (Array.isArray(data)) {
+            data.forEach(item => {
+              const option = document.createElement('option');
+              option.value = item.Name;
+              option.textContent = `${item.Name} (${item.instid})`;
+              dropdown.appendChild(option);
+            });
+          }
+        })
+        .catch(error => {
+          console.error('Error loading config list:', error);
+        });
+    });
+  
+    // 📨 2. Handle form submission & show download link
     const form = document.getElementById('uploadForm');
     const downloadLink = document.getElementById('downloadLink');
-
+  
     form.addEventListener('submit', function(e) {
       e.preventDefault();
       const formData = new FormData(form);
-
+  
       fetch('{% url "format_xml" %}', {
         method: 'POST',
         body: formData,
@@ -126,9 +171,9 @@
           alert('Formatting failed. Try again.');
         }
       })
-      
       .catch(() => alert('An error occurred.'));
     });
   </script>
+  
 </body>
 </html>
