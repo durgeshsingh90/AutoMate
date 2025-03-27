@@ -30,7 +30,7 @@ def config_editor_page(request):
 
 def get_settings(request):
     if request.method == 'GET':
-        settings_file_path = os.path.join(os.path.dirname(__file__), 'static', 'splunkparser', 'settings.json')
+        settings_file_path = os.path.join( 'media', 'splunkparser', 'settings.json')
         try:
             with open(settings_file_path, 'r') as f:
                 data = json.load(f)
