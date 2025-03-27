@@ -221,7 +221,8 @@ def parse_logs(request):
             return JsonResponse({'status': 'error', 'message': 'Invalid JSON data'})
         except Exception as e:
             logger.critical(f"Unexpected error during log parsing: {e}")
-            return JsonResponse({'status': 'error', 'message': 'An unexpected error occurred'})
+            return JsonResponse({'status': 'error', 'message': str(e)})
+
 
     logger.warning(f"Invalid request method: {request.method}")
     return JsonResponse({'status': 'error', 'message': 'Invalid request method'})
@@ -237,6 +238,22 @@ def parse_iso8583(log_data):
 
     lines = log_data.split("\n")
     logger.debug(f"Number of lines received for parsing: {len(lines)}")
+
+    # Detect if log uses only one of "in[" or "out["
+    has_in = any("in[" in line for line in lines)
+    has_out = any("out[" in line for line in lines)
+
+    if has_in and has_out:
+        logger.error("❌ Mixed input: both 'in[' and 'out[' detected.")
+        raise ValueError("Log input cannot contain both 'in[' and 'out[' lines. Use only one direction.")
+
+    prefix = "in[" if has_in else "out[" if has_out else None
+
+    if not prefix:
+        logger.error("❌ No valid 'in[' or 'out[' prefix detected in input.")
+        raise ValueError("Log input must contain either 'in[' or 'out[' lines.")
+
+    escaped_prefix = prefix.replace('[', r'\[').replace(']', r'\]')  # Escape for regex
 
     data_elements = {}  # Dictionary to store Data Elements
 
@@ -275,7 +292,7 @@ def parse_iso8583(log_data):
             logger.info(f"Skipping line with sensitive information: {line.strip()}")
             continue
 
-        match = re.match(r"in\[\s*(\d+):?\s*\]<(.+)>", line)
+        match = re.match(rf"{escaped_prefix}\s*(\d+):?\s*\]<(.+)>", line)
         if match:
             field_number = match.group(1).zfill(3)
             value = match.group(2)
@@ -296,7 +313,7 @@ def parse_iso8583(log_data):
                     logger.debug(f"Adjusted field {field_number} to match length: {value}")
 
             # Special handling for DE 60, 61, and 62
-            if field_number in ['060', '061', '062']:
+            if field_number in ['060', '061', '062', '066']:
                 value = parse_bm6x(value)
                 logger.info(f"Parsed DE {field_number}: {value}")
 
