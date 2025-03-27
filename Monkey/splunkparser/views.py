@@ -2,14 +2,8 @@ import json
 import logging
 import os
 import re
-from django.http import JsonResponse
-
-
-
-import json
-import logging
-import os
 import random
+from django.http import JsonResponse
 from django.conf import settings
 from django.http import JsonResponse, HttpResponse, HttpResponseBadRequest, HttpResponseNotAllowed
 from django.shortcuts import render
@@ -17,8 +11,9 @@ from django.views.decorators.csrf import csrf_exempt
 
 logger = logging.getLogger('splunkparser')
 
-OUTPUT_FOLDER = settings.MEDIA_ROOT / 'splunkparser'
-OUTPUT_FILE_PATH = OUTPUT_FOLDER / 'output.json'
+settings_file_path = os.path.join(settings.MEDIA_ROOT, 'splunkparser', 'settings.json')
+output_file_path = os.path.join(settings.MEDIA_ROOT, 'splunkparser', 'output.json')
+field_definitions_path = os.path.join(settings.MEDIA_ROOT, 'global', 'omnipay_fields_definitions.json')
 
 def editor_page(request):
     logger.info("Rendering the main editor page.")
@@ -30,7 +25,6 @@ def config_editor_page(request):
 
 def get_settings(request):
     if request.method == 'GET':
-        settings_file_path = os.path.join( 'media', 'splunkparser', 'settings.json')
         try:
             with open(settings_file_path, 'r') as f:
                 data = json.load(f)
@@ -43,7 +37,6 @@ def get_settings(request):
 def save_settings(request):
     if request.method == 'POST':
         try:
-            settings_file_path = os.path.join(os.path.dirname(__file__), 'static', 'splunkparser', 'settings.json')
             data = json.loads(request.body)
 
             with open(settings_file_path, 'w') as f:
@@ -58,7 +51,7 @@ def save_settings(request):
 def clear_output_file(request):
     if request.method == 'POST':
         try:
-            with open(OUTPUT_FILE_PATH, 'w') as f:
+            with open(output_file_path, 'w') as f:
                 f.write('{}')
             return JsonResponse({'status': 'success'})
         except Exception as e:
@@ -71,7 +64,7 @@ def save_output_file(request):
         try:
             data = json.loads(request.body)
             output_data = data.get('output_data', '{}')
-            with open(OUTPUT_FILE_PATH, 'w') as f:
+            with open(output_file_path, 'w') as f:
                 f.write(output_data)
             return JsonResponse({'status': 'success'})
         except Exception as e:
@@ -100,94 +93,13 @@ def set_default_values(request):
         return JsonResponse({'status': 'error', 'message': 'Invalid request method'})
 
     try:
-        with open(OUTPUT_FILE_PATH, 'r') as f:
-            output_data = json.load(f)
-
-        data_elements = output_data.get('data_elements', {})
-
-        settings_file_path = os.path.join(os.path.dirname(__file__), 'static', 'splunkparser', 'settings.json')
-        with open(settings_file_path, 'r') as f:
-            settings_data = json.load(f)
-
-        de002_value = data_elements.get('DE002', '')
-        if not de002_value:
-            return JsonResponse({'status': 'error', 'message': 'DE002 not found in output.json'})
-
-        logger.info(f"Original DE002: {de002_value}")
-
-        prefix_to_try = de002_value[:4]
-        logger.info(f"Starting prefix search with: {prefix_to_try}")
-
-        match_found = False
-        default_card = None
-        scheme_name = None
-
-        while len(prefix_to_try) > 0:
-            logger.info(f"Trying prefix: {prefix_to_try}")
-
-            matching_cards = []
-            for scheme in settings_data.get('configs', []):
-                for card in scheme.get('cards', []):
-                    card_de002 = card.get('DE002', '')
-                    if card_de002.startswith(prefix_to_try):
-                        matching_cards.append({
-                            'scheme': scheme.get('scheme'),
-                            'card': card
-                        })
-
-            if matching_cards:
-                match_found = True
-                selected = random.choice(matching_cards)
-                scheme_name = selected['scheme']
-                default_card = selected['card']
-                logger.info(f"Match found! Using scheme: {scheme_name}, card: {default_card.get('cardName')}")
-                break
-
-            prefix_to_try = prefix_to_try[:-1]
-
-        if not match_found:
-            logger.error(f"No matching card found for prefix {de002_value[:4]}")
-            return JsonResponse({'status': 'error', 'message': f'No matching default card found for prefix {de002_value[:4]}'})
-
-        for field in ['DE002', 'DE014', 'DE035', 'DE048']:
-            current_value = data_elements.get(field, '')
-            if '*' in current_value or current_value.strip('*') == '':
-                logger.info(f"Replacing masked {field} with default value {default_card.get(field)}")
-                data_elements[field] = default_card.get(field, '')
-
-        with open(OUTPUT_FILE_PATH, 'w') as f:
-            json.dump(output_data, f, indent=2)
-
-        return JsonResponse({
-            'status': 'success',
-            'message': 'Default values applied',
-            'result': output_data,
-            'scheme': scheme_name,
-            'cardName': default_card.get('cardName'),
-            'prefix_used': prefix_to_try
-        })
-
-    except Exception as e:
-        logger.exception("Error applying default values")
-        return JsonResponse({'status': 'error', 'message': str(e)})
-
-import random  # At the top of views.py
-
-@csrf_exempt
-def set_default_values(request):
-    if request.method != 'POST':
-        return JsonResponse({'status': 'error', 'message': 'Invalid request method'})
-
-    try:
         # Load output.json (parsed ISO8583 message)
-        output_file_path = OUTPUT_FILE_PATH
         with open(output_file_path, 'r') as f:
             output_data = json.load(f)
 
         data_elements = output_data.get('data_elements', {})
 
         # Load settings.json (default config)
-        settings_file_path = os.path.join(os.path.dirname(__file__), 'static', 'splunkparser', 'settings.json')
         with open(settings_file_path, 'r') as f:
             settings_data = json.load(f)
 
@@ -277,7 +189,7 @@ logger.addHandler(console_handler)
 # Load field definitions from the JSON file
 def load_field_definitions():
     try:
-        with open(os.path.join(os.path.dirname(__file__),'media', 'global', 'omnipay_fields_definitions.json')) as f:
+        with open(field_definitions_path) as f:
             field_definitions = json.load(f)
             logger.info("Field definitions loaded successfully.")
             return field_definitions.get("fields", {})
