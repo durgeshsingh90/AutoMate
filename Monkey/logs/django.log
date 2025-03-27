@@ -359,3 +359,39 @@ Bitmap: [723c648108e08014]
 2025-03-27 00:34:01,304 [INFO] splunkparser: Field definitions loaded successfully.
 2025-03-27 00:34:12,487 [INFO] django.utils.autoreload: Watching for file changes with StatReloader
 2025-03-27 00:34:12,494 [INFO] splunkparser: Field definitions loaded successfully.
+2025-03-27 00:53:15,919 [WARNING] django.request: Not Found: /favicon.ico
+2025-03-27 00:54:52,642 [WARNING] django.request: Not Found: /favicon.ico
+2025-03-27 00:55:01,866 [WARNING] django.request: Not Found: /favicon.ico
+2025-03-27 00:56:58,186 [WARNING] django.request: Not Found: /favicon.ico
+2025-03-27 00:57:47,111 [WARNING] django.request: Not Found: /favicon.ico
+2025-03-27 00:59:05,336 [WARNING] django.request: Not Found: /favicon.ico
+2025-03-27 00:59:33,780 [WARNING] django.request: Not Found: /favicon.ico
+2025-03-27 01:00:22,527 [WARNING] django.request: Not Found: /favicon.ico
+2025-03-27 01:07:41,194 [WARNING] django.request: Not Found: /favicon.ico
+2025-03-27 01:09:51,626 [WARNING] django.request: Not Found: /favicon.ico
+2025-03-27 01:16:51,661 [WARNING] django.request: Not Found: /favicon.ico
+2025-03-27 01:17:09,427 [WARNING] django.request: Not Found: /favicon.ico
+2025-03-27 01:19:06,814 [WARNING] django.request: Not Found: /favicon.ico
+2025-03-27 01:19:10,591 [WARNING] django.request: Not Found: /favicon.ico
+2025-03-27 01:21:08,781 [WARNING] django.request: Not Found: /favicon.ico
+2025-03-27 01:21:13,742 [WARNING] django.request: Not Found: /favicon.ico
+2025-03-27 01:21:38,509 [WARNING] django.request: Not Found: /favicon.ico
+2025-03-27 01:23:55,226 [WARNING] django.request: Not Found: /favicon.ico
+2025-03-27 01:23:57,420 [WARNING] django.request: Not Found: /favicon.ico
+2025-03-27 01:24:06,519 [WARNING] django.request: Not Found: /favicon.ico
+2025-03-27 01:24:17,676 [WARNING] django.request: Not Found: /favicon.ico
+2025-03-27 01:26:30,019 [WARNING] django.request: Not Found: /favicon.ico
+2025-03-27 01:28:00,484 [WARNING] django.request: Not Found: /favicon.ico
+2025-03-27 01:28:51,289 [WARNING] django.request: Not Found: /favicon.ico
+2025-03-27 01:29:12,331 [WARNING] django.request: Not Found: /favicon.ico
+2025-03-27 01:29:47,145 [WARNING] django.request: Not Found: /favicon.ico
+2025-03-27 01:30:18,500 [WARNING] django.request: Not Found: /favicon.ico
+2025-03-27 01:30:29,470 [WARNING] django.request: Not Found: /favicon.ico
+2025-03-27 01:31:05,202 [WARNING] django.request: Not Found: /favicon.ico
+2025-03-27 01:31:40,692 [WARNING] django.request: Not Found: /favicon.ico
+2025-03-27 01:31:54,079 [WARNING] django.request: Not Found: /favicon.ico
+2025-03-27 01:31:57,218 [WARNING] django.request: Not Found: /favicon.ico
+2025-03-27 01:32:19,590 [WARNING] django.request: Not Found: /favicon.ico
+2025-03-27 01:32:27,599 [WARNING] django.request: Not Found: /favicon.ico
+2025-03-27 01:33:22,330 [WARNING] django.request: Not Found: /favicon.ico
+2025-03-27 01:37:48,170 [WARNING] django.request: Conflict: /slot_booking/submit/

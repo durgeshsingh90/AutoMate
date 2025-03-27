@@ -24,7 +24,7 @@ function loadConfig() {
     .then(config => {
       populateSelect('psp', config.psps, false, false, false, false, false, true);
       populateSelect('owner', config.owners, false, true);
-      populateSelect('server', config.servers, false, false, true);
+      populateSelect('server', config.servers, true, false, true);
       populateSelect('schemeType', config.schemeTypes, true, false, false, true);
       populateSelect('simulator', config.simulators, false, false, false, false, true);
     });
@@ -104,7 +104,7 @@ function populateSelect(elementId, options, isMultiple = false, isOwner = false,
 
 
 function validateForm() {
-  const requiredFields = ['projectName', 'psp', 'owner', 'server', 'schemeType', 'simulator', 'dateRange'];
+  const requiredFields = ['projectName', 'psp', 'owner', 'schemeType', 'simulator', 'dateRange'];
   for (let field of requiredFields) {
     if (!document.getElementById(field).value) {
       document.getElementById('submissionMessage').textContent = 'Please fill out all required fields';
@@ -113,6 +113,16 @@ function validateForm() {
     }
   }
 
+  // ✅ Validate server selection (multi-select)
+  const serverSelect = document.getElementById('server');
+  const selectedServers = Array.from(serverSelect.selectedOptions);
+  if (selectedServers.length === 0) {
+    document.getElementById('submissionMessage').textContent = 'Please select at least one server';
+    document.getElementById('submissionMessage').style.color = 'red';
+    return false;
+  }
+
+  // ✅ Validate time slot selection
   const timeSlots = document.querySelectorAll('input[name="timeSlot"]:checked').length;
   if (!timeSlots) {
     document.getElementById('submissionMessage').textContent = 'Select at least one Time Slot';
@@ -122,6 +132,7 @@ function validateForm() {
 
   return true;
 }
+
 
 function submitForm() {
   if (!validateForm()) return;
@@ -139,7 +150,7 @@ function submitForm() {
     psp: JSON.parse(formData.get('psp')),
     comments: formData.get('comments') || "",
     owner: JSON.parse(formData.get('owner')),
-    server: JSON.parse(formData.get('server')),
+    server: formData.getAll('server').map(s => JSON.parse(s)),  // multi-select
     schemeType: formData.getAll('schemeType'),
     simulator: JSON.parse(formData.get('simulator')),
     dateRange: {
@@ -150,61 +161,89 @@ function submitForm() {
     openSlot: formData.has('openSlot')
   };
 
-  fetch('/slot_booking/submit/', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-CSRFToken': csrfToken
-    },
-    body: JSON.stringify(jsonData)
-  }).then(response => {
-    if (response.ok) {
-      // Parse JSON to get bookingID
-      response.json().then(data => {
-        const bookingID = data.bookingID || 'N/A';
-  
-        // Success message with booking ID
-        document.getElementById('submissionMessage').textContent = `Submission saved successfully! Booking ID: ${bookingID}`;
-        document.getElementById('submissionMessage').style.color = 'green';
-  
-        // Change button text and color
-        submitButton.textContent = 'Booked';
-        submitButton.style.backgroundColor = 'green';
-  
-        // After 1 second: reload page
-        setTimeout(() => {
-          location.reload();  // ✅ Reload page
-        }, 1000);
+  // ✅ Enhancement logic: block Tue/Thu morning booking if open slot exists
+  fetch('/slot_booking/submissions/')
+    .then(response => response.json())
+    .then(data => {
+      const selectedSlots = jsonData.timeSlot;
+      const isMorning = selectedSlots.includes('morning');
+
+      const start = parseDate(jsonData.dateRange.start);
+      const end = parseDate(jsonData.dateRange.end);
+
+      let blockConflict = false;
+      data.submissions.forEach(sub => {
+        if (sub.openSlot !== true || sub.status !== "Booked") return;
+
+        const openStart = parseDate(sub.dateRange.start);
+        const openEnd = parseDate(sub.dateRange.end);
+
+        let currentDate = new Date(openStart);
+        while (currentDate <= openEnd) {
+          const day = currentDate.getDay(); // 2 = Tuesday, 4 = Thursday
+          if ((day === 2 || day === 4) && sub.timeSlot.includes('morning')) {
+            let targetDate = new Date(start);
+            while (targetDate <= end) {
+              if ((targetDate.getDay() === 2 || targetDate.getDay() === 4) && isMorning) {
+                blockConflict = true;
+                break;
+              }
+              targetDate.setDate(targetDate.getDate() + 1);
+            }
+          }
+          currentDate.setDate(currentDate.getDate() + 1);
+        }
       });
-    } else {
-      response.json().then(data => {
-        // Error feedback
-        document.getElementById('submissionMessage').textContent = `Error: ${data.error}`;
+
+      if (blockConflict) {
+        document.getElementById('submissionMessage').textContent = '❌ Morning booking is blocked on Tuesday and Thursday due to an open slot.';
         document.getElementById('submissionMessage').style.color = 'red';
-  
+        return;
+      }
+
+      // 🟢 Proceed with booking
+      fetch('/slot_booking/submit/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken
+        },
+        body: JSON.stringify(jsonData)
+      }).then(response => {
+        if (response.ok) {
+          response.json().then(data => {
+            const bookingID = data.bookingID || 'N/A';
+            document.getElementById('submissionMessage').textContent = `✅ Submission saved! Booking ID: ${bookingID}`;
+            document.getElementById('submissionMessage').style.color = 'green';
+            submitButton.textContent = 'Booked';
+            submitButton.style.backgroundColor = 'green';
+            setTimeout(() => location.reload(), 1000);
+          });
+        } else {
+          response.json().then(data => {
+            document.getElementById('submissionMessage').textContent = `Error: ${data.error}`;
+            document.getElementById('submissionMessage').style.color = 'red';
+            submitButton.textContent = 'Error';
+            submitButton.style.backgroundColor = 'red';
+            setTimeout(() => {
+              submitButton.textContent = 'Submit';
+              submitButton.style.backgroundColor = '';
+            }, 1000);
+          });
+        }
+      }).catch(error => {
+        document.getElementById('submissionMessage').textContent = `Error: ${error.message}`;
+        document.getElementById('submissionMessage').style.color = 'red';
         submitButton.textContent = 'Error';
         submitButton.style.backgroundColor = 'red';
-  
         setTimeout(() => {
           submitButton.textContent = 'Submit';
           submitButton.style.backgroundColor = '';
         }, 1000);
       });
-    }
-  }).catch(error => {
-    // Fetch error handling
-    document.getElementById('submissionMessage').textContent = `Error: ${error.message}`;
-    document.getElementById('submissionMessage').style.color = 'red';
-  
-    submitButton.textContent = 'Error';
-    submitButton.style.backgroundColor = 'red';
-  
-    setTimeout(() => {
-      submitButton.textContent = 'Submit';
-      submitButton.style.backgroundColor = '';
-    }, 1000);
-  });
+    });
 }
+
 
 function goToSettings() {
 window.location.href = "/slot_booking/admin/";
@@ -261,10 +300,13 @@ function initCalendar() {
       if (sub.status === 'Cancelled') {
         colorClass = 'cancelled-slot';  // Add a special CSS class
       }
+      const serverText = Array.isArray(sub.server)
+      ? sub.server.map(s => s.user).join("/")
+      : (sub.server?.user || 'N/A');
     
       const baseTitle = sub.openSlot
         ? 'Open Slot'
-        : `${sub.bookingID} - ${sub.server.user} - ${sub.schemeType.join("/")} - ${sub.simulator.name}`;
+        : `${sub.bookingID} - ${serverText} - ${sub.schemeType.join("/")} - ${sub.simulator.name}`;
     
       const title = sub.status === 'Cancelled'
         ? `❌ <del>${baseTitle}</del>`  // ❌ icon and strike-through
@@ -289,7 +331,11 @@ function initCalendar() {
         <strong>Project ID:</strong> ${sub.projectID || 'N/A'}<br>
         <strong>PSP:</strong> ${sub.psp.name} (${sub.psp.pspID})<br>
         <strong>Owner:</strong> ${sub.owner.name} (${sub.owner.lanID})<br>
-        <strong>Server:</strong> ${sub.server.hostname} (${sub.server.user})<br>
+    <strong>Server:</strong> ${
+      Array.isArray(sub.server)
+        ? sub.server.map(s => `${s.hostname} (${s.user})`).join('<br>')
+        : 'N/A'
+    }<br>
         <strong>Schemes:</strong> ${sub.schemeType.join(", ")}<br>
         <strong>Simulator:</strong> ${sub.simulator.name} (${sub.simulator.ipAddress})<br>
         <strong>Time Slots:</strong> ${sub.timeSlot.join(", ")}<br>
@@ -353,9 +399,13 @@ function fetchEvents(fetchInfo, successCallback, failureCallback) {
             currentDate.setDate(currentDate.getDate() + 1);
           }
         } else {
+          const serverTitle = Array.isArray(sub.server)
+  ? sub.server.map(s => s.user).join("/")
+  : (sub.server?.user || 'N/A');
+
           events.push({
             id: sub.bookingID,
-            title: `${sub.bookingID} - ${sub.server.user} - ${sub.schemeType.join("/")} - ${sub.simulator.name}`,
+            title: `${sub.bookingID} - ${serverTitle} - ${sub.schemeType.join("/")} - ${sub.simulator.name}`,
             start: formatDate(sub.dateRange.start),
             end: formatDate(sub.dateRange.end, true),
             extendedProps: { ...sub, openSlot: false }
@@ -416,7 +466,11 @@ function globalSearch() {
       });
 
       if (matchedBookings.length > 0) {
+        // Sort descending by bookingID
+        matchedBookings.sort((a, b) => b.bookingID - a.bookingID);
+      
         let resultHtml = `<strong>Found ${matchedBookings.length} result(s):</strong><br><br>`;
+      
         matchedBookings.forEach(sub => {
           resultHtml += `
             <div style="border: 1px solid #ddd; padding: 10px; border-radius: 4px; background: #f9f9f9; margin-bottom: 10px;">

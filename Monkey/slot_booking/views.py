@@ -64,7 +64,7 @@ def is_duplicate_submission(data):
         for submission in submissions_data:
             if (submission["server"] == data["server"] and
                 any(scheme in submission["schemeType"] for scheme in data["schemeType"]) and
-                set(submission["timeSlot"]) == set(data["timeSlot"]) and
+                bool(set(submission["timeSlot"]).intersection(set(data["timeSlot"]))) and
                 is_date_range_overlap(
                     submission["dateRange"]["start"],
                     submission["dateRange"]["end"],
