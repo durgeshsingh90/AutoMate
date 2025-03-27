@@ -5,9 +5,9 @@ import json
 import os
 
 BASE_DIR = settings.BASE_DIR
-CONFIG_PATH = os.path.join(BASE_DIR, 'slot_booking', 'static', 'slot_booking', 'config.json')
-SUBMISSIONS_FILE = os.path.join(BASE_DIR, 'slot_booking', 'static', 'slot_booking', 'submissions.json')
-COUNTER_FILE = os.path.join(BASE_DIR, 'slot_booking', 'static', 'slot_booking', 'counter.json')
+CONFIG_PATH = os.path.join(BASE_DIR, 'media', 'slot_booking', 'config.json')
+SUBMISSIONS_FILE = os.path.join(BASE_DIR, 'media', 'slot_booking', 'submissions.json')
+COUNTER_FILE = os.path.join(BASE_DIR, 'media', 'slot_booking', 'counter.json')
 
 def ensure_files_exist():
     os.makedirs(os.path.dirname(SUBMISSIONS_FILE), exist_ok=True)

@@ -277,7 +277,7 @@ logger.addHandler(console_handler)
 # Load field definitions from the JSON file
 def load_field_definitions():
     try:
-        with open(os.path.join(os.path.dirname(__file__), 'omnipay_fields_definitions.json')) as f:
+        with open(os.path.join(os.path.dirname(__file__),'media', 'global', 'omnipay_fields_definitions.json')) as f:
             field_definitions = json.load(f)
             logger.info("Field definitions loaded successfully.")
             return field_definitions.get("fields", {})

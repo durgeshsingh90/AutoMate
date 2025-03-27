@@ -1,9 +1,5 @@
-AutoMate/logs
-AutoMate/db.sqlite3
+Monkey/media
+Monkey/logs
+Monkey/db.sqlite3
 __pycache__
 migrations
-**/config.json
-**/counter.json
-**/submissions.json
-**/settings.json
-Monkey/media
