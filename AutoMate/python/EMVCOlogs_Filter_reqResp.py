@@ -1,6 +1,11 @@
 import os
 import xml.etree.ElementTree as ET
 
+# Summary of Changes
+# Adjust the keep logic: Added a flag keep to signal when a matching request message has been found.
+# Retain the following message: When a matching message is found, the flag keep ensures that the immediate subsequent message is also retained.
+# Reset the keep flag after the subsequent message is processed.
+
 def element_to_string(element):
     """Convert element text and all subelement text to a single string."""
     content = []
@@ -32,12 +37,22 @@ def filter_online_messages(xml_file, conditions):
 
     online_message_list = root.find('OnlineMessageList')
     if online_message_list is not None:
+        to_remove = []
+        keep = False
+
+        # Iterate over online messages
         for online_message in online_message_list.findall('OnlineMessage'):
-            content = element_to_string(online_message)
+            content = element_to_string(online_message)  # Convert element to string for searching
             if evaluate_conditions(content, conditions):
-                continue
+                keep = True  # Mark to keep the message and the next one
+            elif keep:
+                keep = False  # Reset keep flag after keeping one additional message
             else:
-                online_message_list.remove(online_message)
+                to_remove.append(online_message)  # Mark message for removal
+
+        # Remove messages that didn't meet the conditions
+        for online_message in to_remove:
+            online_message_list.remove(online_message)
 
     # Construct the output filename
     base_name, ext = os.path.splitext(xml_file)

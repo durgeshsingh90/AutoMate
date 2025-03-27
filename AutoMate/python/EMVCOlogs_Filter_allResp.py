@@ -1,6 +1,10 @@
 import os
 import xml.etree.ElementTree as ET
 
+# The changes will include:
+
+# Introducing a flag to determine if the current message is a request.
+# Retaining all subsequent messages once a request is matched until another request message (not matching the condition) is met.
 def element_to_string(element):
     """Convert element text and all subelement text to a single string."""
     content = []
@@ -49,7 +53,7 @@ def filter_online_messages(xml_file, conditions):
     print(f"Filtered XML has been saved to: {output_file}")
 
 if __name__ == "__main__":
-    xml_file = r"C:\Users\f94gdos\Desktop\L3_2025-03-19-1722.xml"  # Path to your input XML file
-    conditions = '456896'  # Search condition string with AND, OR, NOT
+    xml_file = r"C:\Users\f94gdos\Desktop\NET_EMVCo_2025-03-25_03.58.28\NET_EMVCo_2025-03-25_03.58.28.xml"  # Path to your input XML file
+    conditions = '012737'  # Search condition string with AND, OR, NOT
 
     filter_online_messages(xml_file, conditions)
