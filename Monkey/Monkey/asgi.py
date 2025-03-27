@@ -1,5 +1,5 @@
 """
-ASGI config for AutoMate project.
+ASGI config for Monkey project.
 
 It exposes the ASGI callable as a module-level variable named ``application``.
 
@@ -11,6 +11,6 @@ import os
 
 from django.core.asgi import get_asgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'AutoMate.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'Monkey.settings')
 
 application = get_asgi_application()
