@@ -2,6 +2,8 @@ AutoMate/logs
 AutoMate/db.sqlite3
 __pycache__
 migrations
-slot_booking\static\slot_booking\config.json
-slot_booking\static\slot_booking\counter.json
-slot_booking\static\slot_booking\submissions.json
+**/config.json
+**/counter.json
+**/submissions.json
+**/settings.json
+Monkey/media

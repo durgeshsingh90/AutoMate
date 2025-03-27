@@ -3,15 +3,5 @@
         "Name": "trustpayment",
         "instid": "000049",
         "stationid": "123456"
-    },
-    {
-        "Name": "mastercard",
-        "instid": "000050",
-        "stationid": "654321"
-    },
-    {
-        "Name": "visa",
-        "instid": "000051",
-        "stationid": "789012"
     }
 ]

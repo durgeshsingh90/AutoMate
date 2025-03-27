@@ -395,3 +395,8 @@ Bitmap: [723c648108e08014]
 2025-03-27 01:32:27,599 [WARNING] django.request: Not Found: /favicon.ico
 2025-03-27 01:33:22,330 [WARNING] django.request: Not Found: /favicon.ico
 2025-03-27 01:37:48,170 [WARNING] django.request: Conflict: /slot_booking/submit/
+2025-03-27 01:39:55,913 [WARNING] django.request: Not Found: /favicon.ico
+2025-03-27 01:40:16,558 [WARNING] django.request: Conflict: /slot_booking/submit/
+2025-03-27 01:41:23,955 [WARNING] django.request: Not Found: /favicon.ico
+2025-03-27 01:41:51,139 [WARNING] django.request: Not Found: /favicon.ico
+2025-03-27 01:42:59,949 [WARNING] django.request: Conflict: /slot_booking/submit/
