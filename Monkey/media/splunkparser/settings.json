@@ -1,0 +1,20 @@
+[
+    {
+        "Name": "trustpayment",
+        "instid": "000049",
+        "stationid": {
+            "Visa": "111111",
+            "MasterCard": "222222",
+            "Diners Club": "333333"
+        }
+    },
+    {
+        "Name": "Cardnet",
+        "instid": "000008",
+        "stationid": {
+            "Visa": "321321",
+            "MasterCard": "32132",
+            "Diners Club": "21312"
+        }
+    }
+]

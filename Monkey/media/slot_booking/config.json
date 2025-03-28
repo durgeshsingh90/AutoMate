@@ -1,0 +1,77 @@
+{
+    "owners": [
+        {
+            "name": "Durgesh Singh",
+            "lanID": "f94gdos"
+        }
+    ],
+    "servers": [
+        {
+            "hostname": "A5CVAP1003.1dc.com",
+            "user": "dev77"
+        },
+        {
+            "hostname": "A5CVAP1004.1dc.com",
+            "user": "test77"
+        },
+        {
+            "hostname": "A5CVAP1004.1dc.com",
+            "user": "cert77"
+        },
+        {
+            "hostname": "A5CVAP1003.1dc.com",
+            "user": "paypal77"
+        }
+    ],
+    "schemeTypes": [
+        {
+            "name": "VisaRoute"
+        },
+        {
+            "name": "MastercardRoute"
+        },
+        {
+            "name": "DinersRoute"
+        }
+    ],
+    "simulators": [
+        {
+            "name": "Astrex-1",
+            "ipAddress": "10.77.6.248"
+        },
+        {
+            "name": "Astrex-2",
+            "ipAddress": "10.77.6.249"
+        },
+        {
+            "name": "UPI",
+            "ipAddress": "10.77.6.250"
+        },
+        {
+            "name": "Visa Online",
+            "ipAddress": "10.72.18.81"
+        },
+        {
+            "name": "MC Simulator-1",
+            "ipAddress": "10.77.6.17"
+        },
+        {
+            "name": "MC Simulator-2",
+            "ipAddress": "10.77.6.18"
+        },
+        {
+            "name": "BCMC",
+            "ipAddress": "10.77.6.251"
+        }
+    ],
+    "psps": [
+        {
+            "name": "All",
+            "pspID": "All"
+        },
+        {
+            "name": "TrustPayment",
+            "pspID": "000049"
+        }
+    ]
+}
