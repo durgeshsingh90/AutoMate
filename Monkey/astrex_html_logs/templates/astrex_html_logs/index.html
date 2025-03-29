@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Upload HTML Logs</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      height: 100vh;
+      background-color: #f0f2f5;
+    }
+    .left-container {
+      width: 300px;
+      background-color: #fff;
+      box-shadow: 2px 0 5px rgba(0, 0, 0, .1);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+    }
+    .right-container {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+    }
+    .container-title {
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 20px;
+      color: #333;
+    }
+    .upload-section {
+      display: flex;
+      flex-direction: column;
+    }
+    .upload-section input[type="file"] {
+      display: none;
+    }
+    .upload-button {
+      padding: 10px;
+      border-radius: 5px;
+      border: none;
+      cursor: pointer;
+      color: #fff;
+      background-color: #4a90e2;
+      transition: background-color .3s ease;
+      text-align: center;
+      margin-bottom: 15px;
+    }
+    .upload-button:hover {
+      background-color: #357ABD;
+    }
+    .log-info {
+      margin-top: 10px;
+      color: #555;
+      font-size: 14px;
+      overflow-y: auto;
+      flex-grow: 1;
+    }
+    .summary {
+      background-color: #fff;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 30px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      position: relative;
+    }
+    .de032-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    .de032-box {
+      background-color: #fff;
+      border-left: 5px solid #4a90e2;
+      padding: 15px 20px;
+      border-radius: 8px;
+      width: 250px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .de032-header {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+    .count {
+      font-size: 14px;
+      color: #333;
+      margin-bottom: 10px;
+    }
+    .download-btn {
+      padding: 8px 12px;
+      background-color: #4a90e2;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      text-align: center;
+      text-decoration: none;
+      margin-top: 10px;
+    }
+    .download-btn:disabled {
+      background-color: #a0c6ee;
+      cursor: not-allowed;
+    }
+    .download-btn:hover:not(:disabled) {
+      background-color: #357ABD;
+    }
+    .progress-bar {
+      height: 10px;
+      width: 100%;
+      background-color: #e0e0e0;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 10px;
+      position: relative;
+    }
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background-color: #f1c40f;
+      transition: width 0.3s ease;
+    }
+    .progress-text {
+      position: absolute;
+      top: -22px;
+      right: 0;
+      font-size: 13px;
+      color: #666;
+    }
+    #zipDownloadBtn {
+      margin-top: 10px;
+      float: right;
+      background-color: #28a745;
+    }
+    #zipDownloadBtn:hover {
+      background-color: #218838;
+    }
+  </style>
+</head>
+<body>
+
+<div class="left-container">
+  <div class="container-title">HTML Logs Uploader</div>
+  <div class="upload-section">
+    <input type="file" id="htmlLogFile" accept=".html">
+    <label for="htmlLogFile" class="upload-button">Upload HTML Logs</label>
+    <div class="log-info" id="logInfo">No file uploaded yet.</div>
+  </div>
+</div>
+
+<div class="right-container">
+    <div id="summarySection" class="summary" style="display:none;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <h2>DE032 Summary</h2>
+            <p><strong>Unique DE032 Count:</strong> <span id="uniqueCount"></span></p>
+            <p><strong>Start Time:</strong> <span id="startTime"></span></p>
+            <p><strong>End Time:</strong> <span id="endTime"></span></p>
+          </div>
+          <button id="zipDownloadBtn" class="download-btn" style="display:none;" disabled>Download All as ZIP</button>
+        </div>
+      </div>
+      
+
+  <div class="de032-container" id="de032Boxes"></div>
+</div>
+
+<script>
+document.getElementById('htmlLogFile').addEventListener('change', function(event) {
+  const file = event.target.files[0];
+  const logInfo = document.getElementById('logInfo');
+
+  if (file && file.name.endsWith('.html')) {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    fetch('/astrex_html_logs/upload_log/', {
+      method: 'POST',
+      body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+      logInfo.textContent = data.message;
+
+      if (data.status === 'success') {
+        document.getElementById('summarySection').style.display = 'block';
+        document.getElementById('uniqueCount').textContent = data.unique_count;
+        document.getElementById('startTime').textContent = data.start_time;
+        document.getElementById('endTime').textContent = data.end_time;
+
+        const container = document.getElementById('de032Boxes');
+        container.innerHTML = '';
+        const baseFile = file.name.split('.')[0];
+
+        Object.entries(data.de032_counts).forEach(([key, count]) => {
+          const box = document.createElement('div');
+          box.className = 'de032-box';
+          box.innerHTML = `
+            <div class="de032-header">DE032: ${key}</div>
+            <div class="count">Count: ${count}</div>
+            <button class="download-btn" data-key="${key}" disabled>Download</button>
+            <div class="progress-bar">
+              <div class="progress-fill" id="progress-${key}"></div>
+              <div class="progress-text" id="progress-text-${key}">0%</div>
+            </div>
+          `;
+          container.appendChild(box);
+        });
+
+        const zipBtn = document.getElementById('zipDownloadBtn');
+        zipBtn.style.display = 'inline-block';
+        zipBtn.disabled = true;
+        zipBtn.setAttribute('data-filename', file.name);
+
+        pollProgress(file.name, data.de032_counts);
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      logInfo.textContent = 'Error uploading file.';
+    });
+  } else {
+    logInfo.textContent = 'Please select a valid .html file.';
+  }
+});
+
+function pollProgress(filename, de032_counts) {
+  const total = Object.keys(de032_counts).length;
+  const doneKeys = new Set();
+
+  const interval = setInterval(() => {
+    fetch(`/astrex_html_logs/check_progress/?filename=${filename}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.status === 'success') {
+          const files = data.files;
+          const baseFile = filename.split('.')[0];
+
+          Object.entries(de032_counts).forEach(([key]) => {
+            if (doneKeys.has(key)) return;
+
+            const fileMatch = files.find(f => f.includes(`_filtered_${key}`));
+            const bar = document.getElementById(`progress-${key}`);
+            const percent = document.getElementById(`progress-text-${key}`);
+            const btn = document.querySelector(`button[data-key="${key}"]`);
+
+            if (fileMatch && bar && percent && btn) {
+              // Update progress visuals
+              bar.style.width = '100%';
+              bar.style.backgroundColor = '#4a90e2';
+              percent.innerText = '100%';
+              btn.disabled = false;
+
+              btn.onclick = () => {
+                const link = document.createElement('a');
+                link.href = `/media/astrex_html_logs/${fileMatch.split('/').pop()}`;
+                link.download = fileMatch.split('/').pop();
+                link.click();
+              };
+
+              doneKeys.add(key);
+            }
+          });
+
+          // Enable ZIP download when all done
+          if (doneKeys.size === total) {
+            clearInterval(interval);
+            const zipBtn = document.getElementById('zipDownloadBtn');
+            zipBtn.disabled = false;
+          }
+        }
+      });
+  }, 2000);
+}
+
+function downloadZip() {
+  const filename = document.getElementById('zipDownloadBtn').getAttribute('data-filename');
+  const formData = new FormData();
+  formData.append('filename', filename);
+
+  fetch('/astrex_html_logs/zip_filtered_files/', {
+    method: 'POST',
+    body: formData
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.status === 'success') {
+      const link = document.createElement('a');
+      link.href = `/media/astrex_html_logs/${data.zip_file}`;
+      link.download = data.zip_file;
+      link.click();
+    }
+  });
+}
+
+document.getElementById('zipDownloadBtn').addEventListener('click', downloadZip);
+</script>
+
+</body>
+</html>
