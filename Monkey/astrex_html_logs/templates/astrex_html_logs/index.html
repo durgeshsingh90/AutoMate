@@ -151,6 +151,8 @@
     <label for="htmlLogFile" class="upload-button">Upload HTML Logs</label>
     <div class="log-info" id="logInfo">No file uploaded yet.</div>
   </div>
+  <button id="convertEmvcoBtn" class="upload-button" style="display: none;">Convert to EMVCo</button>
+
 </div>
 
 <div class="right-container">
@@ -171,135 +173,176 @@
 </div>
 
 <script>
-document.getElementById('htmlLogFile').addEventListener('change', function(event) {
-  const file = event.target.files[0];
-  const logInfo = document.getElementById('logInfo');
-
-  if (file && file.name.endsWith('.html')) {
+  document.getElementById('htmlLogFile').addEventListener('change', function(event) {
+    const file = event.target.files[0];
+    const logInfo = document.getElementById('logInfo');
+    const convertBtn = document.getElementById('convertEmvcoBtn');
+  
+    // Hide Convert button initially
+    convertBtn.style.display = 'none';
+  
+    if (file && file.name.endsWith('.html')) {
+      const formData = new FormData();
+      formData.append('file', file);
+  
+      fetch('/astrex_html_logs/upload_log/', {
+        method: 'POST',
+        body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+        logInfo.textContent = data.message;
+  
+        if (data.status === 'success') {
+          document.getElementById('summarySection').style.display = 'block';
+          document.getElementById('uniqueCount').textContent = data.unique_count;
+          document.getElementById('startTime').textContent = data.start_time;
+          document.getElementById('endTime').textContent = data.end_time;
+  
+          const container = document.getElementById('de032Boxes');
+          container.innerHTML = '';
+          const baseFile = file.name.split('.')[0];
+  
+          Object.entries(data.de032_counts).forEach(([key, count]) => {
+            const box = document.createElement('div');
+            box.className = 'de032-box';
+            box.innerHTML = `
+              <div class="de032-header">DE032: ${key}</div>
+              <div class="count">Count: ${count}</div>
+              <button class="download-btn" data-key="${key}" disabled>Download</button>
+              <div class="progress-bar">
+                <div class="progress-fill" id="progress-${key}"></div>
+                <div class="progress-text" id="progress-text-${key}">0%</div>
+              </div>
+            `;
+            container.appendChild(box);
+          });
+  
+          const zipBtn = document.getElementById('zipDownloadBtn');
+          zipBtn.style.display = 'inline-block';
+          zipBtn.disabled = true;
+          zipBtn.setAttribute('data-filename', file.name);
+  
+          // ✅ Show Convert to EMVCo button
+          convertBtn.style.display = 'block';
+          convertBtn.setAttribute('data-filename', file.name);
+  
+          pollProgress(file.name, data.de032_counts);
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        logInfo.textContent = 'Error uploading file.';
+        convertBtn.style.display = 'none';
+      });
+    } else {
+      logInfo.textContent = 'Please select a valid .html file.';
+      document.getElementById('convertEmvcoBtn').style.display = 'none';
+    }
+  });
+  
+  function pollProgress(filename, de032_counts) {
+    const total = Object.keys(de032_counts).length;
+    const doneKeys = new Set();
+  
+    const interval = setInterval(() => {
+      fetch(`/astrex_html_logs/check_progress/?filename=${filename}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.status === 'success') {
+            const files = data.files;
+            const baseFile = filename.split('.')[0];
+  
+            Object.entries(de032_counts).forEach(([key]) => {
+              if (doneKeys.has(key)) return;
+  
+              const fileMatch = files.find(f => f.includes(`_filtered_${key}`));
+              const bar = document.getElementById(`progress-${key}`);
+              const percent = document.getElementById(`progress-text-${key}`);
+              const btn = document.querySelector(`button[data-key="${key}"]`);
+  
+              if (fileMatch && bar && percent && btn) {
+                bar.style.width = '100%';
+                bar.style.backgroundColor = '#4a90e2';
+                percent.innerText = '100%';
+                btn.disabled = false;
+  
+                btn.onclick = () => {
+                  const link = document.createElement('a');
+                  link.href = `/media/astrex_html_logs/${fileMatch.split('/').pop()}`;
+                  link.download = fileMatch.split('/').pop();
+                  link.click();
+                };
+  
+                doneKeys.add(key);
+              }
+            });
+  
+            if (doneKeys.size === total) {
+              clearInterval(interval);
+              const zipBtn = document.getElementById('zipDownloadBtn');
+              zipBtn.disabled = false;
+            }
+          }
+        });
+    }, 2000);
+  }
+  
+  function downloadZip() {
+    const filename = document.getElementById('zipDownloadBtn').getAttribute('data-filename');
     const formData = new FormData();
-    formData.append('file', file);
-
-    fetch('/astrex_html_logs/upload_log/', {
+    formData.append('filename', filename);
+  
+    fetch('/astrex_html_logs/zip_filtered_files/', {
       method: 'POST',
       body: formData
     })
-    .then(response => response.json())
+    .then(res => res.json())
     .then(data => {
-      logInfo.textContent = data.message;
-
       if (data.status === 'success') {
-        document.getElementById('summarySection').style.display = 'block';
-        document.getElementById('uniqueCount').textContent = data.unique_count;
-        document.getElementById('startTime').textContent = data.start_time;
-        document.getElementById('endTime').textContent = data.end_time;
-
-        const container = document.getElementById('de032Boxes');
-        container.innerHTML = '';
-        const baseFile = file.name.split('.')[0];
-
-        Object.entries(data.de032_counts).forEach(([key, count]) => {
-          const box = document.createElement('div');
-          box.className = 'de032-box';
-          box.innerHTML = `
-            <div class="de032-header">DE032: ${key}</div>
-            <div class="count">Count: ${count}</div>
-            <button class="download-btn" data-key="${key}" disabled>Download</button>
-            <div class="progress-bar">
-              <div class="progress-fill" id="progress-${key}"></div>
-              <div class="progress-text" id="progress-text-${key}">0%</div>
-            </div>
-          `;
-          container.appendChild(box);
-        });
-
-        const zipBtn = document.getElementById('zipDownloadBtn');
-        zipBtn.style.display = 'inline-block';
-        zipBtn.disabled = true;
-        zipBtn.setAttribute('data-filename', file.name);
-
-        pollProgress(file.name, data.de032_counts);
+        const link = document.createElement('a');
+        link.href = `/media/${data.zip_file}`;
+        link.download = data.zip_file;
+        link.click();
+      }
+    });
+  }
+  
+  document.getElementById('zipDownloadBtn').addEventListener('click', downloadZip);
+  
+  document.getElementById('convertEmvcoBtn').addEventListener('click', function () {
+    const filename = this.getAttribute('data-filename');
+    if (!filename) {
+      alert("No HTML file uploaded yet.");
+      return;
+    }
+  
+    const formData = new FormData();
+    formData.append('filename', filename);
+  
+    fetch('/astrex_html_logs/convert_to_emvco/', {
+      method: 'POST',
+      body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.status === 'success') {
+        const link = document.createElement('a');
+        link.href = `/media/${data.output_file}`;
+        link.download = data.output_file;
+        link.click();
+      } else {
+        alert(data.message);
       }
     })
-    .catch(error => {
-      console.error('Error:', error);
-      logInfo.textContent = 'Error uploading file.';
+    .catch(err => {
+      alert("Conversion failed.");
+      console.error(err);
     });
-  } else {
-    logInfo.textContent = 'Please select a valid .html file.';
-  }
-});
-
-function pollProgress(filename, de032_counts) {
-  const total = Object.keys(de032_counts).length;
-  const doneKeys = new Set();
-
-  const interval = setInterval(() => {
-    fetch(`/astrex_html_logs/check_progress/?filename=${filename}`)
-      .then(res => res.json())
-      .then(data => {
-        if (data.status === 'success') {
-          const files = data.files;
-          const baseFile = filename.split('.')[0];
-
-          Object.entries(de032_counts).forEach(([key]) => {
-            if (doneKeys.has(key)) return;
-
-            const fileMatch = files.find(f => f.includes(`_filtered_${key}`));
-            const bar = document.getElementById(`progress-${key}`);
-            const percent = document.getElementById(`progress-text-${key}`);
-            const btn = document.querySelector(`button[data-key="${key}"]`);
-
-            if (fileMatch && bar && percent && btn) {
-              // Update progress visuals
-              bar.style.width = '100%';
-              bar.style.backgroundColor = '#4a90e2';
-              percent.innerText = '100%';
-              btn.disabled = false;
-
-              btn.onclick = () => {
-                const link = document.createElement('a');
-                link.href = `/media/astrex_html_logs/${fileMatch.split('/').pop()}`;
-                link.download = fileMatch.split('/').pop();
-                link.click();
-              };
-
-              doneKeys.add(key);
-            }
-          });
-
-          // Enable ZIP download when all done
-          if (doneKeys.size === total) {
-            clearInterval(interval);
-            const zipBtn = document.getElementById('zipDownloadBtn');
-            zipBtn.disabled = false;
-          }
-        }
-      });
-  }, 2000);
-}
-
-function downloadZip() {
-  const filename = document.getElementById('zipDownloadBtn').getAttribute('data-filename');
-  const formData = new FormData();
-  formData.append('filename', filename);
-
-  fetch('/astrex_html_logs/zip_filtered_files/', {
-    method: 'POST',
-    body: formData
-  })
-  .then(res => res.json())
-  .then(data => {
-    if (data.status === 'success') {
-      const link = document.createElement('a');
-      link.href = `/media/astrex_html_logs/${data.zip_file}`;
-      link.download = data.zip_file;
-      link.click();
-    }
   });
-}
-
-document.getElementById('zipDownloadBtn').addEventListener('click', downloadZip);
-</script>
+  </script>
+  
 
 </body>
 </html>
+

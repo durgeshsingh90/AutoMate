@@ -24,17 +24,16 @@ def extract_de032_counts_from_html(html_file_path):
         "111111": 1
     }, 3, "2025-03-27 14:03:12", "2025-03-27 15:44:57", "session_key_001"
 
-#in media for suffix each file with inst
+import os
+from django.conf import settings
+from django.shortcuts import render
+
 def index(request):
     folder = os.path.join(settings.MEDIA_ROOT, 'astrex_html_logs')
 
     if os.path.exists(folder):
         for filename in os.listdir(folder):
-            if (
-                filename.endswith('.html') or 
-                filename.endswith('.json') or 
-                filename.endswith('.zip')
-            ):
+            if filename.endswith(('.html', '.json', '.zip', '.xml')):  # added .xml
                 file_path = os.path.join(folder, filename)
                 try:
                     os.remove(file_path)
@@ -167,5 +166,26 @@ def zip_filtered_files(request):
             return JsonResponse({'status': 'success', 'zip_file': zip_path.replace(settings.MEDIA_ROOT + '/', '')})
         else:
             return JsonResponse({'status': 'error', 'message': 'Filtered files not ready'})
+
+    return JsonResponse({'status': 'error', 'message': 'Invalid request'})
+
+from .scripts.html2emvco import convert_html_to_emvco
+
+@csrf_exempt
+def convert_to_emvco(request):
+    if request.method == 'POST':
+        filename = request.POST.get('filename')
+        if not filename:
+            return JsonResponse({'status': 'error', 'message': 'Filename not provided'})
+
+        input_path = os.path.join(settings.MEDIA_ROOT, 'astrex_html_logs', filename)
+        output_path = os.path.join(settings.MEDIA_ROOT, 'astrex_html_logs', f"{os.path.splitext(filename)[0]}_emvco.xml")
+
+        success = convert_html_to_emvco(input_path, output_path)
+
+        if success and os.path.exists(output_path):
+            return JsonResponse({'status': 'success', 'output_file': f"astrex_html_logs/{os.path.basename(output_path)}"})
+        else:
+            return JsonResponse({'status': 'error', 'message': 'Failed to generate EMVCo log.'})
 
     return JsonResponse({'status': 'error', 'message': 'Invalid request'})
