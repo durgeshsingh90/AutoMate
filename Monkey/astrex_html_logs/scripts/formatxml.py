@@ -20,4 +20,4 @@ def format_xml(file_path):
     indent(root)
     tree.write(file_path)
 
-format_xml(r"C:\Users\f94gdos\Desktop\L3_2025-03-19-1722.xml")
+# format_xml(r"C:\Users\f94gdos\Desktop\L3_2025-03-19-1722.xml")
