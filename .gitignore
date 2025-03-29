@@ -4,3 +4,4 @@ __pycache__
 migrations
 Monkey/media/astrex_html_logs/*
 !Monkey/media/astrex_html_logs/.gitkeep
+Monkey/media/pdf_merger

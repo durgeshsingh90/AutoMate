@@ -1,76 +1,148 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>Merge PDFs</title>
     <style>
-        #file-list {
-            list-style-type: none;
-            padding: 0;
-            width: 300px;
+        body {
+            font-family: Arial, sans-serif;
+            background: #f9f9f9;
+            padding: 30px;
         }
-        #file-list li {
-            margin: 8px 0;
-            padding: 8px;
-            background-color: #f3f3f3;
-            border: 1px solid #ddd;
-            cursor: move;
+
+        .container {
+            max-width: 800px;
+            margin: auto;
+        }
+
+        .pdf-box {
+            background: #fff;
+            border: 2px solid #ccc;
+            border-radius: 6px;
+            padding: 12px;
+            min-width: 400px;
+            margin-bottom: 10px;
+            box-shadow: 1px 1px 5px rgba(0,0,0,0.1);
+            cursor: grab;
+        }
+
+        .pdf-box.drag-over {
+            background-color: #e3f2fd;
+            border-color: #1976d2;
+        }
+
+        .pdf-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: #007bff;
+            border: none;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #0056b3;
         }
     </style>
-    <script>
-        function handleFileSelect(event) {
-            const files = event.target.files;
-            const fileList = document.getElementById('file-list');
-            fileList.innerHTML = '';
-            for (let i = 0; i < files.length; i++) {
-                const li = document.createElement('li');
-                li.textContent = files[i].name;
-                li.setAttribute('data-index', i);
-                li.draggable = true;
-                li.addEventListener('dragstart', handleDragStart);
-                li.addEventListener('dragover', handleDragOver);
-                li.addEventListener('drop', handleDrop);
-                fileList.appendChild(li);
-            }
-        }
-
-        function handleDragStart(event) {
-            event.dataTransfer.setData('text/plain', event.target.dataset.index);
-        }
-
-        function handleDragOver(event) {
-            event.preventDefault();
-        }
-
-        function handleDrop(event) {
-            event.preventDefault();
-            const oldIndex = event.dataTransfer.getData('text');
-            const newIndex = event.target.dataset.index;
-            const fileList = document.getElementById('file-list');
-            const items = fileList.children;
-            fileList.insertBefore(items[oldIndex], items[newIndex].nextSibling);
-        }
-
-        function submitForm(event) {
-            const fileList = document.getElementById('file-list');
-            const order = [];
-            for (let i = 0; i < fileList.children.length; i++) {
-                order.push(fileList.children[i].dataset.index);
-            }
-            document.getElementById('file-order').value = order.join(',');
-        }
-    </script>
 </head>
 <body>
+<div class="container">
     <h2>Merge PDFs</h2>
-    <form method="post" enctype="multipart/form-data" onsubmit="submitForm(event)">
+
+    <input type="file" id="pdf-files" accept="application/pdf" multiple>
+    <div class="pdf-container" id="pdf-container"></div>
+
+    <form method="post" onsubmit="return submitForm()">
         {% csrf_token %}
-        <input type="file" id="pdf-files" name="pdf_files" multiple required onchange="handleFileSelect(event)">
-        <ul id="file-list"></ul>
-        <input type="hidden" id="file-order" name="file_order">
-        <button type="submit">Merge PDFs</button>
+        <input type="hidden" name="file_order" id="file-order">
+        <button type="submit">Merge and Download</button>
     </form>
-    {% if error %}
-        <p style="color: red;">{{ error }}</p>
-    {% endif %}
+</div>
+
+<script>
+    const fileInput = document.getElementById('pdf-files');
+    const container = document.getElementById('pdf-container');
+    const uploadedFiles = [];
+
+    fileInput.addEventListener('change', async (event) => {
+        const files = Array.from(event.target.files);
+        for (const file of files) {
+            await uploadFile(file);
+        }
+        renderBoxes();
+    });
+
+    async function uploadFile(file) {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const response = await fetch("{% url 'upload_pdf_ajax' %}", {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+            }
+        });
+
+        const result = await response.json();
+        if (result.status === 'success') {
+            uploadedFiles.push(result.filename);
+        }
+    }
+
+    function renderBoxes() {
+    container.innerHTML = '';
+    uploadedFiles.forEach((filename, index) => {
+        const box = document.createElement('div');
+        box.className = 'pdf-box';
+        box.textContent = `${index + 1}. ${filename}`;
+        box.setAttribute('draggable', 'true');
+        box.setAttribute('data-index', index);
+
+        box.addEventListener('dragstart', handleDragStart);
+        box.addEventListener('dragover', handleDragOver);
+        box.addEventListener('drop', handleDrop);
+        box.addEventListener('dragenter', () => box.classList.add('drag-over'));
+        box.addEventListener('dragleave', () => box.classList.remove('drag-over'));
+
+        container.appendChild(box);
+    });
+}
+
+    let dragSrc = null;
+
+    function handleDragStart(e) {
+        dragSrc = e.target;
+    }
+
+    function handleDragOver(e) {
+        e.preventDefault();
+    }
+
+    function handleDrop(e) {
+        e.preventDefault();
+        if (dragSrc !== e.target) {
+            const from = parseInt(dragSrc.dataset.index);
+            const to = parseInt(e.target.dataset.index);
+
+            const moved = uploadedFiles.splice(from, 1)[0];
+            uploadedFiles.splice(to, 0, moved);
+            renderBoxes();
+        }
+    }
+
+    function submitForm() {
+        const orderInput = document.getElementById('file-order');
+        orderInput.value = uploadedFiles.join(',');
+        return true;
+    }
+</script>
 </body>
 </html>
