@@ -43,51 +43,60 @@ def index(request):
     return render(request, 'astrex_html_logs/index.html')
 
 
+from .scripts.formatxml import format_xml
+
 @csrf_exempt
 def upload_log(request):
     if request.method == 'POST' and request.FILES.get('file'):
         uploaded_file = request.FILES['file']
+        filename = uploaded_file.name.lower()
 
-        if uploaded_file.name.endswith('.html'):
-            new_filename = uploaded_file.name
+        # Set upload path
+        upload_path = os.path.join(settings.MEDIA_ROOT, 'astrex_html_logs')
+        os.makedirs(upload_path, exist_ok=True)
 
-            # Set upload path
-            upload_path = os.path.join(settings.MEDIA_ROOT, 'astrex_html_logs')
-            os.makedirs(upload_path, exist_ok=True)
+        file_path = os.path.join(upload_path, uploaded_file.name)
 
-            file_path = os.path.join(upload_path, new_filename)
+        # Save the uploaded file
+        with open(file_path, 'wb+') as destination:
+            for chunk in uploaded_file.chunks():
+                destination.write(chunk)
 
-            # Save the uploaded file
-            with open(file_path, 'wb+') as destination:
-                for chunk in uploaded_file.chunks():
-                    destination.write(chunk)
-
-            # Call mock DE032 extractor
+        # ✅ If HTML file — extract DE032 and filter
+        if filename.endswith('.html'):
             de032_counts, unique_count, start_time, end_time, key = extract_de032_counts_from_html(file_path)
 
-            # Start background thread to filter HTML
             threading.Thread(
                 target=run_filter_for_each_de032,
                 args=(file_path, de032_counts),
                 daemon=True
             ).start()
 
-            # Return response to frontend
             return JsonResponse({
-    'status': 'success',
-    'message': f'File {new_filename} uploaded and processed successfully.',
-    'unique_count': unique_count,
-    'de032_counts': de032_counts,
-    'start_time': start_time,
-    'end_time': end_time,
-    'key': key
-})
+                'status': 'success',
+                'message': f'File {uploaded_file.name} uploaded and processed successfully.',
+                'unique_count': unique_count,
+                'de032_counts': de032_counts,
+                'start_time': start_time,
+                'end_time': end_time,
+                'key': key,
+                'filename': uploaded_file.name
+            })
 
+        # ✅ If XML file — format and return success
+        elif filename.endswith('.xml'):
+            try:
+                new_path = format_xml(file_path)  # <-- must return new path
+                return JsonResponse({
+                    'status': 'success',
+                    'message': f'XML file formatted and saved as {os.path.basename(new_path)}.',
+                    'formatted_file': f'astrex_html_logs/{os.path.basename(new_path)}'
+                })
+            except Exception as e:
+                return JsonResponse({'status': 'error', 'message': f'Error formatting XML: {str(e)}'})
 
-        return JsonResponse({'status': 'error', 'message': 'Only .html files are allowed.'})
-
+        return JsonResponse({'status': 'error', 'message': 'Only .html or .xml files are allowed.'})
     return JsonResponse({'status': 'error', 'message': 'Invalid request.'})
-
 #Below is production block
 # import json
 
