@@ -68,7 +68,7 @@ LOGGING = {
     },
     'handlers': {
         'file': {
-            'level': 'WARNING',
+            'level': 'DEBUG',
             'class': 'logging.FileHandler',
             'filename': str(LOG_DIR / 'django.log'),  # Dynamic path for the log file
             # 'maxBytes': 10240,  # Set max file size to 10KB (~100 lines depending on log content)
@@ -76,7 +76,7 @@ LOGGING = {
             'formatter': 'standard',
         },
         'console': {
-            'level': 'WARNING',
+            'level': 'DEBUG',
             'class': 'logging.StreamHandler',
             'formatter': 'standard',
         },
@@ -84,7 +84,7 @@ LOGGING = {
     'loggers': {
         '': {  # 'root' logger
             'handlers': ['file', 'console'],
-            'level': 'WARNING',
+            'level': 'DEBUG',
             'propagate': True
         },
     }

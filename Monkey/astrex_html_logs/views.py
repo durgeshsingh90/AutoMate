@@ -1,36 +1,19 @@
-import os
-from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
-from django.shortcuts import render
-from django.conf import settings
-import threading
+import os
 import json
 import zipfile
-
-#Below is production block
-# Import the DE032 parser script
-# from .scripts.astrex_unique_de32_html import extract_de032_counts_from_html
-
-#Below is testing block
-from .scripts.astrex_html_filter import filter_html_by_conditions
-
-
-
-# TEMP MOCK for extract_de032_counts_from_html
-def extract_de032_counts_from_html(html_file_path):
-    return {
-        "123456": 4,
-        "654321": 2,
-        "111111": 1
-    }, 3, "2025-03-27 14:03:12", "2025-03-27 15:44:57", "session_key_001"
-
-import os
 from django.conf import settings
 from django.shortcuts import render
+from django.views.decorators.csrf import csrf_exempt
+from threading import Thread
+
+from .scripts.astrex_unique_de32_html import extract_de032_counts_from_html
+from .scripts.astrex_html_filter import filter_html_by_conditions
+from .scripts.html2emvco import convert_html_to_emvco
+
 
 def index(request):
     folder = os.path.join(settings.MEDIA_ROOT, 'astrex_html_logs')
-
     if os.path.exists(folder):
         for filename in os.listdir(folder):
             if filename.endswith(('.html', '.json', '.zip', '.xml')):  # added .xml
@@ -41,9 +24,6 @@ def index(request):
                     print(f"Error deleting {file_path}: {e}")
 
     return render(request, 'astrex_html_logs/index.html')
-
-
-from .scripts.formatxml import format_xml
 
 @csrf_exempt
 def upload_log(request):
@@ -62,11 +42,11 @@ def upload_log(request):
             for chunk in uploaded_file.chunks():
                 destination.write(chunk)
 
-        # ✅ If HTML file — extract DE032 and filter
+        # If HTML file — extract DE032 and filter
         if filename.endswith('.html'):
             de032_counts, unique_count, start_time, end_time, key = extract_de032_counts_from_html(file_path)
 
-            threading.Thread(
+            Thread(
                 target=run_filter_for_each_de032,
                 args=(file_path, de032_counts),
                 daemon=True
@@ -83,72 +63,35 @@ def upload_log(request):
                 'filename': uploaded_file.name
             })
 
-        # ✅ If XML file — format and return success
-        elif filename.endswith('.xml'):
-            try:
-                new_path = format_xml(file_path)  # <-- must return new path
-                return JsonResponse({
-                    'status': 'success',
-                    'message': f'XML file formatted and saved as {os.path.basename(new_path)}.',
-                    'formatted_file': f'astrex_html_logs/{os.path.basename(new_path)}'
-                })
-            except Exception as e:
-                return JsonResponse({'status': 'error', 'message': f'Error formatting XML: {str(e)}'})
-
         return JsonResponse({'status': 'error', 'message': 'Only .html or .xml files are allowed.'})
     return JsonResponse({'status': 'error', 'message': 'Invalid request.'})
-#Below is production block
-# import json
 
-# def run_filter_for_each_de032(html_file_path, de032_counts):
-#     filtered_files = []
-#     for de032_value in de032_counts.keys():
-#         conditions = [de032_value]
-#         output_file = filter_html_by_conditions(html_file_path, conditions)
-#         if output_file:
-#             filtered_files.append(output_file)
-
-#     # Save all filtered file paths to a progress file (JSON)
-#     progress_file = os.path.splitext(html_file_path)[0] + "_progress.json"
-#     with open(progress_file, 'w') as f:
-#         json.dump(filtered_files, f)
-
-#Below is dummy data for test simulation
 
 
 def run_filter_for_each_de032(html_file_path, de032_counts):
     filtered_files = []
-
-    base, ext = os.path.splitext(html_file_path)
     for de032_value in de032_counts.keys():
-        output_file = f"{base}_filtered_{de032_value}{ext}"
-        with open(output_file, 'w') as f:
-            f.write(f"<html><body><h1>Filtered for DE032: {de032_value}</h1></body></html>")
-        filtered_files.append(output_file)
+        conditions = [de032_value]
+        output_file = filter_html_by_conditions(html_file_path, conditions)
+        if output_file:
+            filtered_files.append(output_file)
 
-    # Save progress file
-    progress_file = f"{base}_progress.json"
+    # Save all filtered file paths to a progress file (JSON)
+    progress_file = os.path.splitext(html_file_path)[0] + "_progress.json"
     with open(progress_file, 'w') as f:
         json.dump(filtered_files, f)
-
-    # 🔥 Auto-create ZIP after filtering is done
-    zip_path = f"{base}_filtered_all.zip"
-    with zipfile.ZipFile(zip_path, 'w') as zipf:
-        for file_path in filtered_files:
-            zipf.write(file_path, os.path.basename(file_path))
-
-from django.http import JsonResponse
-
+    
 def check_filter_progress(request):
     html_file_name = request.GET.get('filename')
     if not html_file_name:
         return JsonResponse({'status': 'error', 'message': 'Filename not provided'})
 
     progress_file = os.path.join(settings.MEDIA_ROOT, 'astrex_html_logs', f"{os.path.splitext(html_file_name)[0]}_progress.json")
-    
+
     if os.path.exists(progress_file):
         with open(progress_file) as f:
             filtered_files = json.load(f)
+            filtered_files = [os.path.relpath(path, settings.MEDIA_ROOT) for path in filtered_files]
         return JsonResponse({'status': 'success', 'files': filtered_files})
     else:
         return JsonResponse({'status': 'processing'})
@@ -165,20 +108,17 @@ def zip_filtered_files(request):
         if os.path.exists(progress_file):
             with open(progress_file) as f:
                 filtered_files = json.load(f)
-
             zip_path = os.path.join(settings.MEDIA_ROOT, 'astrex_html_logs', f"{os.path.splitext(filename)[0]}_filtered_all.zip")
 
             with zipfile.ZipFile(zip_path, 'w') as zipf:
                 for file_path in filtered_files:
-                    zipf.write(file_path, os.path.basename(file_path))
+                    zipf.write(file_path, os.path.relpath(file_path, settings.MEDIA_ROOT))  # relative path
 
-            return JsonResponse({'status': 'success', 'zip_file': zip_path.replace(settings.MEDIA_ROOT + '/', '')})
+            return JsonResponse({'status': 'success', 'zip_file': f"astrex_html_logs/{os.path.basename(zip_path)}"})
         else:
             return JsonResponse({'status': 'error', 'message': 'Filtered files not ready'})
 
     return JsonResponse({'status': 'error', 'message': 'Invalid request'})
-
-from .scripts.html2emvco import convert_html_to_emvco
 
 @csrf_exempt
 def convert_to_emvco(request):

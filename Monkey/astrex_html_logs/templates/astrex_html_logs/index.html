@@ -35,7 +35,7 @@
       flex-direction: column;
     }
     .upload-section input[type="file"] {
-      display: none;
+      display: none; 
     }
     .upload-button {
       padding: 10px;
@@ -65,6 +65,12 @@
       margin-bottom: 30px;
       box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
       position: relative;
+      display: flex;
+      justify-content: space-between;
+    }
+    .left-summary, .right-summary {
+      display: flex;
+      flex-direction: column;
     }
     .de032-container {
       display: flex;
@@ -90,7 +96,7 @@
     .count {
       font-size: 14px;
       color: #333;
-      margin-bottom: 10px;
+      margin-bottom: 10px; 
     }
     .download-btn {
       padding: 8px 12px;
@@ -140,6 +146,41 @@
     #zipDownloadBtn:hover {
       background-color: #218838;
     }
+    .overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+    .overlay-content {
+      text-align: center;
+      position: relative;
+    }
+    .gif-container {
+      position: relative;
+      width: 100px;
+      height: 100px;
+    }
+    .gif-container img {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: auto;
+      opacity: 0;
+      transition: opacity 1s ease-in-out;
+    }
+    .timer {
+      margin-top: 120px; /* Space for the GIFs */
+      font-size: 16px;
+      color: #fff;
+    }
   </style>
 </head>
 <body>
@@ -152,57 +193,82 @@
     <div class="log-info" id="logInfo">No file uploaded yet.</div>
   </div>
   <button id="convertEmvcoBtn" class="upload-button" style="display: none;">Convert to EMVCo</button>
-
 </div>
 
 <div class="right-container">
-    <div id="summarySection" class="summary" style="display:none;">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <div>
-            <h2>DE032 Summary</h2>
-            <p><strong>Unique DE032 Count:</strong> <span id="uniqueCount"></span></p>
-            <p><strong>Start Time:</strong> <span id="startTime"></span></p>
-            <p><strong>End Time:</strong> <span id="endTime"></span></p>
-          </div>
-          <button id="zipDownloadBtn" class="download-btn" style="display:none;" disabled>Download All as ZIP</button>
-        </div>
-      </div>
-      
+  <div id="summarySection" class="summary" style="display:none;">
+    <div class="left-summary">
+      <h2>DE032 Summary</h2>
+      <p><strong>Unique DE032 Count:</strong> <span id="uniqueCount"></span></p>
+      <p><strong>Start Time:</strong> <span id="startTime"></span></p>
+      <p><strong>End Time:</strong> <span id="endTime"></span></p>
+      <p><strong>Duration:</strong> <span id="duration"></span></p>
+    </div>
+    <div class="right-summary">
+      <p><strong>Total Time Taken:</strong> <span id="totalTimeTaken"></span></p>
+      <button id="zipDownloadBtn" class="download-btn" style="display:none;" disabled>Download All as ZIP</button>
+    </div>
+  </div>
 
   <div class="de032-container" id="de032Boxes"></div>
 </div>
 
-<script>
-  document.getElementById('htmlLogFile').addEventListener('change', function(event) {
-    const file = event.target.files[0];
-    const logInfo = document.getElementById('logInfo');
-    const convertBtn = document.getElementById('convertEmvcoBtn');
-  
-    // Hide Convert button initially
-    convertBtn.style.display = 'none';
-  
-    if (file && file.name.endsWith('.html')) {
-      const formData = new FormData();
-      formData.append('file', file);
-  
-      fetch('/astrex_html_logs/upload_log/', {
-        method: 'POST',
-        body: formData
-      })
+<div class="overlay">
+  <div class="overlay-content">
+    <div class="gif-container">
+      <img id="gifImage1" src="/static/astrex_html_logs/styles/images/search-file1.gif" alt="Loading...">
+      <img id="gifImage2" src="/static/astrex_html_logs/styles/images/search-file2.gif" alt="Loading...">
+      <img id="gifImage3" src="/static/astrex_html_logs/styles/images/search-file3.gif" alt="Loading...">
+    </div>
+    <div class="timer" id="runningTimer">00:00</div>
+  </div>
+</div>
+
+<script>document.getElementById('htmlLogFile').addEventListener('change', function(event) {
+  const file = event.target.files[0];
+  const logInfo = document.getElementById('logInfo');
+  const convertBtn = document.getElementById('convertEmvcoBtn');
+
+  // Hide Convert button initially
+  convertBtn.style.display = 'none';
+
+  if (file && file.name.endsWith('.html')) {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    // Show loading overlay
+    document.querySelector('.overlay').style.display = 'flex';
+    startTimer();
+    cycleGIFs();
+    setInterval(cycleGIFs, 3000); // Change GIF every 3 seconds
+
+    fetch('/astrex_html_logs/upload_log/', {
+      method: 'POST',
+      body: formData
+    })
       .then(response => response.json())
       .then(data => {
         logInfo.textContent = data.message;
-  
+
+        stopTimer();
+        // Hide loading overlay
+        document.querySelector('.overlay').style.display = 'none';
+
         if (data.status === 'success') {
-          document.getElementById('summarySection').style.display = 'block';
+          const totalTimeTaken = stopTimer();
+          const duration = calculateDuration(data.start_time, data.end_time);
+
+          document.getElementById('summarySection').style.display = 'flex';
           document.getElementById('uniqueCount').textContent = data.unique_count;
           document.getElementById('startTime').textContent = data.start_time;
           document.getElementById('endTime').textContent = data.end_time;
-  
+          document.getElementById('totalTimeTaken').textContent = totalTimeTaken;
+          document.getElementById('duration').textContent = duration;
+
           const container = document.getElementById('de032Boxes');
           container.innerHTML = '';
           const baseFile = file.name.split('.')[0];
-  
+
           Object.entries(data.de032_counts).forEach(([key, count]) => {
             const box = document.createElement('div');
             box.className = 'de032-box';
@@ -217,16 +283,16 @@
             `;
             container.appendChild(box);
           });
-  
+
           const zipBtn = document.getElementById('zipDownloadBtn');
           zipBtn.style.display = 'inline-block';
           zipBtn.disabled = true;
           zipBtn.setAttribute('data-filename', file.name);
-  
+
           // ✅ Show Convert to EMVCo button
           convertBtn.style.display = 'block';
           convertBtn.setAttribute('data-filename', file.name);
-  
+
           pollProgress(file.name, data.de032_counts);
         }
       })
@@ -234,100 +300,107 @@
         console.error('Error:', error);
         logInfo.textContent = 'Error uploading file.';
         convertBtn.style.display = 'none';
+
+        // Hide loading overlay
+        document.querySelector('.overlay').style.display = 'none';
+        stopTimer();
       });
-    } else {
-      logInfo.textContent = 'Please select a valid .html file.';
-      document.getElementById('convertEmvcoBtn').style.display = 'none';
-    }
-  });
-  
-  function pollProgress(filename, de032_counts) {
-    const total = Object.keys(de032_counts).length;
-    const doneKeys = new Set();
-  
-    const interval = setInterval(() => {
-      fetch(`/astrex_html_logs/check_progress/?filename=${filename}`)
-        .then(res => res.json())
-        .then(data => {
-          if (data.status === 'success') {
-            const files = data.files;
-            const baseFile = filename.split('.')[0];
-  
-            Object.entries(de032_counts).forEach(([key]) => {
-              if (doneKeys.has(key)) return;
-  
-              const fileMatch = files.find(f => f.includes(`_filtered_${key}`));
-              const bar = document.getElementById(`progress-${key}`);
-              const percent = document.getElementById(`progress-text-${key}`);
-              const btn = document.querySelector(`button[data-key="${key}"]`);
-  
-              if (fileMatch && bar && percent && btn) {
-                bar.style.width = '100%';
-                bar.style.backgroundColor = '#4a90e2';
-                percent.innerText = '100%';
-                btn.disabled = false;
-  
-                btn.onclick = () => {
-                  const link = document.createElement('a');
-                  link.href = `/media/astrex_html_logs/${fileMatch.split('/').pop()}`;
-                  link.download = fileMatch.split('/').pop();
-                  link.click();
-                };
-  
-                doneKeys.add(key);
-              }
-            });
-  
-            if (doneKeys.size === total) {
-              clearInterval(interval);
-              const zipBtn = document.getElementById('zipDownloadBtn');
-              zipBtn.disabled = false;
-            }
-          }
-        });
-    }, 2000);
+  } else {
+    logInfo.textContent = 'Please select a valid .html file.';
+    document.getElementById('convertEmvcoBtn').style.display = 'none';
   }
-  
-  function downloadZip() {
-    const filename = document.getElementById('zipDownloadBtn').getAttribute('data-filename');
-    const formData = new FormData();
-    formData.append('filename', filename);
-  
-    fetch('/astrex_html_logs/zip_filtered_files/', {
-      method: 'POST',
-      body: formData
-    })
+});
+
+function pollProgress(filename, de032_counts) {
+  const total = Object.keys(de032_counts).length;
+  const doneKeys = new Set();
+
+  const interval = setInterval(() => {
+    fetch(`/astrex_html_logs/check_progress/?filename=${filename}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.status === 'success') {
+          const files = data.files;
+          const baseFile = filename.split('.')[0];
+
+          Object.entries(de032_counts).forEach(([key]) => {
+            if (doneKeys.has(key)) return;
+
+            const fileMatch = files.find(f => f.includes(`_filtered_${key}`));
+            const bar = document.getElementById(`progress-${key}`);
+            const percent = document.getElementById(`progress-text-${key}`);
+            const btn = document.querySelector(`button[data-key="${key}"]`);
+
+            if (fileMatch && bar && percent && btn) {
+              bar.style.width = '100%';
+              bar.style.backgroundColor = '#4a90e2';
+              percent.innerText = '100%';
+              btn.disabled = false;
+
+              btn.onclick = () => {
+                const link = document.createElement('a');
+                // Use relative path for media directory
+                link.href = `/media/${fileMatch}`;
+                link.download = fileMatch.split('/').pop();
+                link.click();
+              };
+
+              doneKeys.add(key);
+            }
+          });
+
+          if (doneKeys.size === total) {
+            clearInterval(interval);
+            const zipBtn = document.getElementById('zipDownloadBtn');
+            zipBtn.disabled = false;
+          }
+        }
+      });
+  }, 2000);
+}
+
+function downloadZip() {
+  const filename = document.getElementById('zipDownloadBtn').getAttribute('data-filename');
+  const formData = new FormData();
+  formData.append('filename', filename);
+
+  fetch('/astrex_html_logs/zip_filtered_files/', {
+    method: 'POST',
+    body: formData
+  })
     .then(res => res.json())
     .then(data => {
       if (data.status === 'success') {
         const link = document.createElement('a');
+        // Use relative path for media directory
         link.href = `/media/${data.zip_file}`;
         link.download = data.zip_file;
         link.click();
       }
     });
+}
+
+document.getElementById('zipDownloadBtn').addEventListener('click', downloadZip);
+
+document.getElementById('convertEmvcoBtn').addEventListener('click', function () {
+  const filename = this.getAttribute('data-filename');
+  if (!filename) {
+    alert("No HTML file uploaded yet.");
+    return;
   }
-  
-  document.getElementById('zipDownloadBtn').addEventListener('click', downloadZip);
-  
-  document.getElementById('convertEmvcoBtn').addEventListener('click', function () {
-    const filename = this.getAttribute('data-filename');
-    if (!filename) {
-      alert("No HTML file uploaded yet.");
-      return;
-    }
-  
-    const formData = new FormData();
-    formData.append('filename', filename);
-  
-    fetch('/astrex_html_logs/convert_to_emvco/', {
-      method: 'POST',
-      body: formData
-    })
+
+  const formData = new FormData();
+  formData.append('filename', filename);
+
+  fetch('/astrex_html_logs/convert_to_emvco/', {
+    method: 'POST',
+    body: formData
+  })
     .then(res => res.json())
     .then(data => {
       if (data.status === 'success') {
         const link = document.createElement('a');
+        // Use relative path for media directory
         link.href = `/media/${data.output_file}`;
         link.download = data.output_file;
         link.click();
@@ -339,10 +412,52 @@
       alert("Conversion failed.");
       console.error(err);
     });
-  });
-  </script>
-  
+});
+
+function cycleGIFs() {
+  const gifArray = ['gifImage1', 'gifImage2', 'gifImage3'];
+  let gifIndex = 0;
+  const interval = setInterval(() => {
+    const currentGif = document.getElementById(gifArray[gifIndex]);
+    const nextGifIndex = (gifIndex + 1) % gifArray.length;
+    const nextGif = document.getElementById(gifArray[nextGifIndex]);
+
+    currentGif.style.opacity = 0; // Fade out current GIF
+    nextGif.style.opacity = 1; // Fade in next GIF
+
+    gifIndex = nextGifIndex;
+  }, 3000); // Change GIF every 3 seconds
+}
+
+function startTimer() {
+  startTimeClient = new Date();
+  const timerElement = document.getElementById('runningTimer');
+  timerInterval = setInterval(() => {
+    const elapsedTime = new Date(new Date() - startTimeClient);
+    const minutes = String(elapsedTime.getUTCMinutes()).padStart(2, '0');
+    const seconds = String(elapsedTime.getUTCSeconds()).padStart(2, '0');
+    timerElement.textContent = `${minutes}:${seconds}`;
+  }, 1000);
+}
+
+function stopTimer() {
+  clearInterval(timerInterval);
+  const elapsedTime = new Date(new Date() - startTimeClient);
+  const minutes = String(elapsedTime.getUTCMinutes()).padStart(2, '0');
+  const seconds = String(elapsedTime.getUTCSeconds()).padStart(2, '0');
+  return `${minutes}:${seconds}`;
+}
+
+function calculateDuration(startTime, endTime) {
+  const start = new Date(startTime);
+  const end = new Date(endTime);
+  const duration = (end - start) / 1000; // duration in seconds
+  const minutes = String(Math.floor(duration / 60)).padStart(2, '0');
+  const seconds = String(Math.floor(duration % 60)).padStart(2, '0');
+  return `${minutes}:${seconds}`;
+}
+
+</script>
 
 </body>
 </html>
-
