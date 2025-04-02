@@ -14,10 +14,11 @@ logging.basicConfig(
 
 # List of Python files to run in sequence
 scripts = [
-    "1_breakhtml.py",
-    "2_adjusthtml.py",
-    "3_unique_bm32_html.py",
-    "4_astrex_html_filter.py"
+    "1_breakemvco.py",
+    "2_adjustemvco.py",
+    "3_adjustelements.py",
+    "4_unique_de32_emvco.py",
+    "5_emvco_filter.py"
 ]
 
 def run_script(script_name):

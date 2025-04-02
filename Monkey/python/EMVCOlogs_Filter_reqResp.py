@@ -64,7 +64,7 @@ def filter_online_messages(xml_file, conditions):
     print(f"Filtered XML has been saved to: {output_file}")
 
 if __name__ == "__main__":
-    xml_file = r"C:\Users\f94gdos\Desktop\L3_2025-03-19-1722.xml"  # Path to your input XML file
+    xml_file = r"C:\Users\f94gdos\Desktop\TP\L3_2025-03-19-1722.xml"
     conditions = '456896'  # Search condition string with AND, OR, NOT
 
     filter_online_messages(xml_file, conditions)

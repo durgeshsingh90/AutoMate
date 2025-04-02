@@ -83,7 +83,7 @@ def process_html_file(file_path, total_parts):
             break  # Stop if no <BR></BR> is found
 
 def main():
-    main_file_path = r"C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer_.html"
+    main_file_path = r"C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-Visa_BASE_I_(Standard)_Message_viewer_.html"
     
     try:
         logging.info(f"Processing main file: {main_file_path}")

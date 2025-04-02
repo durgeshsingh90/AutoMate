@@ -5,6 +5,8 @@ import queue
 import json
 import logging
 from lxml import etree
+import zipfile
+from datetime import datetime
 
 # Set up logging configuration
 logging.basicConfig(
@@ -58,8 +60,8 @@ def extract_matching_tables(html, conditions_list):
         for row in rows:
             cells = row.xpath('.//td')
             if len(cells) > 6:
-                value = cells[6].text.strip()
-                if match_conditions(value, conditions_list):
+                cell_text = cells[6].text.strip() if cells[6].text is not None else ""
+                if match_conditions(cell_text, [conditions_list]): # Wrap the condition in a list
                     matching_tables.append(etree.tostring(table, pretty_print=True, encoding='unicode'))
                     break
 
@@ -68,12 +70,13 @@ def extract_matching_tables(html, conditions_list):
         output_html += table
     return output_html
 
-def process_file(file_path, conditions_list, output_filepath):
+def process_file(file_path, condition, output_filepath): # update function parameter
+    conditions_list = [condition] # Wrap the condition in a list
     logging.info(f"Processing file: {file_path} with conditions: {conditions_list}")
     with open(file_path, 'r', encoding='utf-8') as file:
         input_html = file.read()
     
-    output_html = extract_matching_tables(input_html, conditions_list)
+    output_html = extract_matching_tables(input_html, condition)
     
     if not output_html.strip():
         logging.info(f"No tables matched the given conditions in file: {file_path}")
@@ -89,14 +92,14 @@ def worker(task_queue, output_filepath, match_queue):
     match_found = False
     while True:
         try:
-            file_path, conditions_list = task_queue.get_nowait()
-            if process_file(file_path, conditions_list, output_filepath):
+            file_path, condition = task_queue.get_nowait() # update variables names
+            if process_file(file_path, condition, output_filepath):
                 match_found = True
         except queue.Empty:
             break
     match_queue.put(match_found)
 
-def process_files_condition_by_condition(json_path, conditions_lists, num_processes=10):
+def process_files_condition_by_condition(json_path, conditions, num_processes=10): # update variables names
     start_time = time.time()
 
     with open(json_path, 'r', encoding='utf-8') as f:
@@ -104,8 +107,8 @@ def process_files_condition_by_condition(json_path, conditions_lists, num_proces
 
     style_html = ""
     file_paths_dict = {}
-    for condition in conditions_lists:
-        file_paths_dict[frozenset(condition)] = []
+    for condition in conditions:
+        file_paths_dict[condition] = []
 
     part0_file_path = None
     
@@ -115,38 +118,40 @@ def process_files_condition_by_condition(json_path, conditions_lists, num_proces
         if part0_file_path is None and "part0" in file_name:
             part0_file_path = file_name
 
-        for condition in conditions_lists:
-            condition_str = frozenset(condition)
-            if any(c in de032_value_counts for c in condition):
-                file_paths_dict[condition_str].append(file_name)
+        for condition in conditions:
+            if condition in de032_value_counts:
+                file_paths_dict[condition].append(file_name)
     
     if part0_file_path:
         with open(part0_file_path, 'r', encoding='utf-8') as file:
             style_html = extract_style(file.read())
 
     output_dir = os.path.dirname(json_path)
+    filtered_files = []
+    base_name = os.path.basename(part0_file_path).split('__part')[0] if part0_file_path else "output"
 
-    for conditions_list in conditions_lists:
-        logging.info(f"Processing with conditions: {conditions_list}")
+    total_conditions = len(conditions)
+    for idx, condition in enumerate(conditions, start=1):
+        conditions_progress = f"{str(idx).zfill(2)}/{str(total_conditions).zfill(2)}"
+        logging.info(f"Processing with condition [{conditions_progress}]: {condition}")
 
-        conditions_str = "_".join(sanitize_filename(condition) for condition in conditions_list)
-        base_name = os.path.basename(part0_file_path).split('__part')[0] if part0_file_path else "output"
+        conditions_str = sanitize_filename(condition)
         output_filename = f"{base_name}_filtered_{conditions_str}.html"
 
         # Use the directory of the JSON file for output
         output_filepath = os.path.join(output_dir, output_filename)
+
+        filtered_files.append(output_filepath)
         
         # Ensure we write the style at the beginning
         with open(output_filepath, 'w', encoding='utf-8') as file:
-            # file.write("<html><head>")
             file.write(style_html)
-            # file.write("</head><body>")
         
         task_queue = multiprocessing.Queue()
         match_queue = multiprocessing.Queue()
 
-        for file_path in file_paths_dict[frozenset(conditions_list)]:
-            task_queue.put((file_path, conditions_list))
+        for file_path in file_paths_dict[condition]:
+            task_queue.put((file_path, condition))
 
         processes = []
         for _ in range(num_processes):
@@ -163,10 +168,18 @@ def process_files_condition_by_condition(json_path, conditions_lists, num_proces
             if os.path.exists(output_filepath):
                 os.remove(output_filepath)
                 logging.info(f"Deleted {output_filepath} as no tables matched the conditions")
+            filtered_files.remove(output_filepath)
             continue
 
-        # with open(output_filepath, 'a', encoding='utf-8') as file:
-            # file.write("</body></html>")
+    # Create a zip file and add all filtered HTML files to it
+    datetime_stamp = datetime.now().strftime('%Y%m%d%H%M%S')
+    zip_filename = os.path.join(output_dir, f"{base_name}pspfiltered_{datetime_stamp}.zip")
+    with zipfile.ZipFile(zip_filename, 'w', zipfile.ZIP_DEFLATED) as zipf:
+        for file in filtered_files:
+            zipf.write(file, os.path.basename(file))
+            os.remove(file)  # Delete the filtered HTML file after adding it to the zip
+
+    logging.info(f"All filtered files have been zipped into {zip_filename}")
 
     end_time = time.time()
     elapsed_time = end_time - start_time
@@ -178,13 +191,36 @@ if __name__ == '__main__':
     # Path to the JSON file
     json_path = r"C:\Users\f94gdos\Desktop\2025-03-31\unique_bm32.json"
 
-    # Define your search conditions as a list of lists
-    conditions_lists = [
-        ["004642"],  # Condition 1
-        ["014206"]   # Condition 2
-        # Add more conditions as needed
+    # Define your search conditions as a list of strings
+    conditions = [
+"456896",
+"411975",
+"440524",
+"400855",
+"459304",
+"417264",
+"421198",
+"408912",
+"400850",
+"469179",
+"437880",
+"400857",
+"405686",
+"422518",
+"424192",
+"425518",
+"453760",
+"405684",
+"459558",
+"408600",
+"417404",
+"400851",
+"438306",
+"477270",
+"487831",
+"499886"
+
     ]
 
     # Process the files condition by condition in parallel
-    process_files_condition_by_condition(json_path, conditions_lists)
-
+    process_files_condition_by_condition(json_path, conditions)

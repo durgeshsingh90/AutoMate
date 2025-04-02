@@ -184,7 +184,7 @@ def main(html_file_path, max_processes):
 
 if __name__ == "__main__":
     # Path to your main HTML file (e.g., r"C:\path\to\your\file.html")
-    html_file_path = os.path.join(r"C:\Users\f94gdos\Desktop\2025-03-31", "ID-7121-MasterCard_GCIS_(Standard)_Message_viewer_.html")
+    html_file_path = os.path.join(r"C:\Users\f94gdos\Desktop\2025-03-31", "ID-7121-Visa_BASE_I_(Standard)_Message_viewer_.html")
     
     # Set the maximum number of parallel processes
     max_processes = 10  # Adjust based on testing and system capabilities
