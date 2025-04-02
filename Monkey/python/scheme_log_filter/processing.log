@@ -1,0 +1,264 @@
+2025-04-02 13:50:30,162 - INFO - Running script: 1_breakhtml.py
+2025-04-02 13:50:31,085 - INFO - 1_breakhtml.py ran successfully in 0 hours, 0 minutes, 0.92 seconds.
+2025-04-02 13:50:31,085 - INFO - Running script: 2_adjusthtml.py
+2025-04-02 13:50:54,118 - INFO - 2_adjusthtml.py ran successfully in 0 hours, 0 minutes, 23.03 seconds.
+2025-04-02 13:50:54,135 - INFO - Running script: 3_unique_bm32_html.py
+2025-04-02 13:50:55,733 - INFO - Found 19 files to process.
+2025-04-02 13:50:57,083 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part0.html
+2025-04-02 13:50:57,124 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part1.html
+2025-04-02 13:50:57,153 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part2.html
+2025-04-02 13:50:57,170 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part3.html
+2025-04-02 13:50:57,370 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part4.html
+2025-04-02 13:50:57,434 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part5.html
+2025-04-02 13:50:57,537 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part6.html
+2025-04-02 13:50:57,898 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part7.html
+2025-04-02 13:50:58,033 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part8.html
+2025-04-02 13:50:58,671 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part9.html
+2025-04-02 13:52:24,552 - INFO - Finished processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part5.html
+2025-04-02 13:52:24,881 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part10.html
+2025-04-02 13:52:25,195 - INFO - Finished processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part4.html
+2025-04-02 13:52:25,294 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part11.html
+2025-04-02 13:52:25,294 - INFO - Finished processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part6.html
+2025-04-02 13:52:25,460 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part12.html
+2025-04-02 13:52:34,192 - INFO - Finished processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part2.html
+2025-04-02 13:52:34,378 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part13.html
+2025-04-02 13:52:35,520 - INFO - Finished processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part0.html
+2025-04-02 13:52:35,678 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part14.html
+2025-04-02 13:52:40,895 - INFO - Finished processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part1.html
+2025-04-02 13:52:41,204 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part15.html
+2025-04-02 13:52:48,101 - INFO - Finished processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part3.html
+2025-04-02 13:52:48,412 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part16.html
+2025-04-02 13:52:54,596 - INFO - Finished processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part9.html
+2025-04-02 13:52:54,616 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part17.html
+2025-04-02 13:52:58,830 - INFO - Finished processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part8.html
+2025-04-02 13:52:58,976 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part18.html
+2025-04-02 13:52:58,978 - INFO - Finished processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part18.html
+2025-04-02 13:53:07,994 - INFO - Finished processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part7.html
+2025-04-02 13:53:55,631 - INFO - Finished processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part11.html
+2025-04-02 13:53:55,972 - INFO - Finished processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part10.html
+2025-04-02 13:53:57,544 - INFO - Finished processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part14.html
+2025-04-02 13:53:57,894 - INFO - Finished processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part17.html
+2025-04-02 13:53:59,205 - INFO - Finished processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part12.html
+2025-04-02 13:53:59,346 - INFO - Finished processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part13.html
+2025-04-02 13:54:04,579 - INFO - Finished processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part15.html
+2025-04-02 13:54:09,347 - INFO - Finished processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part16.html
+2025-04-02 13:54:10,133 - INFO - 
+Total execution time: 0 hours, 3 minutes, 14.40 seconds
+2025-04-02 13:54:10,167 - INFO - 
+Results have been saved to C:\Users\f94gdos\Desktop\2025-03-31\unique_bm32.json
+2025-04-02 13:54:10,381 - INFO - 3_unique_bm32_html.py ran successfully in 0 hours, 3 minutes, 16.24 seconds.
+2025-04-02 13:54:10,382 - INFO - Running script: 4_astrex_html_filter.py
+2025-04-02 13:54:14,480 - INFO - Processing with conditions: ['004642']
+2025-04-02 13:54:15,180 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part0.html with conditions: ['004642']
+2025-04-02 13:54:15,392 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part2.html with conditions: ['004642']
+2025-04-02 13:54:15,392 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part3.html with conditions: ['004642']
+2025-04-02 13:54:15,555 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part13.html with conditions: ['004642']
+2025-04-02 13:54:15,851 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part14.html with conditions: ['004642']
+2025-04-02 13:54:15,853 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part15.html with conditions: ['004642']
+2025-04-02 13:54:24,860 - INFO - Filtered HTML written to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part0_filtered_004642.html
+2025-04-02 13:54:25,628 - INFO - Filtered HTML written to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part2_filtered_004642.html
+2025-04-02 13:54:25,725 - INFO - Filtered HTML written to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part13_filtered_004642.html
+2025-04-02 13:54:26,238 - INFO - Filtered HTML written to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part3_filtered_004642.html
+2025-04-02 13:54:27,354 - INFO - Filtered HTML written to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part14_filtered_004642.html
+2025-04-02 13:54:27,470 - INFO - Filtered HTML written to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part15_filtered_004642.html
+2025-04-02 13:54:27,520 - INFO - Processing with conditions: ['004643']
+2025-04-02 13:54:29,302 - INFO - Deleted C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer_filtered_004643.html as no tables matched the conditions
+2025-04-02 13:54:29,302 - INFO - Processing completed in 0 hours, 0 minutes, and 18 seconds.
+2025-04-02 13:54:29,356 - INFO - 4_astrex_html_filter.py ran successfully in 0 hours, 0 minutes, 18.97 seconds.
+2025-04-02 13:54:29,362 - INFO - 
+Detailed Execution Times:
+2025-04-02 13:54:29,362 - INFO - 1_breakhtml.py: 0 hours, 0 minutes, 0.92 seconds
+2025-04-02 13:54:29,362 - INFO - 2_adjusthtml.py: 0 hours, 0 minutes, 23.03 seconds
+2025-04-02 13:54:29,362 - INFO - 3_unique_bm32_html.py: 0 hours, 3 minutes, 16.24 seconds
+2025-04-02 13:54:29,362 - INFO - 4_astrex_html_filter.py: 0 hours, 0 minutes, 18.97 seconds
+2025-04-02 13:54:29,362 - INFO - 
+Total time to run all scripts: 0 hours, 3 minutes, 59.20 seconds.
+2025-04-02 13:59:22,525 - INFO - Processing with conditions: ['004642']
+2025-04-02 13:59:23,336 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part0.html with conditions: ['004642']
+2025-04-02 13:59:23,426 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part2.html with conditions: ['004642']
+2025-04-02 13:59:23,673 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part3.html with conditions: ['004642']
+2025-04-02 13:59:23,776 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part13.html with conditions: ['004642']
+2025-04-02 13:59:23,993 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part14.html with conditions: ['004642']
+2025-04-02 13:59:24,095 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part15.html with conditions: ['004642']
+2025-04-02 13:59:33,594 - INFO - Filtered HTML written to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part13_filtered_004642.html
+2025-04-02 13:59:33,820 - INFO - Filtered HTML written to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part2_filtered_004642.html
+2025-04-02 13:59:33,917 - INFO - Filtered HTML written to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part3_filtered_004642.html
+2025-04-02 13:59:34,038 - INFO - Filtered HTML written to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part14_filtered_004642.html
+2025-04-02 13:59:34,078 - INFO - Filtered HTML written to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part0_filtered_004642.html
+2025-04-02 13:59:34,455 - INFO - Filtered HTML written to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part15_filtered_004642.html
+2025-04-02 13:59:34,494 - INFO - Processing with conditions: ['004643']
+2025-04-02 13:59:36,057 - INFO - Deleted C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer_filtered_004643.html as no tables matched the conditions
+2025-04-02 13:59:36,061 - INFO - Processing completed in 0 hours, 0 minutes, and 15 seconds.
+2025-04-02 14:00:13,293 - INFO - Processing with conditions: ['004642']
+2025-04-02 14:00:13,879 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part0.html with conditions: ['004642']
+2025-04-02 14:00:13,882 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part2.html with conditions: ['004642']
+2025-04-02 14:00:13,882 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part3.html with conditions: ['004642']
+2025-04-02 14:00:14,062 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part13.html with conditions: ['004642']
+2025-04-02 14:00:14,313 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part14.html with conditions: ['004642']
+2025-04-02 14:00:14,493 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part15.html with conditions: ['004642']
+2025-04-02 14:00:24,977 - INFO - Filtered HTML written to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part2_filtered_004642.html
+2025-04-02 14:00:25,922 - INFO - Filtered HTML written to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part3_filtered_004642.html
+2025-04-02 14:00:26,364 - INFO - Filtered HTML written to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part13_filtered_004642.html
+2025-04-02 14:00:27,493 - INFO - Filtered HTML written to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part0_filtered_004642.html
+2025-04-02 14:00:27,538 - INFO - Filtered HTML written to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part14_filtered_004642.html
+2025-04-02 14:00:28,272 - INFO - Filtered HTML written to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part15_filtered_004642.html
+2025-04-02 14:00:28,315 - INFO - Processing with conditions: ['004643']
+2025-04-02 14:00:29,642 - INFO - Deleted C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer_filtered_004643.html as no tables matched the conditions
+2025-04-02 14:00:29,642 - INFO - Processing completed in 0 hours, 0 minutes, and 18 seconds.
+2025-04-02 14:02:51,093 - INFO - Processing with conditions: ['004642']
+2025-04-02 14:02:51,447 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part0.html with conditions: ['004642']
+2025-04-02 14:02:51,684 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part2.html with conditions: ['004642']
+2025-04-02 14:02:51,997 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part3.html with conditions: ['004642']
+2025-04-02 14:02:52,362 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part13.html with conditions: ['004642']
+2025-04-02 14:02:52,813 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part14.html with conditions: ['004642']
+2025-04-02 14:02:53,500 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part15.html with conditions: ['004642']
+2025-04-02 14:03:00,597 - INFO - Filtered HTML written to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part2_filtered_004642.html
+2025-04-02 14:03:01,282 - INFO - Filtered HTML written to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part3_filtered_004642.html
+2025-04-02 14:03:02,053 - INFO - Filtered HTML written to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part0_filtered_004642.html
+2025-04-02 14:03:02,100 - INFO - Filtered HTML written to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part13_filtered_004642.html
+2025-04-02 14:03:02,273 - INFO - Filtered HTML written to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part14_filtered_004642.html
+2025-04-02 14:03:03,187 - INFO - Filtered HTML written to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part15_filtered_004642.html
+2025-04-02 14:03:03,235 - INFO - Processing with conditions: ['004643']
+2025-04-02 14:03:06,524 - INFO - Deleted C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer_filtered_004643.html as no tables matched the conditions
+2025-04-02 14:03:06,524 - INFO - Processing completed in 0 hours, 0 minutes, and 17 seconds.
+2025-04-02 14:03:23,109 - INFO - Processing with conditions: ['004642']
+2025-04-02 14:03:23,548 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part0.html with conditions: ['004642']
+2025-04-02 14:03:23,793 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part2.html with conditions: ['004642']
+2025-04-02 14:03:24,110 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part3.html with conditions: ['004642']
+2025-04-02 14:03:24,436 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part13.html with conditions: ['004642']
+2025-04-02 14:03:24,871 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part14.html with conditions: ['004642']
+2025-04-02 14:03:25,292 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part15.html with conditions: ['004642']
+2025-04-02 14:03:31,839 - INFO - Filtered HTML written to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part0_filtered_004642.html
+2025-04-02 14:03:32,858 - INFO - Filtered HTML written to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part2_filtered_004642.html
+2025-04-02 14:03:32,918 - INFO - Filtered HTML written to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part3_filtered_004642.html
+2025-04-02 14:03:33,633 - INFO - Filtered HTML written to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part14_filtered_004642.html
+2025-04-02 14:03:34,135 - INFO - Filtered HTML written to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part13_filtered_004642.html
+2025-04-02 14:03:34,691 - INFO - Filtered HTML written to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part15_filtered_004642.html
+2025-04-02 14:03:34,728 - INFO - Processing with conditions: ['004643']
+2025-04-02 14:03:37,437 - INFO - Deleted C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer_filtered_004643.html as no tables matched the conditions
+2025-04-02 14:03:37,438 - INFO - Processing completed in 0 hours, 0 minutes, and 16 seconds.
+2025-04-02 14:03:59,199 - INFO - Processing with conditions: ['004642']
+2025-04-02 14:04:00,655 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part0.html with conditions: ['004642']
+2025-04-02 14:04:00,796 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part2.html with conditions: ['004642']
+2025-04-02 14:04:00,796 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part3.html with conditions: ['004642']
+2025-04-02 14:04:00,806 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part13.html with conditions: ['004642']
+2025-04-02 14:04:00,821 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part14.html with conditions: ['004642']
+2025-04-02 14:04:01,187 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part15.html with conditions: ['004642']
+2025-04-02 14:04:11,627 - INFO - Filtered HTML appended to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer_filtered_004642.html
+2025-04-02 14:04:12,082 - INFO - Filtered HTML appended to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer_filtered_004642.html
+2025-04-02 14:04:12,584 - INFO - Filtered HTML appended to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer_filtered_004642.html
+2025-04-02 14:04:12,721 - INFO - Filtered HTML appended to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer_filtered_004642.html
+2025-04-02 14:04:12,775 - INFO - Filtered HTML appended to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer_filtered_004642.html
+2025-04-02 14:04:12,827 - INFO - Filtered HTML appended to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer_filtered_004642.html
+2025-04-02 14:04:12,885 - INFO - Processing with conditions: ['004643']
+2025-04-02 14:04:14,615 - INFO - Deleted C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer_filtered_004643.html as no tables matched the conditions
+2025-04-02 14:04:14,615 - INFO - Processing completed in 0 hours, 0 minutes, and 18 seconds.
+2025-04-02 14:05:30,803 - INFO - Processing with conditions: ['004642']
+2025-04-02 14:05:31,554 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part0.html with conditions: ['004642']
+2025-04-02 14:05:31,702 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part2.html with conditions: ['004642']
+2025-04-02 14:05:31,736 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part3.html with conditions: ['004642']
+2025-04-02 14:05:31,875 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part13.html with conditions: ['004642']
+2025-04-02 14:05:32,183 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part14.html with conditions: ['004642']
+2025-04-02 14:05:32,336 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part15.html with conditions: ['004642']
+2025-04-02 14:05:43,189 - INFO - Filtered HTML appended to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer_filtered_004642.html
+2025-04-02 14:05:43,686 - INFO - Filtered HTML appended to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer_filtered_004642.html
+2025-04-02 14:05:43,951 - INFO - Filtered HTML appended to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer_filtered_004642.html
+2025-04-02 14:05:44,515 - INFO - Filtered HTML appended to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer_filtered_004642.html
+2025-04-02 14:05:44,766 - INFO - Filtered HTML appended to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer_filtered_004642.html
+2025-04-02 14:05:45,081 - INFO - Filtered HTML appended to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer_filtered_004642.html
+2025-04-02 14:05:45,148 - INFO - Processing with conditions: ['004643']
+2025-04-02 14:05:47,094 - INFO - Deleted C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer_filtered_004643.html as no tables matched the conditions
+2025-04-02 14:05:47,095 - INFO - Processing completed in 0 hours, 0 minutes, and 19 seconds.
+2025-04-02 14:08:44,366 - INFO - Processing with conditions: ['004642']
+2025-04-02 14:08:45,144 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part0.html with conditions: ['004642']
+2025-04-02 14:08:45,213 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part2.html with conditions: ['004642']
+2025-04-02 14:08:45,410 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part3.html with conditions: ['004642']
+2025-04-02 14:08:45,469 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part13.html with conditions: ['004642']
+2025-04-02 14:08:45,513 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part14.html with conditions: ['004642']
+2025-04-02 14:08:45,644 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part15.html with conditions: ['004642']
+2025-04-02 14:08:56,145 - INFO - Filtered HTML appended to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer_filtered_004642.html
+2025-04-02 14:08:56,284 - INFO - Filtered HTML appended to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer_filtered_004642.html
+2025-04-02 14:08:56,592 - INFO - Filtered HTML appended to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer_filtered_004642.html
+2025-04-02 14:08:56,798 - INFO - Filtered HTML appended to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer_filtered_004642.html
+2025-04-02 14:08:56,809 - INFO - Filtered HTML appended to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer_filtered_004642.html
+2025-04-02 14:08:56,842 - INFO - Filtered HTML appended to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer_filtered_004642.html
+2025-04-02 14:08:56,916 - INFO - Processing with conditions: ['004643']
+2025-04-02 14:08:58,834 - INFO - Deleted C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer_filtered_004643.html as no tables matched the conditions
+2025-04-02 14:08:58,835 - INFO - Processing completed in 0 hours, 0 minutes, and 17 seconds.
+2025-04-02 14:10:40,108 - INFO - Processing with conditions: ['004642']
+2025-04-02 14:10:40,891 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part0.html with conditions: ['004642']
+2025-04-02 14:10:41,246 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part2.html with conditions: ['004642']
+2025-04-02 14:10:41,261 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part3.html with conditions: ['004642']
+2025-04-02 14:10:41,360 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part13.html with conditions: ['004642']
+2025-04-02 14:10:41,487 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part14.html with conditions: ['004642']
+2025-04-02 14:10:41,493 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part15.html with conditions: ['004642']
+2025-04-02 14:10:50,593 - INFO - Filtered HTML appended to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer_filtered_004642.html
+2025-04-02 14:10:51,050 - INFO - Filtered HTML appended to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer_filtered_004642.html
+2025-04-02 14:10:52,396 - INFO - Filtered HTML appended to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer_filtered_004642.html
+2025-04-02 14:10:52,627 - INFO - Filtered HTML appended to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer_filtered_004642.html
+2025-04-02 14:10:52,927 - INFO - Filtered HTML appended to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer_filtered_004642.html
+2025-04-02 14:10:53,013 - INFO - Filtered HTML appended to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer_filtered_004642.html
+2025-04-02 14:10:53,066 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part0.html with conditions: ['004642']
+2025-04-02 14:10:59,742 - INFO - Filtered HTML appended to C:\Users\f94gdos\Desktop\2025-03-31\debug\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part0_filtered_004642.html
+2025-04-02 14:10:59,750 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part2.html with conditions: ['004642']
+2025-04-02 14:11:04,352 - INFO - Filtered HTML appended to C:\Users\f94gdos\Desktop\2025-03-31\debug\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part2_filtered_004642.html
+2025-04-02 14:11:04,356 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part3.html with conditions: ['004642']
+2025-04-02 14:11:08,775 - INFO - Filtered HTML appended to C:\Users\f94gdos\Desktop\2025-03-31\debug\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part3_filtered_004642.html
+2025-04-02 14:11:08,779 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part13.html with conditions: ['004642']
+2025-04-02 14:11:13,450 - INFO - Filtered HTML appended to C:\Users\f94gdos\Desktop\2025-03-31\debug\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part13_filtered_004642.html
+2025-04-02 14:11:13,455 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part14.html with conditions: ['004642']
+2025-04-02 14:11:17,147 - INFO - Filtered HTML appended to C:\Users\f94gdos\Desktop\2025-03-31\debug\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part14_filtered_004642.html
+2025-04-02 14:11:17,149 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part15.html with conditions: ['004642']
+2025-04-02 14:11:22,113 - INFO - Filtered HTML appended to C:\Users\f94gdos\Desktop\2025-03-31\debug\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part15_filtered_004642.html
+2025-04-02 14:11:22,113 - INFO - Processing with conditions: ['004643']
+2025-04-02 14:11:23,428 - INFO - Deleted C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer_filtered_004643.html as no tables matched the conditions
+2025-04-02 14:11:23,429 - INFO - Processing completed in 0 hours, 0 minutes, and 46 seconds.
+2025-04-02 14:11:53,208 - INFO - Processing with conditions: ['004642']
+2025-04-02 14:11:53,894 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part0.html with conditions: ['004642']
+2025-04-02 14:11:53,934 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part2.html with conditions: ['004642']
+2025-04-02 14:11:54,074 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part3.html with conditions: ['004642']
+2025-04-02 14:11:54,126 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part13.html with conditions: ['004642']
+2025-04-02 14:11:54,312 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part14.html with conditions: ['004642']
+2025-04-02 14:11:54,414 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part15.html with conditions: ['004642']
+2025-04-02 14:12:03,180 - INFO - Filtered HTML appended to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer_filtered_004642.html
+2025-04-02 14:12:03,972 - INFO - Filtered HTML appended to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer_filtered_004642.html
+2025-04-02 14:12:04,151 - INFO - Filtered HTML appended to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer_filtered_004642.html
+2025-04-02 14:12:04,242 - INFO - Filtered HTML appended to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer_filtered_004642.html
+2025-04-02 14:12:04,688 - INFO - Filtered HTML appended to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer_filtered_004642.html
+2025-04-02 14:12:04,832 - INFO - Filtered HTML appended to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer_filtered_004642.html
+2025-04-02 14:12:04,888 - INFO - Processing with conditions: ['004643']
+2025-04-02 14:12:06,794 - INFO - Deleted C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer_filtered_004643.html as no tables matched the conditions
+2025-04-02 14:12:06,794 - INFO - Processing completed in 0 hours, 0 minutes, and 16 seconds.
+2025-04-02 14:12:25,228 - INFO - Processing with conditions: ['004642']
+2025-04-02 14:12:25,928 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part0.html with conditions: ['004642']
+2025-04-02 14:12:25,935 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part2.html with conditions: ['004642']
+2025-04-02 14:12:25,981 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part3.html with conditions: ['004642']
+2025-04-02 14:12:26,044 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part13.html with conditions: ['004642']
+2025-04-02 14:12:26,405 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part14.html with conditions: ['004642']
+2025-04-02 14:12:26,522 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part15.html with conditions: ['004642']
+2025-04-02 14:12:36,405 - INFO - Filtered HTML appended to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer_filtered_004642.html
+2025-04-02 14:12:36,930 - INFO - Filtered HTML appended to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer_filtered_004642.html
+2025-04-02 14:12:37,127 - INFO - Filtered HTML appended to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer_filtered_004642.html
+2025-04-02 14:12:37,510 - INFO - Filtered HTML appended to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer_filtered_004642.html
+2025-04-02 14:12:37,924 - INFO - Filtered HTML appended to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer_filtered_004642.html
+2025-04-02 14:12:38,078 - INFO - Filtered HTML appended to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer_filtered_004642.html
+2025-04-02 14:12:38,121 - INFO - Processing with conditions: ['014206']
+2025-04-02 14:12:38,961 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part1.html with conditions: ['014206']
+2025-04-02 14:12:39,033 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part2.html with conditions: ['014206']
+2025-04-02 14:12:39,393 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part3.html with conditions: ['014206']
+2025-04-02 14:12:39,496 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part7.html with conditions: ['014206']
+2025-04-02 14:12:39,878 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part10.html with conditions: ['014206']
+2025-04-02 14:12:40,033 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part12.html with conditions: ['014206']
+2025-04-02 14:12:40,155 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part14.html with conditions: ['014206']
+2025-04-02 14:12:40,313 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part15.html with conditions: ['014206']
+2025-04-02 14:12:40,737 - INFO - Processing file: C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer__part17.html with conditions: ['014206']
+2025-04-02 14:12:51,236 - INFO - Filtered HTML appended to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer_filtered_014206.html
+2025-04-02 14:12:51,345 - INFO - Filtered HTML appended to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer_filtered_014206.html
+2025-04-02 14:12:53,293 - INFO - Filtered HTML appended to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer_filtered_014206.html
+2025-04-02 14:12:53,294 - INFO - Filtered HTML appended to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer_filtered_014206.html
+2025-04-02 14:12:53,486 - INFO - Filtered HTML appended to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer_filtered_014206.html
+2025-04-02 14:12:53,727 - INFO - Filtered HTML appended to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer_filtered_014206.html
+2025-04-02 14:12:55,138 - INFO - Filtered HTML appended to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer_filtered_014206.html
+2025-04-02 14:12:55,683 - INFO - Filtered HTML appended to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer_filtered_014206.html
+2025-04-02 14:12:57,392 - INFO - Filtered HTML appended to C:\Users\f94gdos\Desktop\2025-03-31\ID-7121-MasterCard_GCIS_(Standard)_Message_viewer_filtered_014206.html
+2025-04-02 14:12:57,424 - INFO - Processing completed in 0 hours, 0 minutes, and 35 seconds.
