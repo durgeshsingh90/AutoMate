@@ -1,20 +1,19 @@
-# oracledb_queries.py
-
 import oracledb
 import logging
 import json
 from datetime import datetime
 import base64
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from threading import Lock
+import os
+import time  # Import time module
 
 # Set up logging
 logging.basicConfig(level=logging.DEBUG)
 
 # Oracle connection details
-username = 'oasis77'
-password = 'ist0py'
-dsn_alias = 'ISTU2_EQU'  # Alias defined in TNSNAMES.ORA
+username = 'F94GDOS'
+password = 'Ireland2025!'
+dsn_alias = 'A4PCDO8001.ESH.PAR_IST'  # Alias defined in TNSNAMES.ORA
 
 # Provide the path to the Oracle Instant Client libraries
 oracle_client_path = r"C:\Oracle\Ora12c_64\BIN"  # Your Oracle Instant Client path
@@ -43,7 +42,7 @@ def initialize_connection():
         return None
 
 def execute_query(connection, query):
-    query_result = {}
+    query_result = {"query": query, "result": None, "error": None}
     try:
         cursor = connection.cursor()
         try:
@@ -73,7 +72,7 @@ def execute_query(connection, query):
                 result.append(row_dict)
 
             # Add result to query_result
-            query_result[query] = result
+            query_result["result"] = result
 
         finally:
             # Close the cursor
@@ -83,14 +82,11 @@ def execute_query(connection, query):
         # Handle connection errors
         error = e.args[0]
         logging.error(f"An error occurred: {error.code}: {error.message}")
-
-        if error.isrecoverable:
-            logging.error("The error is recoverable. You might want to retry the connection.")
-        else:
-            logging.error("The error is not recoverable. Check your configuration and network.")
+        query_result["error"] = f"Database error {error.code}: {error.message}"
 
     except Exception as e:
         logging.error(f"An unexpected error occurred: {e}")
+        query_result["error"] = str(e)
 
     return query_result
 
@@ -102,12 +98,29 @@ def execute_queries_with_new_connection(queries):
             future_to_query = {executor.submit(execute_query, connection, query): query for query in queries}
             for future in as_completed(future_to_query):
                 query = future_to_query[future]
+
+                # Track the start time
+                start_time = time.time()
+
                 try:
                     result = future.result()
                     results.append(result)
                     logging.info(f"Query completed: {query}")
                 except Exception as exc:
                     logging.error(f"Query {query} generated an exception: {exc}")
+                    results.append({"query": query, "result": None, "error": str(exc)})
+
+                # Track the end time
+                end_time = time.time()
+
+                # Calculate the elapsed time
+                elapsed_time = end_time - start_time
+                hours, rem = divmod(elapsed_time, 3600)
+                minutes, seconds = divmod(rem, 60)
+
+                # Print the elapsed time for the query
+                print(f"Time taken for query: {query} - {int(hours)} hours {int(minutes)} minutes {seconds:.2f} seconds")
+
         # Close the connection
         connection.close()
         logging.info("Database connection closed")
@@ -125,4 +138,50 @@ def execute_multiple_query_sets(query_sets):
                 all_results.extend(result)
             except Exception as exc:
                 logging.error(f"Query set {query_set} generated an exception: {exc}")
+                all_results.append({"query_set": query_set, "result": None, "error": str(exc)})
     return all_results
+
+# Your queries
+query_set_1 = [
+    """
+    select refnum, issuer, msgtype, pcode, host_name, CARDPRODUCT, ISSUER_DATA, 
+           ACQUIRER_DATA, amount, mask_pan, respcode, alpharesponsecode AS Scheme_response, 
+           acquirer, filler2, filler3, termid, termloc AS MERCHANT, merchant_type, 
+           chip_index, acceptorname, omni_log_dt_utc, acq_currency_code, iss_currency_code, 
+           TXN_END_TIME, authnum, member_id, trantime, pos_condition_code 
+    from oasis77.shclog 
+    where msgtype like ('%130%') 
+          and respcode in ('09') 
+          and cardproduct in ('BCMC')
+    """
+]
+# List of query sets
+query_sets = [query_set_1]
+
+# Track the start time
+start_time = time.time()
+
+# Execute the queries
+results = execute_multiple_query_sets(query_sets)
+
+# Track the end time
+end_time = time.time()
+
+# Calculate the total elapsed time
+total_elapsed_time = end_time - start_time
+total_hours, total_rem = divmod(total_elapsed_time, 3600)
+total_minutes, total_seconds = divmod(total_rem, 60)
+
+# Create the output filename based on the script filename
+script_filename = os.path.splitext(os.path.basename(__file__))[0]
+output_filename = f"{script_filename}_output.json"
+
+# Write output to a JSON file
+with open(output_filename, 'w') as output_file:
+    json.dump(results, output_file, cls=CustomJSONEncoder, indent=4)
+
+# Print out the results
+# print(json.dumps(results, cls=CustomJSONEncoder, indent=4))
+
+# Print out the total elapsed time
+print(f"Total time taken for all queries: {int(total_hours)} hours {int(total_minutes)} minutes {total_seconds:.2f} seconds")

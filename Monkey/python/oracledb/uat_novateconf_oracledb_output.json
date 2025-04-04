@@ -1,0 +1,7 @@
+[
+    {
+        "query": "\n    select refnum, issuer, msgtype, pcode, host_name, CARDPRODUCT, ISSUER_DATA, \n           ACQUIRER_DATA, amount, mask_pan, respcode, alpharesponsecode AS Scheme_response, \n           acquirer, filler2, filler3, termid, termloc AS MERCHANT, merchant_type, \n           chip_index, acceptorname, omni_log_dt_utc, acq_currency_code, iss_currency_code, \n           TXN_END_TIME, authnum, member_id, trantime, pos_condition_code \n    from oasis77.shclog \n    where msgtype like ('%130%') \n          and respcode in ('09') \n          and cardproduct in ('BCMC')\n    ",
+        "result": null,
+        "error": "Database error 942: ORA-00942: table or view does not exist"
+    }
+]
