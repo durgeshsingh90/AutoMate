@@ -1,0 +1,16 @@
+{
+    "total_DE032_count": 0,
+    "files": [
+        {
+            "file_name": "C:\\Projects\\Monkey\\Monkey\\media\\uploads\\test_part0.html",
+            "unique_value_count": 0,
+            "de032_value_counts": {}
+        }
+    ],
+    "consolidated_de032_value_counts": {},
+    "execution_time": {
+        "hours": 0,
+        "minutes": 0,
+        "seconds": 0.3314180374145508
+    }
+}

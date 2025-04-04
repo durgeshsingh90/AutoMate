@@ -52,7 +52,6 @@ INSTALLED_APPS = [
     'binblock',
     'pdf_merger',
     'gen_reversals',
-    'emvco_filter',
     'astrex_html_logs',
     'rrn_search'
 ]
@@ -178,7 +177,6 @@ STATICFILES_DIRS = [
     BASE_DIR / "binblock/static",
     BASE_DIR / "slot_booking/static",
     BASE_DIR / "gen_reversals/static",
-    BASE_DIR / "emvco_filter/static",
     BASE_DIR / "astrex_html_logs/static",
     BASE_DIR / "rrn_search/static",
 
