@@ -39,7 +39,6 @@ urlpatterns = [
     path('pdf_merger/', include('pdf_merger.urls')),
     path('slot_booking/', include('slot_booking.urls')),
     path('gen_reversals/', include('gen_reversals.urls')),
-    path('emvco_filter/', include('emvco_filter.urls')),
     path('astrex_html_logs/', include('astrex_html_logs.urls')),
     path('rrn_search/', include('rrn_search.urls'))
 
