@@ -89,29 +89,16 @@ def download_filtered_by_de032(request):
             json_path = os.path.join(settings.MEDIA_ROOT, 'astrex_html_logs', 'unique_bm32.json')
             conditions = de032_value.split(',')
 
-            filtered_files = []
-            for condition in conditions:
-                run_astrex_html_filter(json_path, [condition])
-                base_name = os.path.splitext(filename)[0]
-                filtered_file = f"{base_name}_filtered_{condition}.html"
-                filtered_path = os.path.join(settings.MEDIA_ROOT, 'astrex_html_logs', filtered_file)
-                if os.path.exists(filtered_path):
-                    filtered_files.append(filtered_path)
-
-            if filtered_files:
-                # zip_path = os.path.join(settings.MEDIA_ROOT, 'astrex_html_logs', f"{base_name}_filtered_all.zip")
-                zip_path = os.path.join(settings.MEDIA_ROOT, 'astrex_html_logs', f"{base_name}_filtered_{'_'.join(conditions)}.zip")
-
-                with zipfile.ZipFile(zip_path, 'w') as zipf:
-                    for file_path in filtered_files:
-                        zipf.write(file_path, os.path.relpath(file_path, settings.MEDIA_ROOT))
-
+            # Run filter and get the path of the generated zip
+            zip_file_path = run_astrex_html_filter(json_path, conditions)
+            
+            if zip_file_path and os.path.exists(zip_file_path):
                 return JsonResponse({
                     'status': 'success',
-                    'filtered_file': f"astrex_html_logs/{os.path.basename(zip_path)}"
+                    'filtered_file': f"astrex_html_logs/{os.path.basename(zip_file_path)}"
                 })
             else:
-                return JsonResponse({'status': 'error', 'message': 'No filtered files found.'})
+                return JsonResponse({'status': 'error', 'message': 'Filtered ZIP not created.'})
 
         except Exception as e:
             import traceback

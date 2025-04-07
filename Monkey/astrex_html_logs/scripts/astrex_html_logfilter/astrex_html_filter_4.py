@@ -173,7 +173,7 @@ def process_files_condition_by_condition(json_path, conditions, num_processes=10
 
     # Create a zip file and add all filtered HTML files to it
     datetime_stamp = datetime.now().strftime('%Y%m%d%H%M%S')
-    zip_filename = os.path.join(output_dir, f"{base_name}pspfiltered_{datetime_stamp}.zip")
+    zip_filename = os.path.join(output_dir, f"{base_name}_pspfiltered_{datetime_stamp}.zip")
     with zipfile.ZipFile(zip_filename, 'w', zipfile.ZIP_DEFLATED) as zipf:
         for file in filtered_files:
             zipf.write(file, os.path.basename(file))
@@ -186,6 +186,7 @@ def process_files_condition_by_condition(json_path, conditions, num_processes=10
     hours, rem = divmod(elapsed_time, 3600)
     minutes, seconds = divmod(rem, 60)
     logging.info(f"Processing completed in {int(hours)} hours, {int(minutes)} minutes, and {int(seconds)} seconds.")
+    return zip_filename
 
 # if __name__ == '__main__':
 #     # Path to the JSON file
@@ -203,4 +204,4 @@ def process_files_condition_by_condition(json_path, conditions, num_processes=10
 
 # Replace if __name__ == '__main__': block with:
 def run_astrex_html_filter(json_path, conditions, num_processes=10):
-    process_files_condition_by_condition(json_path, conditions, num_processes)
+    return process_files_condition_by_condition(json_path, conditions, num_processes)
