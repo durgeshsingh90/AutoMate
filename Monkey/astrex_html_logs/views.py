@@ -99,7 +99,9 @@ def download_filtered_by_de032(request):
                     filtered_files.append(filtered_path)
 
             if filtered_files:
-                zip_path = os.path.join(settings.MEDIA_ROOT, 'astrex_html_logs', f"{base_name}_filtered_all.zip")
+                # zip_path = os.path.join(settings.MEDIA_ROOT, 'astrex_html_logs', f"{base_name}_filtered_all.zip")
+                zip_path = os.path.join(settings.MEDIA_ROOT, 'astrex_html_logs', f"{base_name}_filtered_{'_'.join(conditions)}.zip")
+
                 with zipfile.ZipFile(zip_path, 'w') as zipf:
                     for file_path in filtered_files:
                         zipf.write(file_path, os.path.relpath(file_path, settings.MEDIA_ROOT))
