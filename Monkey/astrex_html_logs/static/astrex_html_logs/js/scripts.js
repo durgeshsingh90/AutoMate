@@ -98,25 +98,27 @@ function uploadFile() {
   });
 });
   
-        convertBtn.addEventListener('click', () => {
-          const convertForm = new FormData();
-          convertForm.append('de032', key);
-          convertForm.append('filename', file.name);
-          fetch('/astrex_html_logs/convert_emvco/', {
-            method: 'POST',
-            body: convertForm
-          }).then(res => res.json())
-          .then(result => {
-            if (result.status === 'success') {
-              const link = document.createElement('a');
-              link.href = `/media/${result.emvco_file}`;
-              link.download = result.emvco_file;
-              link.click();
-            } else {
-              alert(result.message);
-            }
-          });
-        });
+convertBtn.addEventListener('click', () => {
+  const convertForm = new FormData();
+  convertForm.append('de032', key);
+  convertForm.append('filename', file.name);
+  fetch('/astrex_html_logs/convert_emvco/', {
+    method: 'POST',
+    body: convertForm
+  }).then(res => res.json())
+  .then(result => {
+    if (result.status === 'success') {
+      const link = document.createElement('a');
+      link.href = `/media/${result.emvco_file}`;
+      link.download = result.emvco_file.split('/').pop();
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } else {
+      alert(result.message);
+    }
+  });
+});
         container.appendChild(box);
       });
 

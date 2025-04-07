@@ -101,8 +101,20 @@ def run_html2emvco(html_file_path):
 
     with open(output_file_path, 'w', encoding='utf-8') as file:
         file.write(pretty_print_xml(root))
+    import zipfile
 
-    return output_file_path
+    # Create ZIP file path
+    zip_path = output_file_path.replace('.xml', '.zip')
+
+    # Zip the XML file
+    with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+        zipf.write(output_file_path, os.path.basename(output_file_path))
+
+    # Optionally delete the original XML after zipping
+    os.remove(output_file_path)
+
+    return zip_path  # Return path to the ZIP instead of XML
+
 
 
 def create_field_element(online_message, cells, current_mti):
