@@ -102,11 +102,15 @@ convertBtn.addEventListener('click', () => {
   const convertForm = new FormData();
   convertForm.append('de032', key);
   convertForm.append('filename', file.name);
+
+  showLoadingScreen(); // 🧩 FIX HERE
+
   fetch('/astrex_html_logs/convert_emvco/', {
     method: 'POST',
     body: convertForm
   }).then(res => res.json())
   .then(result => {
+    hideLoadingScreen(); // 🧩 FIX HERE
     if (result.status === 'success') {
       const link = document.createElement('a');
       link.href = `/media/${result.emvco_file}`;
@@ -117,8 +121,13 @@ convertBtn.addEventListener('click', () => {
     } else {
       alert(result.message);
     }
+  }).catch(err => {
+    hideLoadingScreen(); // always hide on error
+    console.error(err);
+    alert('Conversion failed.');
   });
 });
+
         container.appendChild(box);
       });
 
@@ -160,45 +169,67 @@ function hideLoadingScreen() {
 }
 
 function cycleMedia() {
-  const media = document.querySelectorAll('.loading-media');
+  const media = Array.from(document.querySelectorAll('.loading-media')).filter(el => {
+    // Only keep elements that are actually visible and loaded
+    if (el.tagName === 'VIDEO') {
+      return el.readyState > 0;  // has enough data to play
+    }
+    return true; // assume GIFs are always good
+  });
+
+  if (media.length === 0) return;
+
   let currentIndex = 0;
 
   function playNext() {
-    // Hide current media
     media[currentIndex].style.opacity = 0;
+
     setTimeout(() => {
       media[currentIndex].style.display = 'none';
-
-      // Move to the next media
       currentIndex = (currentIndex + 1) % media.length;
       const nextMedia = media[currentIndex];
 
-      // Show the next media
       if (nextMedia.tagName === 'VIDEO') {
-        nextMedia.style.display = 'block';
-        nextMedia.style.opacity = 1;
-        nextMedia.play();
-        nextMedia.onended = playNext;
+        try {
+          nextMedia.style.display = 'block';
+          nextMedia.style.opacity = 1;
+          nextMedia.play().then(() => {
+            nextMedia.onended = playNext;
+          }).catch(() => {
+            // Skip broken video
+            playNext();
+          });
+        } catch {
+          playNext(); // fallback if video fails
+        }
       } else {
         nextMedia.style.display = 'block';
         nextMedia.style.opacity = 1;
-        setTimeout(playNext, 2000); // Change this to the duration of the GIF
+        setTimeout(playNext, 2000); // for GIFs
       }
-    }, 1000); // Match the transition duration used in CSS
+    }, 1000); // transition time
   }
 
-  // Initially play the first media
+  // Initial
   if (media[currentIndex].tagName === 'VIDEO') {
-    media[currentIndex].style.display = 'block';
-    media[currentIndex].style.opacity = 1;
-    media[currentIndex].play();
-    media[currentIndex].onended = playNext;
+    try {
+      media[currentIndex].style.display = 'block';
+      media[currentIndex].style.opacity = 1;
+      media[currentIndex].play().then(() => {
+        media[currentIndex].onended = playNext;
+      }).catch(() => {
+        playNext();
+      });
+    } catch {
+      playNext();
+    }
   } else {
     media[currentIndex].style.display = 'block';
     media[currentIndex].style.opacity = 1;
-    setTimeout(playNext, 2000); // Change this to the duration of the GIF
+    setTimeout(playNext, 2000);
   }
 }
+
 
 function startLoadingTimer() {
   const timerElement = document.getElementById('loadingTimer');
