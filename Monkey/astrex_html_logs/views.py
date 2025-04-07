@@ -158,23 +158,37 @@ def convert_emvco(request):
 @csrf_exempt
 def zip_filtered_files(request):
     if request.method == 'POST':
-        filename = request.POST.get('filename')
-        if not filename:
-            return JsonResponse({'status': 'error', 'message': 'Filename not provided'})
+        try:
+            filename = request.POST.get('filename')
+            if not filename:
+                return JsonResponse({'status': 'error', 'message': 'Filename not provided'})
 
-        progress_file = os.path.join(settings.MEDIA_ROOT, 'astrex_html_logs', f"{os.path.splitext(filename)[0]}_progress.json")
+            json_path = os.path.join(settings.MEDIA_ROOT, 'astrex_html_logs', 'unique_bm32.json')
 
-        if os.path.exists(progress_file):
-            with open(progress_file) as f:
-                filtered_files = json.load(f)
-            zip_path = os.path.join(settings.MEDIA_ROOT, 'astrex_html_logs', f"{os.path.splitext(filename)[0]}_filtered_all.zip")
+            if not os.path.exists(json_path):
+                return JsonResponse({'status': 'error', 'message': 'unique_bm32.json not found'})
 
-            with zipfile.ZipFile(zip_path, 'w') as zipf:
-                for file_path in filtered_files:
-                    zipf.write(file_path, os.path.relpath(file_path, settings.MEDIA_ROOT))
+            with open(json_path, 'r') as f:
+                json_data = json.load(f)
 
-            return JsonResponse({'status': 'success', 'zip_file': f"astrex_html_logs/{os.path.basename(zip_path)}"})
-        else:
-            return JsonResponse({'status': 'error', 'message': 'Filtered files not ready'})
+            # Extract all unique BM32s
+            consolidated_counts = json_data.get("consolidated_de032_value_counts", {})
+            all_conditions = list(consolidated_counts.keys())
+
+            # Call the script with all conditions
+            zip_file_path = run_astrex_html_filter(json_path, all_conditions)
+
+            if zip_file_path and os.path.exists(zip_file_path):
+                return JsonResponse({
+                    'status': 'success',
+                    'zip_file': f"astrex_html_logs/{os.path.basename(zip_file_path)}"
+                })
+            else:
+                return JsonResponse({'status': 'error', 'message': 'Filtered ZIP not created.'})
+
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            return JsonResponse({'status': 'error', 'message': f'Server error: {str(e)}'})
 
     return JsonResponse({'status': 'error', 'message': 'Invalid request'})
