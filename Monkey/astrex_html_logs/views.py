@@ -51,9 +51,9 @@ def upload_log(request):
                 de032_result = run_unique_de32_html(file_path, max_processes=10)
 
                 total_DE032_count = de032_result["total_DE032_count"]
-                total_txn = 1234  # Replace this with the actual logic to get total transactions
-                start_log_time = "2023-04-01T10:00:00"  # Replace with actual
-                end_log_time = "2023-04-01T12:30:00"  # Replace with actual
+                total_txn = de032_result.get("total_transactions", "")
+                start_log_time = de032_result.get("start_log_time", "")
+                end_log_time = de032_result.get("end_log_time", "")
                 execution_time = de032_result["execution_time"]
 
                 return JsonResponse({
@@ -67,6 +67,11 @@ def upload_log(request):
                     'end_log_time': end_log_time,
                     'execution_time': execution_time,
                 })
+#   "consolidated_de032_value_counts": {...},
+#   "execution_time": ...,
+#   "start_log_time": ...,
+#   "end_log_time": ...,
+#   "total_transactions": ...
             return JsonResponse({'status': 'error', 'message': 'Only .html files are supported.'})
 
         except Exception as e:

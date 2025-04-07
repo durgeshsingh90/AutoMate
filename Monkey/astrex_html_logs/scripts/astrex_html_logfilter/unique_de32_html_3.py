@@ -8,33 +8,7 @@ from pathlib import Path
 import re
 import os
 
-# Set up logging configuration
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler("processing.log"),
-        logging.StreamHandler()
-    ]
-)
-
-def setup_logging():
-    logger = logging.getLogger()
-    logger.setLevel(logging.INFO)
-    # Create file handler
-    fh = logging.FileHandler("processing.log")
-    fh.setLevel(logging.INFO)
-    # Create console handler
-    ch = logging.StreamHandler()
-    ch.setLevel(logging.INFO)
-    # Create formatter and add it to the handlers
-    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-    fh.setFormatter(formatter)
-    ch.setFormatter(formatter)
-    # Add the handlers to the logger
-    logger.addHandler(fh)
-    logger.addHandler(ch)
-    return logger
+logger = logging.getLogger('astrex_html_filter')
 
 # Function to process a single chunk
 def process_chunk(chunk):
@@ -64,7 +38,7 @@ def split_html_file(filepath, delimiter='<br>'):
         with open(filepath, 'r', encoding='utf-8', errors='ignore') as file:
             content = file.read()
     except FileNotFoundError as e:
-        logging.error(f"File not found: {filepath}")
+        logger.error(f"File not found: {filepath}")
         return []
 
     parts = content.split(delimiter)
@@ -74,7 +48,7 @@ def split_html_file(filepath, delimiter='<br>'):
 
 # Function to process a single file sequentially
 def sequential_process_file(html_file_path):
-    logging.info(f"Processing file: {html_file_path}")
+    logger.info(f"Processing file: {html_file_path}")
     # Split the HTML file into parts
     parts = split_html_file(html_file_path)
     if not parts:  # File was not found or could not be split
@@ -95,7 +69,7 @@ def sequential_process_file(html_file_path):
     # Get the count of DE032 unique values
     de032_value_counts = Counter(de032_values)
 
-    logging.info(f"Finished processing file: {html_file_path}")
+    logger.info(f"Finished processing file: {html_file_path}")
 
     return html_file_path, value_counts, de032_value_counts
 
@@ -124,10 +98,10 @@ def main(html_file_path, max_processes):
     existing_files = [file for file in file_names if Path(file).exists()]
 
     if not existing_files:
-        logging.warning("No valid _part files to process.")
+        logger.warning("No valid _part files to process.")
         return
 
-    logging.info(f"Found {len(existing_files)} files to process.")
+    logger.info(f"Found {len(existing_files)} files to process.")
 
     # Process each file in parallel at the top level
     with Pool(processes=max_processes) as pool:
@@ -173,14 +147,14 @@ def main(html_file_path, max_processes):
     }
 
     # Print total execution time and JSON file output status
-    logging.info(f"\nTotal execution time: {hours} hours, {minutes} minutes, {seconds:.2f} seconds")
+    logger.info(f"\nTotal execution time: {hours} hours, {minutes} minutes, {seconds:.2f} seconds")
 
     # Output the result data as JSON in the same directory as the input file
     output_filename = Path(html_file_path).parent / "unique_bm32.json"
     with open(output_filename, "w", encoding='utf-8') as json_file:
         json.dump(result_data, json_file, indent=4)
 
-    logging.info(f"\nResults have been saved to {output_filename}")
+    logger.info(f"\nResults have been saved to {output_filename}")
     return result_data  # ✅ Add this line
 
 # if __name__ == "__main__":

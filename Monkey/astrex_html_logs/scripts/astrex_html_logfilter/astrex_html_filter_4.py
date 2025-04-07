@@ -8,15 +8,8 @@ from lxml import etree
 import zipfile
 from datetime import datetime
 
-# Set up logging configuration
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler("processing.log"),
-        logging.StreamHandler()
-    ]
-)
+logger = logging.getLogger('astrex_html_filter')
+
 
 def condition_to_expression(conditions_list):
     conditions_str = " ".join(conditions_list)
@@ -72,20 +65,20 @@ def extract_matching_tables(html, conditions_list):
 
 def process_file(file_path, condition, output_filepath): # update function parameter
     conditions_list = [condition] # Wrap the condition in a list
-    logging.info(f"Processing file: {file_path} with conditions: {conditions_list}")
+    logger.info(f"Processing file: {file_path} with conditions: {conditions_list}")
     with open(file_path, 'r', encoding='utf-8') as file:
         input_html = file.read()
     
     output_html = extract_matching_tables(input_html, condition)
     
     if not output_html.strip():
-        logging.info(f"No tables matched the given conditions in file: {file_path}")
+        logger.info(f"No tables matched the given conditions in file: {file_path}")
         return False
 
     with open(output_filepath, 'a', encoding='utf-8') as file:
         file.write(output_html)
     
-    logging.info(f"Filtered HTML appended to {output_filepath}")
+    logger.info(f"Filtered HTML appended to {output_filepath}")
     return True
 
 def worker(task_queue, output_filepath, match_queue):
@@ -133,7 +126,7 @@ def process_files_condition_by_condition(json_path, conditions, num_processes=10
     total_conditions = len(conditions)
     for idx, condition in enumerate(conditions, start=1):
         conditions_progress = f"{str(idx).zfill(2)}/{str(total_conditions).zfill(2)}"
-        logging.info(f"Processing with condition [{conditions_progress}]: {condition}")
+        logger.info(f"Processing with condition [{conditions_progress}]: {condition}")
 
         conditions_str = sanitize_filename(condition)
         output_filename = f"{base_name}_filtered_{conditions_str}.html"
@@ -167,7 +160,7 @@ def process_files_condition_by_condition(json_path, conditions, num_processes=10
         if not match_found:
             if os.path.exists(output_filepath):
                 os.remove(output_filepath)
-                logging.info(f"Deleted {output_filepath} as no tables matched the conditions")
+                logger.info(f"Deleted {output_filepath} as no tables matched the conditions")
             filtered_files.remove(output_filepath)
             continue
 
@@ -179,13 +172,13 @@ def process_files_condition_by_condition(json_path, conditions, num_processes=10
             zipf.write(file, os.path.basename(file))
             os.remove(file)  # Delete the filtered HTML file after adding it to the zip
 
-    logging.info(f"All filtered files have been zipped into {zip_filename}")
+    logger.info(f"All filtered files have been zipped into {zip_filename}")
 
     end_time = time.time()
     elapsed_time = end_time - start_time
     hours, rem = divmod(elapsed_time, 3600)
     minutes, seconds = divmod(rem, 60)
-    logging.info(f"Processing completed in {int(hours)} hours, {int(minutes)} minutes, and {int(seconds)} seconds.")
+    logger.info(f"Processing completed in {int(hours)} hours, {int(minutes)} minutes, and {int(seconds)} seconds.")
     return zip_filename
 
 # if __name__ == '__main__':

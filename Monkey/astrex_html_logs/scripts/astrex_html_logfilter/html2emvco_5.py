@@ -4,6 +4,9 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 import xml.etree.ElementTree as ET
 import xml.dom.minidom
+import logging
+
+logger = logging.getLogger('astrex_html_filter')
 
 # Get current script directory
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
