@@ -1,3 +1,4 @@
+{%load static%}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,53 +13,145 @@
       display: flex;
       height: 100vh;
     }
+
     .left-container {
       width: 300px;
       background: white;
       padding: 20px;
       box-shadow: 2px 0 5px rgba(0,0,0,0.1);
     }
+
+    .file-name {
+      word-wrap: break-word;
+      white-space: normal;
+      margin-top: 10px;
+      background: #f4f4f4;
+      padding: 10px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+
+    .main-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .summary-container {
+      background: white;
+      padding: 10px; /* Reduce the padding */
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      margin-bottom: 10px; /* Reduce the margin */
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .summary-header {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .summary-title {
+      font-weight: bold;
+      font-size: 16px;
+    }
+
+    .summary-details {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .summary-details p {
+      margin: 0;
+      padding: 2px 0; /* Adjust this for desired spacing */
+    }
+
+    .right-items {
+      display: none;
+      flex-direction: column;
+      align-items: flex-end;
+    }
+
+    .script-duration {
+      font-size: 12px; /* Adjust font size */
+      margin-top: 10px;
+    }
+
     .right-container {
       flex: 1;
-      padding: 20px;
+      padding: 10px; /* Reduce the padding */
       overflow-y: auto;
       display: flex;
       flex-wrap: wrap;
-      gap: 15px;
+      gap: 5px; /* Reduce the gap */
     }
-    .upload-button {
-      display: block;
-      margin-top: 10px;
-      padding: 10px;
-      background: #4a90e2;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      text-align: center;
-    }
+
     .de032-box {
       background: white;
-      border-left: 5px solid #4a90e2;
-      padding: 15px;
-      border-radius: 8px;
-      width: 240px;
+      border-left: 4px solid #4a90e2;
+      padding: 5px;
+      border-radius: 6px;
+      width: 100px; /* Adjust this value to change the width */
+      height: 100px; /* Adjust this value to change the height */
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      font-size: 10px; /* Adjust font size */
     }
+
     .de032-header {
       font-weight: bold;
-      font-size: 18px;
+      font-size: 12px; /* Adjust font size */
     }
+
     .count {
-      margin: 10px 0;
+      margin: 5px 0;
+      font-size: 12px;
     }
-    .download-btn {
+
+    .download-btn, .convert-btn {
       background: #28a745;
       color: white;
       border: none;
-      padding: 8px 12px;
-      border-radius: 5px;
+      padding: 4px 6px;
+      border-radius: 4px;
       cursor: pointer;
+      font-size: 10px;
+      text-align: center;
+    }
+
+    .convert-btn {
+      background: #007bff;
+    }
+
+    .loading-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.8);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      z-index: 1000;
+    }
+
+    .loading-media {
+      display: none;
+      width: 50px;
+      height: 50px;
+      transition: opacity 1s ease-in-out; /* Smooth transition */
+      position: absolute;
+    }
+
+    .loading-timer {
+      margin-top: 80px; /* Adjust the position below gifs/videos */
+      font-size: 14px;
+      font-weight: bold;
     }
   </style>
 </head>
@@ -67,18 +160,46 @@
 <div class="left-container">
   <h3>HTML Logs Uploader</h3>
   <input type="file" id="htmlLogFile" accept=".html">
-  <button class="upload-button" onclick="uploadFile()">Upload</button>
-  <div id="logInfo"></div>
+  <div id="logInfo" class="file-name"></div> <!-- Updated file-name div -->
 </div>
 
-<div class="right-container" id="de032Container"></div>
+<div class="main-container">
+  <div class="summary-container" id="summaryContainer">
+    <div class="summary-header">
+      <span class="summary-title">Summary</span>
+      <div class="right-items">
+        <button class="download-btn" id="downloadAllBtn" disabled>Download All Files</button>
+        <span class="script-duration" id="scriptRunDuration">Script Run Duration: 0h 0m 0s</span>
+      </div>
+    </div>
+    <div id="summaryDetails" class="summary-details"></div>
+  </div>
+
+  <div class="right-container" id="de032Container"></div>
+</div>
+
+<div class="loading-screen" id="loadingScreen">
+  <img src="{% static 'astrex_html_logs/images/search-file1.gif' %}" alt="Loading" class="loading-media" id="gif1">
+  <img src="{% static 'astrex_html_logs/images/search-file2.gif' %}" alt="Loading" class="loading-media" id="gif2">
+  <img src="{% static 'astrex_html_logs/images/search-file3.gif' %}" alt="Loading" class="loading-media" id="gif3">
+  <video class="loading-media" id="mp41" src="{% static 'astrex_html_logs/videos/loading1.mp4' %}" type="video/mp4"></video>
+  <video class="loading-media" id="mp42" src="{% static 'astrex_html_logs/videos/loading2.mp4' %}" type="video/mp4"></video>
+  <div class="loading-timer" id="loadingTimer">0h 0m 0s</div>
+</div>
 
 <script>
 let file = null;
+let de032_counts = {};
+let startTime;
+let loadingTimerInterval;
+let loadingTimeout;
 
 document.getElementById('htmlLogFile').addEventListener('change', function(e) {
   file = e.target.files[0];
   document.getElementById('logInfo').textContent = file ? file.name : '';
+  if (file) {
+    uploadFile();
+  }
 });
 
 function uploadFile() {
@@ -87,18 +208,41 @@ function uploadFile() {
     return;
   }
 
+  startTime = new Date();
+  startLoadingTimer();
+
+  // Set a timeout to show the loading screen if the process takes more than 2 seconds
+  loadingTimeout = setTimeout(showLoadingScreen, 2000);
+
   const formData = new FormData();
   formData.append('file', file);
 
   fetch('/astrex_html_logs/upload_log/', {
     method: 'POST',
     body: formData
-  })
-  .then(res => res.json())
+  }).then(res => res.json())
   .then(data => {
+    clearTimeout(loadingTimeout); // Clear the loading timeout if the process completes in time
+    hideLoadingScreen();
+    clearInterval(loadingTimerInterval);
     if (data.status === 'success') {
       const container = document.getElementById('de032Container');
       container.innerHTML = '';
+      const summaryDetails = document.getElementById('summaryDetails');
+      const rightItems = document.querySelector('.right-items');
+      rightItems.style.display = 'flex';
+      de032_counts = data.de032_counts;
+
+      // Update summary information
+      summaryDetails.innerHTML = `
+        <p>Total DE032 Count: ${data.total_DE032_count}</p>
+        <p>Total Transactions: ${data.total_txn}</p>
+        <p>Start Log Time: ${data.start_log_time}</p>
+        <p>End Log Time: ${data.end_log_time}</p>
+        <p>Total Duration: ${calculateDuration(data.start_log_time, data.end_log_time)}</p>
+      `;
+      document.getElementById('scriptRunDuration').textContent = `Script Run Duration: ${calculateExecutionDuration(Math.floor((new Date() - startTime) / 1000))}`;
+
       const de032s = data.de032_counts;
 
       Object.entries(de032s).forEach(([key, count]) => {
@@ -108,18 +252,27 @@ function uploadFile() {
           <div class="de032-header">DE032: ${key}</div>
           <div class="count">Count: ${count}</div>
           <button class="download-btn">Download</button>
+          <button class="convert-btn">Convert to EMVCo</button>
         `;
-        const btn = box.querySelector('button');
+        const btn = box.querySelector('.download-btn');
+        const convertBtn = box.querySelector('.convert-btn');
+        
         btn.addEventListener('click', () => {
           const dlForm = new FormData();
           dlForm.append('de032', key);
           dlForm.append('filename', file.name);
+          
+          // Show the loading screen if the process takes more than 2 seconds
+          loadingTimeout = setTimeout(showLoadingScreen, 2000);
+
+          // execute the Python script with the unique DE032 value and JSON path as parameters
           fetch('/astrex_html_logs/download_filtered/', {
             method: 'POST',
             body: dlForm
-          })
-          .then(res => res.json())
+          }).then(res => res.json())
           .then(result => {
+            clearTimeout(loadingTimeout); // Clear the timeout if the process completes quickly
+            hideLoadingScreen();
             if (result.status === 'success') {
               const link = document.createElement('a');
               link.href = `/media/${result.filtered_file}`;
@@ -128,19 +281,159 @@ function uploadFile() {
             } else {
               alert(result.message);
             }
+          }).catch(err => {
+            clearTimeout(loadingTimeout); // Clear the timeout if an error occurs
+            hideLoadingScreen();
+            console.error(err);
+            alert('Download failed.');
+          });
+        });
+        
+        convertBtn.addEventListener('click', () => {
+          const convertForm = new FormData();
+          convertForm.append('de032', key);
+          convertForm.append('filename', file.name);
+          fetch('/astrex_html_logs/convert_emvco/', {
+            method: 'POST',
+            body: convertForm
+          }).then(res => res.json())
+          .then(result => {
+            if (result.status === 'success') {
+              const link = document.createElement('a');
+              link.href = `/media/${result.emvco_file}`;
+              link.download = result.emvco_file;
+              link.click();
+            } else {
+              alert(result.message);
+            }
           });
         });
         container.appendChild(box);
       });
+
+      document.getElementById('downloadAllBtn').disabled = false;
     } else {
       alert(data.message);
     }
   })
   .catch(err => {
+    clearTimeout(loadingTimeout); // Clear the loading timeout if there's an error
+    hideLoadingScreen();
+    clearInterval(loadingTimerInterval);
     console.error(err);
     alert('Upload failed.');
   });
 }
+
+function showLoadingScreen() {
+  document.getElementById('loadingScreen').style.display = 'flex';
+  cycleMedia();
+}
+
+function hideLoadingScreen() {
+  const media = document.querySelectorAll('.loading-media');
+  media.forEach(item => {
+    item.style.display = 'none';
+    if (item.tagName === 'VIDEO') {
+      item.pause();
+      item.currentTime = 0;
+    }
+  });
+  document.getElementById('loadingScreen').style.display = 'none';
+  clearInterval(loadingTimerInterval);
+}
+
+function cycleMedia() {
+  const media = document.querySelectorAll('.loading-media');
+  let currentIndex = 0;
+
+  function playNext() {
+    // Hide current media
+    media[currentIndex].style.opacity = 0;
+    setTimeout(() => {
+      media[currentIndex].style.display = 'none';
+
+      // Move to the next media
+      currentIndex = (currentIndex + 1) % media.length;
+      const nextMedia = media[currentIndex];
+
+      // Show the next media
+      if (nextMedia.tagName === 'VIDEO') {
+        nextMedia.style.display = 'block';
+        nextMedia.style.opacity = 1;
+        nextMedia.play();
+        nextMedia.onended = playNext;
+      } else {
+        nextMedia.style.display = 'block';
+        nextMedia.style.opacity = 1;
+        setTimeout(playNext, 2000); // Change this to the duration of the GIF
+      }
+    }, 1000); // Match the transition duration used in CSS
+  }
+
+  // Initially play the first media
+  if (media[currentIndex].tagName === 'VIDEO') {
+    media[currentIndex].style.display = 'block';
+    media[currentIndex].style.opacity = 1;
+    media[currentIndex].play();
+    media[currentIndex].onended = playNext;
+  } else {
+    media[currentIndex].style.display = 'block';
+    media[currentIndex].style.opacity = 1;
+    setTimeout(playNext, 2000); // Change this to the duration of the GIF
+  }
+}
+
+function startLoadingTimer() {
+  const timerElement = document.getElementById('loadingTimer');
+
+  loadingTimerInterval = setInterval(() => {
+    const elapsedSeconds = Math.floor((new Date() - startTime) / 1000);
+    timerElement.textContent = calculateExecutionDuration(elapsedSeconds);
+  }, 1000);
+}
+
+function calculateDuration(start, end) {
+  const startTime = new Date(start);
+  const endTime = new Date(end);
+  const duration = endTime - startTime;
+
+  const hours = Math.floor(duration / (1000 * 60 * 60));
+  const minutes = Math.floor((duration % (1000 * 60 * 60)) / (1000 * 60));
+  const seconds = Math.floor((duration % (1000 * 60)) / 1000);
+
+  return `${hours}h ${minutes}m ${seconds}s`;
+}
+
+function calculateExecutionDuration(executionTime) {
+  const hours = Math.floor(executionTime / 3600);
+  const minutes = Math.floor((executionTime % 3600) / 60);
+  const seconds = executionTime % 60;
+  return `${hours}h ${minutes}m ${seconds}s`;
+}
+
+document.getElementById('downloadAllBtn').addEventListener('click', function(event) {
+  event.stopPropagation(); // Prevent triggering showLoadingScreen()
+  const de032s = Object.keys(de032_counts).join(',');
+  const dlForm = new FormData();
+  dlForm.append('de032', de032s);
+  dlForm.append('filename', file.name);
+
+  fetch('/astrex_html_logs/zip_filtered_files/', {
+    method: 'POST',
+    body: dlForm
+  }).then(res => res.json())
+  .then(result => {
+    if (result.status === 'success') {
+      const link = document.createElement('a');
+      link.href = `/media/${result.zip_file}`;
+      link.download = result.zip_file;
+      link.click();
+    } else {
+      alert(result.message);
+    }
+  });
+});
 </script>
 
 </body>
