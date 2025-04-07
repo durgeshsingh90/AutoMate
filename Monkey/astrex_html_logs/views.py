@@ -21,6 +21,8 @@ def clear_previous_files():
     folder = os.path.join(settings.MEDIA_ROOT, 'astrex_html_logs')
     if os.path.exists(folder):
         for filename in os.listdir(folder):
+            if filename in ["bm32_config.json"]:
+                continue  # Skip config file
             file_path = os.path.join(folder, filename)
             try:
                 os.remove(file_path)
@@ -207,3 +209,42 @@ def zip_filtered_files(request):
             return JsonResponse({'status': 'error', 'message': f'Server error: {str(e)}'})
 
     return JsonResponse({'status': 'error', 'message': 'Invalid request'})
+
+from django.views.decorators.csrf import csrf_exempt
+
+def admin_config(request):
+    return render(request, 'astrex_html_logs/admin.html')
+
+@csrf_exempt
+def save_config(request):
+    if request.method == 'POST':
+        try:
+            config_path = os.path.join(settings.MEDIA_ROOT, 'astrex_html_logs', 'bm32_config.json')
+            os.makedirs(os.path.dirname(config_path), exist_ok=True)
+            with open(config_path, 'w') as f:
+                f.write(request.body.decode('utf-8'))
+            return JsonResponse({'status': 'success', 'message': 'Config saved successfully'})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)})
+    return JsonResponse({'status': 'error', 'message': 'Invalid request'})
+
+def load_config(request):
+    config_path = os.path.join(settings.MEDIA_ROOT, 'astrex_html_logs', 'bm32_config.json')
+
+    # 👇 Add this block to recreate default if missing
+    if not os.path.exists(config_path):
+        default_config = {
+            "411111": "Visa PSP India",
+            "512345": "MasterCard PSP Dubai",
+            "456789": "RuPay Test Node",
+            "622126": "UnionPay China Gateway",
+            "370000": "Amex Sandbox"
+        }
+        os.makedirs(os.path.dirname(config_path), exist_ok=True)
+        with open(config_path, 'w') as f:
+            json.dump(default_config, f, indent=2)
+
+    with open(config_path, 'r') as f:
+        data = json.load(f)
+
+    return JsonResponse(data, safe=False)

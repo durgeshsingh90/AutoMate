@@ -3,6 +3,11 @@ let de032_counts = {};
 let startTime;
 let loadingTimerInterval;
 let loadingTimeout;
+let bm32NameMap = {};
+
+fetch('/astrex_html_logs/load_config/')
+  .then(res => res.json())
+  .then(config => { bm32NameMap = config || {}; });
 
 document.getElementById('htmlLogFile').addEventListener('change', function(e) {
   file = e.target.files[0];
@@ -58,9 +63,11 @@ function uploadFile() {
 
       Object.entries(de032s).forEach(([key, count]) => {
         const box = document.createElement('div');
+        const displayName = bm32NameMap[key] ? ` (${bm32NameMap[key]})` : '';
+
         box.className = 'de032-box';
         box.innerHTML = `
-          <div class="de032-header">DE032: ${key}</div>
+  <div class="de032-header">DE032: ${key}${displayName}</div>
           <div class="count">Count: ${count}</div>
           <button class="download-btn">Download</button>
           <button class="convert-btn">Convert to EMVCo</button>
