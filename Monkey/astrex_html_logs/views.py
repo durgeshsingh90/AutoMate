@@ -118,24 +118,39 @@ def download_filtered_by_de032(request):
 
     return JsonResponse({'status': 'error', 'message': 'Invalid request'})
 
+from pathlib import Path
+
+# This will point to: Monkey/astrex_html_logs/scripts/astrex_html_logfilter/emvco_template.xml
+template_path = os.path.join(
+    Path(__file__).resolve().parent,
+    'scripts',
+    'astrex_html_logfilter',
+    'emvco_template.xml'
+)
+
 @csrf_exempt
 def convert_emvco(request):
     if request.method == 'POST':
         try:
             de032_value = request.POST.get('de032')
-            filename = request.POST.get('filename')  # original .html filename
+            filename = request.POST.get('filename')
 
             if not de032_value or not filename:
                 return JsonResponse({'status': 'error', 'message': 'Missing DE032 or filename'})
 
-            json_path = os.path.join(settings.MEDIA_ROOT, 'astrex_html_logs', 'unique_bm32.json')
             base_name = os.path.splitext(filename)[0]
-
-            # Define paths
             html_file_path = os.path.join(settings.MEDIA_ROOT, filename)
-            template_path = r"C:\Durgesh\Office\Automation\Monkey\Monkey\python\astrex_html_logfilter\emvco_template.xml"
-            converted_file_path = run_html2emvco(html_file_path, template_path)
-    
+
+            # Get relative template path
+            template_path = os.path.join(
+                Path(__file__).resolve().parent,
+                'scripts',
+                'astrex_html_logfilter',
+                'emvco_template.xml'
+            )
+
+            converted_file_path = run_html2emvco(html_file_path)
+
             if os.path.exists(converted_file_path):
                 return JsonResponse({
                     'status': 'success',

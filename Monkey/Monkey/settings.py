@@ -52,9 +52,7 @@ INSTALLED_APPS = [
     'binblock',
     'pdf_merger',
     'gen_reversals',
-    'astrex_html_logs',
-    'rrn_search'
-]
+    'astrex_html_logs']
 
 # Logging configuration
 LOGGING = {
@@ -178,7 +176,6 @@ STATICFILES_DIRS = [
     BASE_DIR / "slot_booking/static",
     BASE_DIR / "gen_reversals/static",
     BASE_DIR / "astrex_html_logs/static",
-    BASE_DIR / "rrn_search/static",
 
     
     # Add other app static directories as needed
