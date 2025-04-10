@@ -54,7 +54,7 @@ INSTALLED_APPS = [
     'gen_reversals',
     'astrex_html_logs',
     'emvco_logs',
-    'xml_logs'
+    # 'xml_logs'
     ]
 
 # Logging configuration
@@ -179,8 +179,8 @@ STATICFILES_DIRS = [
     BASE_DIR / "slot_booking/static",
     BASE_DIR / "gen_reversals/static",
     BASE_DIR / "astrex_html_logs/static",
-    BASE_DIR / "emvco_logs/static",
-    BASE_DIR / "xml_logs/static",
+    # BASE_DIR / "emvco_logs/static",
+    # BASE_DIR / "xml_logs/static",
 
     
     # Add other app static directories as needed

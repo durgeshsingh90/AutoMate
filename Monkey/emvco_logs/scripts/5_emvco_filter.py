@@ -160,10 +160,7 @@ def process_conditions(conditions, condition_file_map, output_base_path):
 if __name__ == "__main__":
     json_file = r"C:\Users\f94gdos\Desktop\TP\unique_bm32_emvco.json"
     conditions = [
-"00000367631",
-"411975",
-"411975",
-"000046"
+"00000367631"
     ]
     
     # Load condition to file mappings from JSON

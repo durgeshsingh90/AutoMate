@@ -1,0 +1,20 @@
+[
+    {
+        "query": " \nselect\n  acquiring_inst_id_code_in, destination_key,message_type_identifier,\nsubstr(pan,1,6) || '****'|| substr(pan, -4) as pan, transaction_amount, retrieval_reference_number,INTERNAL_RESPONSE_CODE_RSP,destination_key,\nhost_start_time as DATE_TIME, card_acceptor_id_code, card_acceptor_merchant_name \n--extractValue(ADDITIONAL_FIELDS,'//response/bcmc_reject_code[1]' ) as REJECT_CODE\nFROM NOVATE.TRANSACTION_LOG \nwhere \nhost_start_time     between to_date('07-Apr-2025 00:01:00', 'dd-mon-yyyy hh24:mi:ss')               and to_date('07-APR-2025 23:59:00', 'dd-mon-yyyy hh24:mi:ss') \n--and message_type_identifier = '0230'\nand RETRIEVAL_REFERENCE_NUMBER like '506320844443'\n--INTERNAL_RESPONSE_CODE_RSP like '%rigi%'\n--and INTERNAL_RESPONSE_CODE_RSP in ('unable-to-locate-record')\n",
+        "result": [
+            {
+                "ACQUIRING_INST_ID_CODE_IN": "000022",
+                "DESTINATION_KEY": null,
+                "MESSAGE_TYPE_IDENTIFIER": "0230",
+                "PAN": "522962****2477",
+                "TRANSACTION_AMOUNT": 7.8,
+                "RETRIEVAL_REFERENCE_NUMBER": "506320844443",
+                "INTERNAL_RESPONSE_CODE_RSP": "unable-to-locate-record",
+                "DATE_TIME": "2025-04-07T12:47:14.261000",
+                "CARD_ACCEPTOR_ID_CODE": "000102238135595",
+                "CARD_ACCEPTOR_MERCHANT_NAME": "Tabac Shop"
+            }
+        ],
+        "error": null
+    }
+]

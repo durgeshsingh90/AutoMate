@@ -5,8 +5,22 @@ import os
 from datetime import datetime
 import xml.dom.minidom
 
+# Function to generate search symbol based on friendly name
+def generate_search_symbol(friendly_name):
+    words = friendly_name.split()
+    if len(words) > 2:
+        # More than 2 words - take the 1st letter of each word and combine in caps
+        search_symbol = ''.join(word[0] for word in words).upper()
+    elif len(words) == 2:
+        # Two words - merge the two words and make it uppercase
+        search_symbol = (words[0] + words[1]).upper()
+    else:
+        # One word - make it uppercase
+        search_symbol = friendly_name.upper()
+    return search_symbol
+
 # Define paths
-html_file_path = r"C:\Users\f94gdos\Desktop\emv\ID-7121-Visa_BASE_I_(Standard)_Message_viewer__part0.html"
+html_file_path = r"C:\Users\f94gdos\Desktop\TP\ID-7107-DCI_Relay_Xpress_(DinersDiscover)_Message_viewer__filtered_20250327_202308\ID-7107-DCI_Relay_Xpress_(DinersDiscover)_Message_viewer__filtered_20250327_202308.html"
 template_path = r"C:\Durgesh\Office\Automation\Monkey\Monkey\python\astrex_html_logfilter\emvco_template.xml"
 
 # Prepare the output path (remove timestamp, keeping '_emvco' suffix)
@@ -44,6 +58,9 @@ online_message_list = root.find(".//OnlineMessageList")
 # Define the list of field IDs to ignore
 ignore_list = {"HDRLEN", "MHDR", "BM1", "BM2"}
 
+# Define the list of field IDs for which to add search symbols
+search_symbol_field_ids = {"DE002", "DE003", "DE004"}  # example field IDs
+
 # To store the current MTI value
 current_mti = "0100"
 
@@ -76,8 +93,8 @@ def is_ignored_field(field_id):
         return True
     return False
 
-def process_field_type(field_type):
-    if field_type[1:].isdigit():
+def process_field_type(field_type, field_id):
+    if field_id.startswith("DE.") and field_type[1:].isdigit():
         number_part = int(field_type[1:]) * 2
         return f"{field_type[0]}{number_part}"
     return field_type
@@ -89,7 +106,7 @@ def create_field_element(parent, id_prefix, cells, subfields=None):
         return
 
     friendly_name = cells[1].get_text(strip=True).replace("&", " ")
-    field_type = process_field_type(cells[2].get_text(strip=True))
+    field_type = process_field_type(cells[2].get_text(strip=True), field_id)
     field_binary = cells[4].get_text(strip=True)
     field_viewable = cells[6].get_text(strip=True).replace(" ", "")
     tool_comment = cells[7].get_text(strip=True)
@@ -108,6 +125,13 @@ def create_field_element(parent, id_prefix, cells, subfields=None):
     ET.SubElement(field, "FieldType").text = field_type
     ET.SubElement(field, "FieldBinary").text = field_binary
     ET.SubElement(field, "FieldViewable").text = field_viewable
+    
+    # Add SearchSymbol element for specific fields
+    if field_id in search_symbol_field_ids:
+        search_symbol_name = generate_search_symbol(friendly_name)
+        search_symbol_value = field_viewable
+        ET.SubElement(field, "SearchSymbol", Name=search_symbol_name, Value=search_symbol_value)
+    
     if tool_comment:
         ET.SubElement(field, "ToolComment").text = tool_comment
         ET.SubElement(field, "ToolCommentLevel").text = "INFO"

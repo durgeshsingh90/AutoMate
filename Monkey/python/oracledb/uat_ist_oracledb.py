@@ -41,8 +41,13 @@ def initialize_connection():
         logging.error(f"Database connection error: {e}")
         return None
 
-def execute_query(connection, query):
+def execute_query(query):
     query_result = {"query": query, "result": None, "error": None}
+    connection = initialize_connection()
+    if connection is None:
+        query_result["error"] = "Unable to establish database connection"
+        return query_result
+    
     try:
         cursor = connection.cursor()
         try:
@@ -77,6 +82,7 @@ def execute_query(connection, query):
         finally:
             # Close the cursor
             cursor.close()
+            connection.close()
 
     except oracledb.DatabaseError as e:
         # Handle connection errors
@@ -91,46 +97,40 @@ def execute_query(connection, query):
     return query_result
 
 def execute_queries_with_new_connection(queries):
-    connection = initialize_connection()
-    if connection:
-        results = []
-        with ThreadPoolExecutor(max_workers=len(queries)) as executor:
-            future_to_query = {executor.submit(execute_query, connection, query): query for query in queries}
-            for future in as_completed(future_to_query):
-                query = future_to_query[future]
+    results = []
+    with ThreadPoolExecutor(max_workers=10) as executor:  # Set max_workers to 10 for 10 concurrent connections
+        future_to_query = {executor.submit(execute_query, query): query for query in queries}
+        for future in as_completed(future_to_query):
+            query = future_to_query[future]
 
-                # Track the start time
-                start_time = time.time()
+            # Track the start time
+            start_time = time.time()
 
-                try:
-                    result = future.result()
-                    results.append(result)
-                    logging.info(f"Query completed: {query}")
-                except Exception as exc:
-                    logging.error(f"Query {query} generated an exception: {exc}")
-                    results.append({"query": query, "result": None, "error": str(exc)})
+            try:
+                result = future.result()
+                results.append(result)
+                logging.info(f"Query completed: {query}")
+            except Exception as exc:
+                logging.error(f"Query {query} generated an exception: {exc}")
+                results.append({"query": query, "result": None, "error": str(exc)})
 
-                # Track the end time
-                end_time = time.time()
+            # Track the end time
+            end_time = time.time()
 
-                # Calculate the elapsed time
-                elapsed_time = end_time - start_time
-                hours, rem = divmod(elapsed_time, 3600)
-                minutes, seconds = divmod(rem, 60)
+            # Calculate the elapsed time
+            elapsed_time = end_time - start_time
+            hours, rem = divmod(elapsed_time, 3600)
+            minutes, seconds = divmod(rem, 60)
 
-                # Print the elapsed time for the query
-                print(f"Time taken for query: {query} - {int(hours)} hours {int(minutes)} minutes {seconds:.2f} seconds")
+            # Print the elapsed time for the query
+            print(f"Time taken for query: {query} - {int(hours)} hours {int(minutes)} minutes {seconds:.2f} seconds")
 
-        # Close the connection
-        connection.close()
-        logging.info("Database connection closed")
-        return results
-    return []
+    return results
 
 def execute_multiple_query_sets(query_sets):
+    all_results = []
     with ThreadPoolExecutor(max_workers=len(query_sets)) as executor:
         future_to_query_set = {executor.submit(execute_queries_with_new_connection, queries): queries for queries in query_sets}
-        all_results = []
         for future in as_completed(future_to_query_set):
             query_set = future_to_query_set[future]
             try:
@@ -155,6 +155,8 @@ query_set_1 = [
           and cardproduct in ('BCMC')
     """
 ]
+
+
 # List of query sets
 query_sets = [query_set_1]
 
@@ -181,7 +183,7 @@ with open(output_filename, 'w') as output_file:
     json.dump(results, output_file, cls=CustomJSONEncoder, indent=4)
 
 # Print out the results
-# print(json.dumps(results, cls=CustomJSONEncoder, indent=4))
+print(json.dumps(results, cls=CustomJSONEncoder, indent=4))
 
 # Print out the total elapsed time
 print(f"Total time taken for all queries: {int(total_hours)} hours {int(total_minutes)} minutes {total_seconds:.2f} seconds")
