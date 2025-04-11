@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'emvco_logs',
     # 'xml_logs',
     'oracle_query_executor',
+    'validate_testcase',
 
     ]
 
@@ -234,6 +235,7 @@ STATICFILES_DIRS = [
     # BASE_DIR / "emvco_logs/static",
     # BASE_DIR / "xml_logs/static",
     BASE_DIR / "oracle_query_executor/static",
+    BASE_DIR / "validate_testcase/static",
 
 
     

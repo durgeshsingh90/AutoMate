@@ -1,6 +1,7 @@
 import oracledb
 import logging
 import json
+import yaml
 from datetime import datetime
 import base64
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -19,6 +20,15 @@ dsn_alias = 'A4PCDO8001.ESH.PAR_IST'  # Alias defined in TNSNAMES.ORA
 # Provide the path to the Oracle Instant Client libraries
 oracle_client_path = r"C:\Oracle\Ora12c_64\BIN"
 
+# Connection pool parameters
+pool_min = 1
+pool_max = 2
+pool_increment = 1
+
+# Initialize Oracle client
+oracledb.init_oracle_client(lib_dir=oracle_client_path)
+logging.info(f"Oracle client initialized from {oracle_client_path}")
+
 # Custom JSON encoder for handling specific data types
 class CustomJSONEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -28,20 +38,23 @@ class CustomJSONEncoder(json.JSONEncoder):
             return base64.b64encode(obj).decode('utf-8')
         return super(CustomJSONEncoder, self).default(obj)
 
-def initialize_connection():
+def initialize_connection_pool():
     try:
-        oracledb.init_oracle_client(lib_dir=oracle_client_path)
-        logging.info(f"Oracle client initialized from {oracle_client_path}")
-        connection = oracledb.connect(user=username, password=password, dsn=dsn_alias)
-        logging.info("Successfully connected to the database")
-        return connection
+        pool = oracledb.create_pool(user=username, password=password, dsn=dsn_alias, min=pool_min, max=pool_max, increment=pool_increment)
+        logging.info("Successfully created connection pool")
+        return pool
     except oracledb.DatabaseError as e:
-        logging.error(f"Database connection error: {e}")
+        logging.error(f"Database connection pool creation error: {e}")
         return None
 
-def execute_query(query):
+def generate_insert_statement(table_name, columns, row):
+    columns_str = ', '.join(columns)
+    values_str = ', '.join(f"'{value}'" if value is not None else 'NULL' for value in row)
+    insert_statement = f"INSERT INTO {table_name} ({columns_str}) VALUES ({values_str});"
+    return insert_statement
+
+def execute_query(connection, query):
     query_result = {"query": query, "result": None, "error": None}
-    connection = initialize_connection()
     if connection is None:
         query_result["error"] = "Unable to establish database connection"
         return query_result
@@ -57,18 +70,26 @@ def execute_query(query):
             columns = [col[0] for col in metadata]
 
             result = []
+            insert_statements = []
+
             for row in rows:
                 row_dict = {}
                 for idx, value in enumerate(row):
                     col_name = columns[idx]
                     row_dict[col_name] = value
                 result.append(row_dict)
+                
+                # Generate the insert statement for the row
+                table_name = query.split()[3].split('.')[1]
+                insert_statements.append(generate_insert_statement(table_name, columns, row))
 
-            query_result["result"] = result
+            query_result["result"] = {
+                "data": result,
+                "insert_statements": insert_statements
+            }
 
         finally:
-            cursor.close()
-            connection.close()
+            cursor.close()  # cursor is closed here
 
     except oracledb.DatabaseError as e:
         error = e.args[0]
@@ -81,50 +102,42 @@ def execute_query(query):
 
     return query_result
 
-def save_query_result_to_file(result, query):
-    # Extract table name from query
+def save_query_result_to_file(result, query, output_types):
     table_name = query.split()[3].split('.')[1]
-
-    # Create the output directory path based on script filename and table name
     script_filename = os.path.splitext(os.path.basename(__file__))[0]
     output_dir = os.path.join('Monkey', 'media','oracledb', script_filename)
     os.makedirs(output_dir, exist_ok=True)
-    output_filename = os.path.join(output_dir, f"{table_name}_output.json")
 
-    # Write each query result to a separate JSON file
-    with open(output_filename, 'w') as output_file:
-        json.dump(result, output_file, cls=CustomJSONEncoder, indent=4)
+    if 'json' in output_types:
+        # Write data output to JSON file
+        output_filename_json = os.path.join(output_dir, f"{table_name}.json")
+        with open(output_filename_json, 'w', encoding='utf-8') as output_file:
+            json.dump(result["result"]["data"], output_file, cls=CustomJSONEncoder, indent=4)
 
-def execute_queries_with_new_connection(queries):
+    if 'sql' in output_types:
+        # Write insert statements to SQL file
+        output_filename_sql = os.path.join(output_dir, f"{table_name}.sql")
+        with open(output_filename_sql, 'w', encoding='utf-8') as sql_file:
+            for statement in result["result"]["insert_statements"]:
+                sql_file.write(statement + '\n')
+
+def execute_queries_with_pool(pool, queries, output_types):
     results = []
-    with ThreadPoolExecutor(max_workers=10) as executor:
-        future_to_query = {executor.submit(execute_query, query): query for query in queries}
-        for future in as_completed(future_to_query):
-            query = future_to_query[future]
-            start_time = time.time()
-            try:
-                result = future.result()
-                results.append(result)
-                logging.info(f"Query completed: {query}")
-
-                # Save query result to file
-                save_query_result_to_file(result, query)
-
-            except Exception as exc:
-                logging.error(f"Query {query} generated an exception: {exc}")
-                results.append({"query": query, "result": None, "error": str(exc)})
-
-            end_time = time.time()
-            elapsed_time = end_time - start_time
-            hours, rem = divmod(elapsed_time, 3600)
-            minutes, seconds = divmod(rem, 60)
-
+    connection = pool.acquire()
+    try:
+        for query in queries:
+            result = execute_query(connection, query)
+            results.append(result)
+            save_query_result_to_file(result, query, output_types)
+    finally:
+        pool.release(connection)  # Return the connection to the pool
+    
     return results
 
-def execute_multiple_query_sets(query_sets):
+def execute_multiple_query_sets(pool, query_sets, output_types):
     all_results = []
-    with ThreadPoolExecutor(max_workers=len(query_sets)) as executor:
-        future_to_query_set = {executor.submit(execute_queries_with_new_connection, queries): queries for queries in query_sets}
+    with ThreadPoolExecutor(max_workers=2) as executor:  # Adjust the number of workers as needed
+        future_to_query_set = {executor.submit(execute_queries_with_pool, pool, queries, output_types): queries for queries in query_sets}
         for future in as_completed(future_to_query_set):
             query_set = future_to_query_set[future]
             try:
@@ -135,38 +148,32 @@ def execute_multiple_query_sets(query_sets):
                 all_results.append({"query_set": query_set, "result": None, "error": str(exc)})
     return all_results
 
-query_set_1 = [""" select * from oasis77.card_scheme """]
-query_set_2 = [""" select * from oasis77.institution """]
-query_set_3 = [""" select * from oasis77.acq_profile """]
-query_set_4 = [""" select * from oasis77.iss_profile """]
-query_set_5 = [""" select * from oasis77.inst_profile """]
-query_set_6 = [""" select * from oasis77.shcbin """]
-query_set_7 = [""" select * from oasis77.shckeys """]
-query_set_8 = [""" select * from oasis77.shcextbindb """]
-query_set_9 = [""" select * from oasis77.istreplaytab """]
+def load_queries_from_yaml(file_path):
+    with open(file_path, 'r', encoding='utf-8') as file:
+        queries_yaml = yaml.safe_load(file)
+    query_sets = [queries_yaml[key] for key in queries_yaml]
+    return query_sets
 
-query_sets = [
-    query_set_1,
-    query_set_2,
-    query_set_3,
-    query_set_4,
-    # query_set_5,
-    # query_set_6,
-    # query_set_7,
-    # query_set_8,
-    # query_set_9
-]
+# Load queries from a YAML file
+yaml_file_path = r"Monkey\python\oracledb\queries.yaml"
+query_sets = load_queries_from_yaml(yaml_file_path)
+
+output_types = ['sql']  # Options: 'json', 'sql', or both
+
+# Initialize connection pool
+pool = initialize_connection_pool()
+if pool is None:
+    logging.error("Failed to create connection pool. Exiting...")
+    exit(1)
 
 start_time = time.time()
 
-results = execute_multiple_query_sets(query_sets)
+results = execute_multiple_query_sets(pool, query_sets, output_types)
 
 end_time = time.time()
 
 total_elapsed_time = end_time - start_time
 total_hours, total_rem = divmod(total_elapsed_time, 3600)
 total_minutes, total_seconds = divmod(total_rem, 60)
-
-# print(json.dumps(results, cls=CustomJSONEncoder, indent=4))
 
 print(f"Total time taken for all queries: {int(total_hours)} hours {int(total_minutes)} minutes {total_seconds:.2f} seconds")

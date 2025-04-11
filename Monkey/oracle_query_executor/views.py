@@ -74,16 +74,24 @@ def execute_query(query, db_config):
             columns = [col[0] for col in metadata]
 
             result = []
-            insert_statements = []
+            insert_statements = None  # Initialize insert_statements to None
+
             if "SELECT COUNT(*)" in query.upper():
                 for row in rows:
                     result.append({"COUNT(*)": row[0]})
             else:
-                schema, table_name = query.split()[3].split('.')
-                for row in rows:
-                    row_dict = {columns[idx]: value for idx, value in enumerate(row)}
-                    result.append(row_dict)
-                    insert_statements.append(generate_insert_statement(schema, table_name, columns, row))
+                parts = query.split()
+                if len(parts) > 3 and '.' in parts[3]:
+                    schema, table_name = parts[3].split('.')
+                    insert_statements = []
+                    for row in rows:
+                        row_dict = {columns[idx]: value for idx, value in enumerate(row)}
+                        result.append(row_dict)
+                        insert_statements.append(generate_insert_statement(schema, table_name, columns, row))
+                else:
+                    query_result["error"] = "Invalid query format to extract table name"
+                    query_result["result"] = {}
+                    return query_result
             
             query_result["result"] = {
                 "data": result,
@@ -98,9 +106,11 @@ def execute_query(query, db_config):
         error = e.args[0]
         logger.error(f"An error occurred: {error.code}: {error.message}")
         query_result["error"] = f"Database error {error.code}: {error.message}"
+        query_result["result"] = {}
     except Exception as e:
         logger.error(f"An unexpected error occurred: {e}")
         query_result["error"] = str(e)
+        query_result["result"] = {}
 
     end_time = time.time()
     query_result["execution_time"] = end_time - start_time
@@ -108,20 +118,32 @@ def execute_query(query, db_config):
     return query_result
 
 def save_query_result_to_file(result, query, output_types, db_key):
-    table_name = query.split()[3].split('.')[1]
+    parts = query.split()
+    if len(parts) > 3 and '.' in parts[3]:
+        table_name = parts[3].split('.')[1]
+    else:
+        logger.error(f"Unable to extract table name from query: {query}")
+        return
+
     output_dir = os.path.join(settings.BASE_DIR, 'media', 'oracledb', db_key)
     os.makedirs(output_dir, exist_ok=True)
 
+    data = result.get("result", {}).get("data", [])
+    insert_statements = result.get("result", {}).get("insert_statements", [])
+
     if 'json' in output_types:
         output_filename_json = os.path.join(output_dir, f"{table_name}.json")
-        with open(output_filename_json, 'w') as output_file:
-            json.dump(result["result"]["data"], output_file, cls=CustomJSONEncoder, indent=4)
+        with open(output_filename_json, 'w', encoding='utf-8') as output_file:
+            json.dump(data, output_file, cls=CustomJSONEncoder, indent=4)
 
     if 'sql' in output_types:
         output_filename_sql = os.path.join(output_dir, f"{table_name}.sql")
-        with open(output_filename_sql, 'w') as sql_file:
-            for statement in result["result"]["insert_statements"]:
-                sql_file.write(statement + '\n')
+        if insert_statements:
+            with open(output_filename_sql, 'w', encoding='utf-8') as sql_file:
+                for statement in insert_statements:
+                    sql_file.write(statement + '\n')
+        else:
+            logger.error(f"No insert statements found in result for query: {query}")
 
 def file_writer(queue, output_types, db_key):
     while True:
@@ -187,11 +209,14 @@ def save_query_history(query_text, format):
         "query": query_text
     }
 
+    history = []
     if os.path.exists(HISTORY_FILE_PATH):
-        with open(HISTORY_FILE_PATH, 'r') as history_file:
-            history = json.load(history_file)
-    else:
-        history = []
+        try:
+            with open(HISTORY_FILE_PATH, 'r') as history_file:
+                history = json.load(history_file)
+        except json.JSONDecodeError:
+            logger.error("Failed to decode JSON from history file")
+            history = []
 
     if len(history) >= 5000:
         history = history[1:]
@@ -199,6 +224,7 @@ def save_query_history(query_text, format):
     history.append(entry)
     with open(HISTORY_FILE_PATH, 'w') as history_file:
         json.dump(history, history_file, indent=4)
+
 
 @csrf_exempt
 @require_POST

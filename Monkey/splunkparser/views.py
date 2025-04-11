@@ -200,11 +200,22 @@ def load_field_definitions():
 # Load field definitions
 FIELD_DEFINITIONS = load_field_definitions()
 
+@csrf_exempt
 def parse_logs(request):
     if request.method == 'POST':
         try:
-            data = json.loads(request.body)
-            log_data = data.get('log_data', '')
+            content_type = request.content_type
+            if content_type == 'application/json':
+                data = json.loads(request.body)
+                log_data = data.get('log_data', '')
+            elif content_type.startswith('multipart/form-data'):
+                file = request.FILES.get('file')
+                if file:
+                    log_data = file.read().decode('utf-8')
+                else:
+                    return JsonResponse({'status': 'error', 'message': 'File not provided'}, status=400)
+            else:
+                return JsonResponse({'status': 'error', 'message': 'Unsupported content type'}, status=415)
 
             logger.info("Received request for log parsing.")
             logger.debug(f"Raw log data received: {log_data}")
@@ -223,10 +234,7 @@ def parse_logs(request):
             logger.critical(f"Unexpected error during log parsing: {e}")
             return JsonResponse({'status': 'error', 'message': str(e)})
 
-
-    logger.warning(f"Invalid request method: {request.method}")
-    return JsonResponse({'status': 'error', 'message': 'Invalid request method'})
-
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)
 def parse_iso8583(log_data):
     message = {}
     de007_parts = []
@@ -308,11 +316,14 @@ def parse_iso8583(log_data):
                 if field_number == '003':
                     value = value.ljust(field_length, '0')
                     logger.debug(f"Adjusted field {field_number} to match length: {value}")
-                elif field_number == '004':  # Unlikely to be adjusted here due to being in integer_fields already
-                    value = value.zfill(field_length)
-                    logger.debug(f"Adjusted field {field_number} to match length: {value}")
+                elif field_number == '004':
+                    if value.strip() and value.strip('0'):  # Ensure non-empty and not just zeros
+                        value = int(value.lstrip('0'))
+                    else:
+                        value = 0
+                    logger.debug(f"Set field {field_number} to {value}")
 
-            # Special handling for DE 60, 61, and 62
+            # Special handling for DE060, 061, and 062
             if field_number in ['060', '061', '062', '066']:
                 value = parse_bm6x(value)
                 logger.info(f"Parsed DE {field_number}: {value}")
@@ -351,10 +362,11 @@ def parse_iso8583(log_data):
                     logger.debug(f"Accumulating DE 53 parts: {de053_parts}")
                 continue
 
-            # Convert to integer if the field is in the integer_fields list
-            if field_number in integer_fields:
-                value = int(value.lstrip('0'))
-                logger.debug(f"Converted field {field_number} to integer: {value}")
+            # Convert to integer if the field is in the integer_fields list, and it's not empty
+            if field_number in integer_fields and field_number != '004':  # Skip DE004 here, as it's handled above
+                if value.strip():  # Ensure value is not empty
+                    value = int(value.lstrip('0'))
+                    logger.debug(f"Converted field {field_number} to integer: {value}")
 
             # Pad with zeros if the field is in the pad_zero_fields list
             if field_number in pad_zero_fields:
@@ -367,35 +379,35 @@ def parse_iso8583(log_data):
     if de007_parts:
         combined_de007 = ''.join(de007_parts)
         data_elements["DE007"] = combined_de007.zfill(10)
-        logger.info(f"Combined DE 007: {data_elements['DE007']}")
+        logger.info(f"Combined DE007: {data_elements['DE007']}")
 
     # Combine and pad DE090
     if de090_parts:
         combined_de090 = ''.join(de090_parts)
-        logger.debug(f"Combined DE 090: {combined_de090}")
+        logger.debug(f"Combined DE090: {combined_de090}")
         parsed_de090 = parse_de090_fields(combined_de090)  # Call parse function for DE090
         data_elements["DE090"] = parsed_de090
-        logger.info(f"Parsed DE 090: {data_elements['DE090']}")
+        logger.info(f"Parsed DE090: {data_elements['DE090']}")
 
-    # Combine parts of DE 43 without stripping spaces
+    # Combine parts of DE043 without stripping spaces
     if bm43_parts:
         data_elements["DE043"] = ''.join(bm43_parts)  # Combine without stripping spaces
-        logger.info(f"Combined DE 43: {data_elements['DE043']}")
+        logger.info(f"Combined DE043: {data_elements['DE043']}")
 
-    # Combine parts of DE 53
+    # Combine parts of DE053
     if de053_parts:
         data_elements["DE053"] = ''.join(de053_parts)  # Retain spaces if needed
-        logger.info(f"Combined DE 53: {data_elements['DE053']}")
+        logger.info(f"Combined DE053: {data_elements['DE053']}")
 
-    # Combine parts of DE 55 and parse as TLV
+    # Combine parts of DE055 and parse as TLV
     if de055_parts:
         combined_de055 = ''.join(de055_parts)
-        logger.debug(f"Combined DE 55: {combined_de055}")
-        parsed_de055 = parse_emv_field_55(combined_de055)  # Parse the combined DE 55
-        # Update the DE 55 data if necessary
+        logger.debug(f"Combined DE055: {combined_de055}")
+        parsed_de055 = parse_emv_field_55(combined_de055)  # Parse the combined DE55
+        # Update the DE55 data if necessary
         update_de55(parsed_de055)
         data_elements["DE055"] = parsed_de055
-        logger.info(f"Parsed DE 055: {data_elements['DE055']}")
+        logger.info(f"Parsed DE055: {data_elements['DE055']}")
 
     # Sort data_elements by keys in ascending order
     sorted_data_elements = dict(sorted(data_elements.items()))
