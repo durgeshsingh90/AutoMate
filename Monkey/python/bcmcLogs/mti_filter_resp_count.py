@@ -52,7 +52,7 @@ def count_unique_strings(output_file, patterns):
 def main():
     start_time = time.time()
 
-    input_file = r"C:\Users\f94gdos\Desktop\novate\transaction.log.2025-04-07"  # Adjust the path to your log file
+    input_file = r"C:\Users\f94gdos\Desktop\novate\transaction.log.2025-04-07"  
     search_blocks = [
        [
             "BCMC | 1.1        | \"1\"",
@@ -75,7 +75,6 @@ def main():
         [
             "OMNIPAY | 39         | \"09\""
         ]
-        # Add more search blocks as needed
     ]
 
     filtered_entries = parse_log_file(input_file, search_blocks)

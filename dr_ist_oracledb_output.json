@@ -1,7 +1,0 @@
-[
-    {
-        "query": " \nselect  transaction_log_id,systems_trace_audit_number,message_type_identifier, host_start_time, host_end_time, destination_key, transaction_amount as amount ,internal_response_code_rsp as respcode, destination_response_code_rsp as alpharespcode,retrieval_reference_number as REFNUM,authorization_id_code as AUTHCODE,  acquiring_inst_id_code_in as ACQUIRER, card_acceptor_merchant_name as psp, extractValue(ADDITIONAL_FIELDS,'//response/bcmc_reject_code[1]' ) as REJECT_CODE, transaction_complete, transaction_declined, card_acceptor_id_code as TERMLOC, acceptor_key, switch_key, pan, extractValue(ADDITIONAL_FIELDS,'//response/bcmc_reject_code[1]' ) as REJECT_CODE\n\nfrom novate.transaction_log\n\nWHERE \n  MSGTYPE LIKE '%130%'\n  AND CARDPRODUCT LIKE '%BCMC%'\n  AND RESPCODE IN ( '09')\n  AND refnum IN ('506320844443')\n  AND OMNI_LOG_DT_UTC BETWEEN TO_DATE('07-Apr-2025 00:00:00', 'DD-MON-YYYY HH24:MI:SS')\n                          AND TO_DATE('07-Apr-2025 23:59:59', 'DD-MON-YYYY HH24:MI:SS')\n\n",
-        "result": [],
-        "error": "Unable to establish database connection"
-    }
-]

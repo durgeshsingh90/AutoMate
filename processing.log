@@ -1,8 +1,0 @@
-2025-04-08 14:52:05,771 - INFO - Running script: 1_breakemvco.py
-2025-04-08 14:52:06,351 - ERROR - An error occurred while running 1_breakemvco.py: Command '['python', '1_breakemvco.py']' returned non-zero exit status 2.
-2025-04-08 14:52:06,352 - ERROR - Failed to run 1_breakemvco.py, stopping the sequence.
-2025-04-08 14:52:06,354 - INFO - 
-Detailed Execution Times:
-2025-04-08 14:52:06,354 - INFO - 1_breakemvco.py: 0 hours, 0 minutes, 0.00 seconds
-2025-04-08 14:52:06,356 - INFO - 
-Total time to run all scripts: 0 hours, 0 minutes, 0.58 seconds.

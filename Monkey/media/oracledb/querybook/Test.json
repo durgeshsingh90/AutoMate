@@ -1,0 +1,7 @@
+{
+    "name": "Test",
+    "description": "",
+    "content": "select * from oasis77.shclog where REFNUM in ('410209940622')",
+    "format": "sql",
+    "timestamp": "2025-04-11T16:04:09.680144"
+}

@@ -42,6 +42,7 @@ urlpatterns = [
     path('astrex_html_logs/', include('astrex_html_logs.urls')),
     # path('emvco_logs/', include('emvco_logs.urls')),
     # path('xml_logs/', include('xml_logs.urls')),
+    path('oracle_query_executor/', include('oracle_query_executor.urls')),
 
 ]
 

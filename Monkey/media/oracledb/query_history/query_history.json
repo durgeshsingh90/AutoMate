@@ -1,0 +1,7 @@
+[
+    {
+        "timestamp": "2025-04-11T16:31:13.631030",
+        "format": "sql",
+        "query": "select * from oasis77.shclog where REFNUM in ('410209940622')"
+    }
+]

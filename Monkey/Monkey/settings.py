@@ -54,7 +54,9 @@ INSTALLED_APPS = [
     'gen_reversals',
     'astrex_html_logs',
     'emvco_logs',
-    # 'xml_logs'
+    # 'xml_logs',
+    'oracle_query_executor',
+
     ]
 
 # Logging configuration
@@ -125,12 +127,62 @@ WSGI_APPLICATION = 'Monkey.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
+# Define the path to the Oracle Instant Client libraries
+ORACLE_CLIENT_PATH = r'C:\Oracle\Ora12c_64\BIN'
+
 DATABASES = {
-    'default': {
+        'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
+    },
+    'dr_ist': {
+        'ENGINE': 'django.db.backends.oracle',
+        'NAME': 'A4PCDO8001.ESH.PAR_IST',
+        'USER': 'F94GDOS',
+        'PASSWORD': 'Ireland2025!',
+        'HOST': '',
+        'PORT': '',
+        'client_path': ORACLE_CLIENT_PATH,
+    },
+    'prod_ist': {
+        'ENGINE': 'django.db.backends.oracle',
+        'NAME': 'A5PCDO8001.EQU.IST',
+        'USER': 'F94GDOS',
+        'PASSWORD': 'Ireland2025!',
+        'HOST': '',
+        'PORT': '',
+        'client_path': ORACLE_CLIENT_PATH,
+    },
+    'uat_ist': {
+        'ENGINE': 'django.db.backends.oracle',
+        'NAME': 'ISTU2_EQU',
+        'USER': 'oasis77',
+        'PASSWORD': 'ist0py',
+        'HOST': '',
+        'PORT': '',
+        'client_path': ORACLE_CLIENT_PATH,
+    },
+    'uat_novate': {
+        'ENGINE': 'django.db.backends.oracle',
+        'NAME': 'ISTU2',
+        'USER': 'novate',
+        'PASSWORD': 'nov1234',
+        'HOST': '',
+        'PORT': '',
+        'client_path': ORACLE_CLIENT_PATH,
+    },
+    'uat_novate_conf': {
+        'ENGINE': 'django.db.backends.oracle',
+        'NAME': 'ISTU2',
+        'USER': 'novate_conf',
+        'PASSWORD': 'nov1234',
+        'HOST': '',
+        'PORT': '',
+        'client_path': ORACLE_CLIENT_PATH,
     }
 }
+
+# Other settings...
 
 
 # Password validation
@@ -181,6 +233,8 @@ STATICFILES_DIRS = [
     BASE_DIR / "astrex_html_logs/static",
     # BASE_DIR / "emvco_logs/static",
     # BASE_DIR / "xml_logs/static",
+    BASE_DIR / "oracle_query_executor/static",
+
 
     
     # Add other app static directories as needed

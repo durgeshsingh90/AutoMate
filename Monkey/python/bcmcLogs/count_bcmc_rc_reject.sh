@@ -2,7 +2,7 @@
 
 start_time=$(date +%s)
 
-input_file="/path/to/your/logfile.log"  # Adjust the path to your log file
+input_file="transaction.log"  
 output_file="${input_file}_output"
 
 # Define search blocks
